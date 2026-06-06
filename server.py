@@ -17,7 +17,7 @@ import tempfile
 import urllib.request
 import uuid
 import zipfile
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 from urllib.parse import urlparse
 
@@ -49,6 +49,7 @@ IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 TOOL_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]*$")
 APT_PACKAGE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+_.:-]*$")
 SAFE_BINARY_RE = re.compile(r"^[A-Za-z0-9._+-]+$")
+WINDOWS_ABSOLUTE_PATH_RE = re.compile(r"^[A-Za-z]:[\\/]")
 DEFAULT_TIMEOUT_SECONDS = 60 * 60
 
 logging.basicConfig(
@@ -228,9 +229,50 @@ def looks_like_path_param(name: str, schema: dict[str, Any]) -> bool:
     )
 
 
+def configured_host_data_roots() -> list[PureWindowsPath]:
+    raw_roots: list[str] = []
+    single_root = os.environ.get("MCP_HOST_DATA_ROOT", "").strip()
+    if single_root:
+        raw_roots.append(single_root)
+    multi_roots = os.environ.get("MCP_HOST_DATA_ROOTS", "")
+    raw_roots.extend(root.strip() for root in multi_roots.split(";") if root.strip())
+    return [PureWindowsPath(root) for root in raw_roots]
+
+
+def windows_parts_match_prefix(parts: tuple[str, ...], prefix: tuple[str, ...]) -> bool:
+    if len(parts) < len(prefix):
+        return False
+    return all(left.casefold() == right.casefold() for left, right in zip(parts, prefix))
+
+
+def translate_windows_host_path(raw: str, param_name: str) -> Path | None:
+    if not WINDOWS_ABSOLUTE_PATH_RE.match(raw):
+        return None
+
+    windows_path = PureWindowsPath(raw)
+    host_roots = configured_host_data_roots()
+    if not host_roots:
+        raise ValueError(
+            f"Path parameter '{param_name}' is a Windows host path. Pass a /data path, "
+            "or configure MCP_HOST_DATA_ROOT to the host directory mounted as /data."
+        )
+
+    for host_root in host_roots:
+        if windows_parts_match_prefix(windows_path.parts, host_root.parts):
+            relative_parts = windows_path.parts[len(host_root.parts) :]
+            return DATA_ROOT.joinpath(*relative_parts)
+
+    roots_text = ", ".join(str(root) for root in host_roots)
+    raise ValueError(
+        f"Path parameter '{param_name}' is outside configured host data root(s): {roots_text}. "
+        f"Use a path under the mounted data directory or pass a /data path; got {raw}"
+    )
+
+
 def normalize_data_path(value: Any, param_name: str, create_parent: bool = False) -> str:
     raw = str(value)
-    candidate = Path(raw)
+    translated = translate_windows_host_path(raw, param_name)
+    candidate = translated if translated is not None else Path(raw)
     if not candidate.is_absolute():
         candidate = DATA_ROOT / candidate
     resolved = candidate.resolve(strict=False)

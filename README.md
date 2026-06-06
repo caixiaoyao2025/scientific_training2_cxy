@@ -95,6 +95,7 @@ docker run -d --name bio-mcp-http --restart unless-stopped `
   -e MCP_HOST=0.0.0.0 `
   -e MCP_PORT=8000 `
   -e MCP_PATH=/mcp `
+  -e MCP_HOST_DATA_ROOT=<your-data-dir> `
   bio-mcp
 ```
 
@@ -285,6 +286,17 @@ Supported `render_as` values:
 Path-like inputs are resolved inside `/data`. Relative paths are interpreted
 relative to `/data`.
 
+When agents pass a Windows host path such as `E:\bio-data\sample.fa`, set
+`MCP_HOST_DATA_ROOT` to the host directory mounted as `/data`. The server then
+maps matching host paths into container paths, for example:
+
+```text
+E:\bio-data\sample.fa -> /data/sample.fa
+```
+
+Windows paths outside the configured host data root are rejected before command
+execution.
+
 ## Data Firewall And Output Handling
 
 For tools with:
@@ -361,6 +373,21 @@ pass paths such as:
 
 ```text
 /data/sample.bam
+```
+
+If an agent sends Windows host paths, run the container with
+`MCP_HOST_DATA_ROOT` set to the same host directory mounted as `/data`:
+
+```powershell
+docker run -d --name bio-mcp-http --restart unless-stopped `
+  -p 127.0.0.1:8765:8000 `
+  -v E:\bio-data:/data `
+  -e MCP_HOST_DATA_ROOT=E:\bio-data `
+  -e MCP_TRANSPORT=streamable-http `
+  -e MCP_HOST=0.0.0.0 `
+  -e MCP_PORT=8000 `
+  -e MCP_PATH=/mcp `
+  bio-mcp
 ```
 
 ### apt-installed tools disappear
