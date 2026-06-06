@@ -37,6 +37,9 @@ USER_REGISTRY_PATH = Path(
     os.environ.get("MCP_USER_REGISTRY_PATH", DATA_ROOT / "mcp_registry.yaml")
 ).resolve()
 TOOL_BIN_ROOT = Path(os.environ.get("MCP_TOOL_BIN_ROOT", DATA_ROOT / "mcp_tools" / "bin")).resolve()
+TOOL_VENV_ROOT = Path(
+    os.environ.get("MCP_TOOL_VENV_ROOT", DATA_ROOT / "mcp_tools" / "venvs")
+).resolve()
 STORAGE_ROOT = APP_ROOT / "storage"
 OUTPUT_ROOT = DATA_ROOT / "mcp_outputs"
 os.environ["PATH"] = f"{TOOL_BIN_ROOT}{os.pathsep}{os.environ.get('PATH', '')}"
@@ -67,7 +70,9 @@ class RegistryError(ValueError):
 def ensure_runtime_directories() -> None:
     if not is_relative_to(TOOL_BIN_ROOT, DATA_ROOT):
         raise RuntimeError(f"MCP_TOOL_BIN_ROOT must resolve inside {DATA_ROOT}; got {TOOL_BIN_ROOT}")
-    for directory in (APP_ROOT, STORAGE_ROOT, DATA_ROOT, OUTPUT_ROOT, TOOL_BIN_ROOT):
+    if not is_relative_to(TOOL_VENV_ROOT, DATA_ROOT):
+        raise RuntimeError(f"MCP_TOOL_VENV_ROOT must resolve inside {DATA_ROOT}; got {TOOL_VENV_ROOT}")
+    for directory in (APP_ROOT, STORAGE_ROOT, DATA_ROOT, OUTPUT_ROOT, TOOL_BIN_ROOT, TOOL_VENV_ROOT):
         directory.mkdir(parents=True, exist_ok=True)
 
 
@@ -592,6 +597,7 @@ def registry_snapshot() -> dict[str, Any]:
         "base_registry_path": str(REGISTRY_PATH),
         "user_registry_path": str(USER_REGISTRY_PATH),
         "tool_bin_root": str(TOOL_BIN_ROOT),
+        "tool_venv_root": str(TOOL_VENV_ROOT),
         "base_tool_count": len(base_tools),
         "user_tool_count": len(user_tools),
         "effective_tool_count": len(tools),
@@ -668,9 +674,22 @@ def locate_binary(search_root: Path, binary_name: str) -> Path:
     raise FileNotFoundError(f"Unable to locate binary '{binary_name}' in downloaded artifact.")
 
 
+def validate_http_url(download_url: str) -> None:
+    parsed = urlparse(download_url)
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("download_url must use http or https.")
+
+
+def write_python_tool_wrapper(wrapper_path: Path, target_binary: Path) -> None:
+    wrapper = f"#!/bin/sh\nexec {shlex.quote(str(target_binary))} \"$@\"\n"
+    atomic_write_text(wrapper_path, wrapper)
+    current_mode = wrapper_path.stat().st_mode
+    wrapper_path.chmod(current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
 @mcp.tool()
 def install_bio_tool(method: str, package_name: str = "", download_url: str = "", binary_name: str = "") -> str:
-    """Install a bioinformatics tool using apt or a precompiled binary URL."""
+    """Install a bioinformatics tool using apt, a binary URL, or a Python package URL."""
     method = method.strip().lower()
 
     if method == "apt":
@@ -723,7 +742,56 @@ def install_bio_tool(method: str, package_name: str = "", download_url: str = ""
             logger.exception("binary_url install failed for %s", binary_name)
             return f"binary_url install failed for '{binary_name}': {exc}"
 
-    return "Unsupported method. Use method='apt' or method='binary_url'."
+    if method == "pip_url":
+        if not download_url:
+            return "download_url is required for method='pip_url'."
+        if not SAFE_BINARY_RE.match(package_name):
+            return f"Rejected unsafe package name: {package_name!r}"
+        if not SAFE_BINARY_RE.match(binary_name):
+            return f"Rejected unsafe binary name: {binary_name!r}"
+        venv_path = TOOL_VENV_ROOT / package_name
+        wrapper_path = TOOL_BIN_ROOT / binary_name
+        try:
+            validate_http_url(download_url)
+            TOOL_BIN_ROOT.mkdir(parents=True, exist_ok=True)
+            TOOL_VENV_ROOT.mkdir(parents=True, exist_ok=True)
+            if venv_path.exists():
+                shutil.rmtree(venv_path)
+            subprocess.run(
+                [sys.executable, "-m", "venv", str(venv_path)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            python_path = venv_path / "bin" / "python"
+            binary_path = venv_path / "bin" / binary_name
+            subprocess.run(
+                [str(python_path), "-m", "pip", "install", download_url],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            if not binary_path.is_file():
+                raise FileNotFoundError(
+                    f"Unable to locate installed CLI '{binary_name}' at {binary_path}."
+                )
+            write_python_tool_wrapper(wrapper_path, binary_path)
+            return (
+                f"Installed Python package '{package_name}' from URL into {venv_path}. "
+                f"Created wrapper '{binary_name}' at {wrapper_path}."
+            )
+        except subprocess.CalledProcessError as exc:
+            logger.exception("pip_url install failed for %s", package_name)
+            return (
+                f"pip_url install failed for '{package_name}' with exit code {exc.returncode}.\n"
+                f"STDOUT:\n{exc.stdout[-4000:] if exc.stdout else ''}\n"
+                f"STDERR:\n{exc.stderr[-4000:] if exc.stderr else ''}"
+            )
+        except Exception as exc:
+            logger.exception("pip_url install failed for %s", package_name)
+            return f"pip_url install failed for '{package_name}': {exc}"
+
+    return "Unsupported method. Use method='apt', method='binary_url', or method='pip_url'."
 
 
 @mcp.tool()

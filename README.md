@@ -14,7 +14,8 @@ images, Markdown data tables, and PDF text summaries as MCP content.
 - No Bioconda: uses `python:3.11-slim-bookworm`, apt packages, and pip wheels.
 - Dynamic registry: built-in tools are loaded from `/app/registry.yaml`.
 - Persistent user tools: agent-added tools are stored in `/data/mcp_registry.yaml`.
-- Persistent downloaded binaries: `binary_url` installs to `/data/mcp_tools/bin`.
+- Persistent downloaded tools: `binary_url` installs to `/data/mcp_tools/bin`;
+  `pip_url` installs Python CLIs into `/data/mcp_tools/venvs`.
 - Secure execution: commands are split with `shlex.split`; `shell=True` is not used.
 - Data firewall: path inputs must resolve inside `/data`.
 - Large-output interception: full raw output is written to `/data/mcp_outputs`.
@@ -158,7 +159,8 @@ args = ["run", "--rm", "-i", "-v", "E:\\bio-data:/data", "bio-mcp"]
 ```text
 /data/
   mcp_registry.yaml       # Agent-added persistent tool schemas
-  mcp_tools/bin/          # Persistent binaries installed by binary_url
+  mcp_tools/bin/          # Persistent binaries and CLI wrappers
+  mcp_tools/venvs/        # Persistent Python virtualenvs installed by pip_url
   mcp_outputs/            # Full raw outputs intercepted by the data firewall
   your_input_files...     # FASTA, FASTQ, BAM, BED, PDF, TSV, etc.
 ```
@@ -186,11 +188,27 @@ Parameters:
 
 Supported methods:
 
-- `binary_url`: downloads a tar/zip or direct binary, extracts `binary_name`,
-  makes it executable, and stores it under `/data/mcp_tools/bin`.
 - `apt`: installs an apt package inside the current container. This is useful
   for quick experiments, but it is not persistent across new containers. For
   permanent apt tools, add them to the Dockerfile and rebuild the image.
+- `binary_url`: downloads a tar/zip or direct binary, extracts `binary_name`,
+  makes it executable, and stores it under `/data/mcp_tools/bin`.
+- `pip_url`: installs a Python source archive, wheel, or package URL into
+  `/data/mcp_tools/venvs/<package_name>` and writes a wrapper named
+  `binary_name` under `/data/mcp_tools/bin`.
+
+Example: install the `gget` CLI from a tagged GitHub source archive. This does
+not preinstall `gget` in the image; it installs it into the mounted `/data`
+directory for this server.
+
+```json
+{
+  "method": "pip_url",
+  "package_name": "gget",
+  "download_url": "https://github.com/pachterlab/gget/archive/refs/tags/v0.30.5.tar.gz",
+  "binary_name": "gget"
+}
+```
 
 ### `append_tool_to_registry`
 
@@ -349,7 +367,8 @@ pass paths such as:
 
 `method="apt"` installs into the current container only. To make apt tools
 permanent, add them to the Dockerfile and rebuild. For downloadable standalone
-binaries, prefer `method="binary_url"`.
+binaries, prefer `method="binary_url"`. For Python package URLs that expose a
+CLI, prefer `method="pip_url"`.
 
 ## Development
 
