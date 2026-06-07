@@ -1,21 +1,10 @@
 ARG PYTHON_BASE=python:3.11-slim-bookworm
 
-FROM ${PYTHON_BASE} AS builder
-
-ENV PIP_NO_CACHE_DIR=1
-
-RUN python -m pip install --upgrade pip \
-    && pip wheel --no-cache-dir --retries 5 --timeout 120 --wheel-dir /wheels \
-        fastmcp \
-        pyyaml \
-        pandas \
-        tabulate \
-        pypdf
-
 FROM ${PYTHON_BASE} AS runtime
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
     MCP_APP_ROOT=/app \
     MCP_DATA_ROOT=/data \
     MCP_REGISTRY_PATH=/app/registry.yaml \
@@ -41,9 +30,12 @@ RUN apt-get update \
         wget \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /var/cache/apt/*.bin
 
-COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir /wheels/* \
-    && rm -rf /wheels
+RUN uv pip install --system --no-cache \
+        fastmcp \
+        pyyaml \
+        pandas \
+        tabulate \
+        pypdf
 
 WORKDIR /app
 
