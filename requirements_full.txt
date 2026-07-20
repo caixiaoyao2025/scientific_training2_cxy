@@ -99,7 +99,6 @@ langsmith==0.8.9
 legacy-api-wrap==1.5
 lxml==6.1.0
 # Editable install with no version control (map2video==0.1.0)
--e c:\users\123456\appdata\local\temp\opencode\map2video_tts
 Markdown==3.10.2
 markdown-it-py==4.2.0
 MarkupSafe==3.0.3
