@@ -1,0 +1,10 @@
+mcp_servers:
+  bio-mcp:
+    command:
+      - "docker"
+      - "run"
+      - "--rm"
+      - "-i"
+      - "-v"
+      - "C:\\Users\\123456\\Desktop\\st2\\SCI1003_TEAM11\\data:/data"
+      - "bio-mcp"

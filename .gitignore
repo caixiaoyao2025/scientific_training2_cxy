@@ -1,6 +1,10 @@
 __pycache__/
 *.py[cod]
 *.log
+*.egg-info/
+dist/
+build/
+.eggs/
 
 # Runtime data and agent-installed tools. Keep only directory placeholders.
 data/*
@@ -15,3 +19,33 @@ data/*
 # App-side persisted state generated inside containers or local runs.
 storage/*
 !storage/.gitkeep
+
+# Generated pipeline outputs (regeneratable)
+github_from_html.json
+tool_library.json
+tool_library_clean.json
+tool_summary.json
+discovered_registry.yaml
+seen_papers.json
+mcp_registry.yaml
+
+# Docker build artifacts from broken PowerShell
+CACHED
+ERROR
+FROM
+RUN
+cd
+docker
+git
+[internal]
+[runtime
+#
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

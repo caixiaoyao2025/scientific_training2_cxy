@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["name", "description", "source", "type"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "工具名称"
+    },
+    "description": {
+      "type": "string",
+      "description": "工具功能描述"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "github": {
+          "type": "string",
+          "format": "uri",
+          "description": "GitHub仓库地址"
+        },
+        "paper_doi": {
+          "type": "string",
+          "description": "来源论文的DOI"
+        },
+        "paper_title": {
+          "type": "string",
+          "description": "来源论文标题"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": ["software", "web_server", "database", "pipeline", "library"],
+      "description": "工具类型"
+    },
+    "interface": {
+      "type": "object",
+      "properties": {
+        "cli": {
+          "type": "boolean",
+          "description": "是否有命令行接口"
+        },
+        "api": {
+          "type": "boolean",
+          "description": "是否有API接口"
+        },
+        "web": {
+          "type": "boolean",
+          "description": "是否有Web界面"
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "关键词标签，方便下游Agent匹配任务"
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "质量评分（基于GitHub星星、论文影响力等）"
+    }
+  }
+}

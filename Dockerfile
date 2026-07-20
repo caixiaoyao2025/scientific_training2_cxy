@@ -1,8 +1,6 @@
-ARG PYTHON_BASE=python:3.11-slim-bookworm
+FROM python:3.11-slim
 
-FROM ${PYTHON_BASE} AS runtime
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1 \
     MCP_APP_ROOT=/app \
@@ -15,36 +13,16 @@ ENV PYTHONUNBUFFERED=1 \
     MCP_PORT=8000 \
     MCP_PATH=/mcp
 
-RUN apt-get update \
-    -o Acquire::Retries=5 \
-    && apt-get install -y --no-install-recommends \
-        -o Acquire::Retries=5 \
-        bedtools \
-        ca-certificates \
-        curl \
-        default-jre-headless \
-        fastp \
-        ncbi-blast+ \
-        r-base \
-        samtools \
-        wget \
-    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /var/cache/apt/*.bin
-
-RUN uv pip install --system --no-cache \
-        fastmcp \
-        pyyaml \
-        pandas \
-        tabulate \
-        pypdf
-
-WORKDIR /app
-
-RUN mkdir -p /app/storage /data/mcp_outputs
+RUN pip install --no-cache-dir --timeout 120 \
+    fastmcp \
+    pyyaml \
+    pandas \
+    tabulate \
+    pypdf
 
 COPY server.py registry.yaml /app/
+RUN mkdir -p /data/mcp_outputs
 
 VOLUME ["/data"]
-
 EXPOSE 8000
-
 ENTRYPOINT ["python", "-u", "/app/server.py"]
