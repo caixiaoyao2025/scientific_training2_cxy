@@ -4,9 +4,13 @@ import re
 import time
 import random
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
-import json
 import os
+
+try:
+    from playwright.sync_api import sync_playwright
+    HAS_PLAYWRIGHT = True
+except ImportError:
+    HAS_PLAYWRIGHT = False
 
 # ============================================================
 # 记忆管理：记录已处理的论文
@@ -89,6 +93,8 @@ def search_papers(query, max_results=10):
 # ============================================================
 def fetch_with_playwright(url):
     """使用Playwright获取JavaScript渲染后的内容（攻克复杂出版社）"""
+    if not HAS_PLAYWRIGHT:
+        return None
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
