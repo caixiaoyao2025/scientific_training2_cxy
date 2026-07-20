@@ -1,0 +1,21 @@
+name: biomni311
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    - biomni
+    - langchain-core
+    - langchain-openai
+    - langchain-anthropic
+    - langchain-community
+    - langgraph
+    - nest_asyncio
+    - mcp
+    - pandas
+    - requests
+    - beautifulsoup4
+    - pyyaml
+    - tabulate
+    - python-dateutil
