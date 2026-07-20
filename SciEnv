@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Ollama
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    curl -fsSL https://ollama.com/install.sh | sh && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy project code
+COPY . /app/
+
+# Install Python deps
+RUN pip install --no-cache-dir biomni langchain-core langchain-openai langchain-anthropic langchain-community langgraph nest_asyncio mcp pandas && \
+    pip install --no-cache-dir requests beautifulsoup4 pyyaml tabulate python-dateutil
+
+# Pull model at build time (saved in image forever)
+RUN ollama serve & sleep 3 && ollama pull qwen2.5:14b
+
+EXPOSE 11434
+CMD ollama serve & python biomni_test.py
