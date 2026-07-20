@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Ollama
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    curl -fsSL https://ollama.com/install.sh | sh && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Python deps
+COPY requirements_full.txt /app/
+RUN pip install --no-cache-dir -r requirements_full.txt && \
+    pip install --no-cache-dir nest_asyncio mcp
+
+# Copy project
+COPY . /app/
+
+# Pull model at build time (saves forever in image)
+RUN ollama serve & sleep 3 && ollama pull qwen2.5:14b && kill %1
+
+# Start Ollama + MCP server
+CMD ollama serve & sleep 2 && python biomni_test.py
