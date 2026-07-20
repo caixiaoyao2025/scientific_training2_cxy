@@ -87,6 +87,9 @@ def step3_clean():
     print("\n" + "=" * 60)
     print("STEP 3: Cleaning tool library...")
     print("=" * 60)
+    if not os.path.exists("tool_library.json"):
+        print("No tool_library.json found, skipping clean.")
+        return
     import importlib
     import clean
     importlib.reload(clean)
@@ -96,6 +99,9 @@ def step4_to_registry():
     print("\n" + "=" * 60)
     print("STEP 4: Converting to MCP registry format...")
     print("=" * 60)
+    if not os.path.exists("tool_library_clean.json"):
+        print("No tool_library_clean.json found, skipping registry conversion.")
+        return
     from discovery_to_registry import load_tool_library, convert_to_registry
 
     tools = load_tool_library()
@@ -106,6 +112,9 @@ def step5_register_to_mcp():
     print("\n" + "=" * 60)
     print("STEP 5: Registering tools to MCP server...")
     print("=" * 60)
+    if not os.path.exists("discovered_registry.yaml"):
+        print("No discovered_registry.yaml found, skipping merge.")
+        return
     from merge_to_mcp import merge_registries
     merge_registries()
 
