@@ -6,7 +6,7 @@ MODEL_PATH = os.environ.get("MODEL_PATH", "/caixiaoyao/ollama_models/qwen2.5-14b
 PORT = int(os.environ.get("PORT", "11434"))
 
 print(f"Loading model: {MODEL_PATH}")
-llm = Llama(model_path=MODEL_PATH, n_gpu_layers=0, verbose=False, n_ctx=4096)
+llm = Llama(model_path=MODEL_PATH, n_gpu_layers=0, verbose=False, n_ctx=16384)
 print("Model loaded")
 
 class Handler(BaseHTTPRequestHandler):
@@ -37,15 +37,17 @@ class Handler(BaseHTTPRequestHandler):
                     prompt += f"<|im_start|>assistant\n{content}\n<|im_end|>\n"
             prompt += "<|im_start|>assistant\n"
 
-            result = llm(prompt, max_tokens=512, temperature=0.7, stop=["<|im_end|>", "<|im_start|>"])
-            text = result["choices"][0]["text"].strip()
-
-            resp = {
-                "choices": [{
-                    "message": {"role": "assistant", "content": text},
-                    "finish_reason": "stop"
-                }]
-            }
+            try:
+                result = llm(prompt, max_tokens=512, temperature=0.7, stop=["<|im_end|>", "<|im_start|>"])
+                text = result["choices"][0]["text"].strip()
+                resp = {
+                    "choices": [{
+                        "message": {"role": "assistant", "content": text},
+                        "finish_reason": "stop"
+                    }]
+                }
+            except Exception as e:
+                resp = {"error": str(e), "choices": [{"message": {"role": "assistant", "content": f"Error: {e}"}, "finish_reason": "stop"}]}
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
