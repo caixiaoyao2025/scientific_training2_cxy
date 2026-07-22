@@ -1,12 +1,14 @@
 import os
 
-os.environ["MCP_DATA_ROOT"] = os.path.join(os.path.dirname(__file__), "data")
-os.environ["MCP_APP_ROOT"] = os.path.dirname(__file__)
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+os.environ["MCP_DATA_ROOT"] = "data"
+os.environ["MCP_APP_ROOT"] = "."
 
 from biomni.agent import A1
 
 agent = A1(
-    path=os.path.join(os.path.dirname(__file__), "data"),
+    path="data",
     llm="qwen2.5:14b",
     source="Custom",
     base_url="http://localhost:11434/v1",
