@@ -2,8 +2,6 @@ import os
 import re
 import types
 import sys
-import asyncio
-import concurrent.futures
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.environ["MCP_DATA_ROOT"] = "data"
@@ -11,9 +9,7 @@ os.environ["MCP_APP_ROOT"] = "."
 
 from biomni.agent import A1
 from biomni.tool.support_tools import _persistent_namespace
-from mcp import StdioServerParameters
-from mcp.client.stdio import stdio_client
-from mcp import ClientSession
+import gradio as gr
 
 api_key = os.environ.get("SILICONFLOW_API_KEY") or "sk-lufftravmhzgdpudfvbvzwrlfyctebizytmtlbynyiohtkij"
 
@@ -27,33 +23,9 @@ agent = A1(
 )
 agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 
-def make_working_wrapper(tool_name):
-    def wrapper(*args, **kwargs):
-        async def call():
-            params = StdioServerParameters(command="python", args=["server.py"])
-            async with stdio_client(params) as (reader, writer):
-                async with ClientSession(reader, writer) as session:
-                    await session.initialize()
-                    result = await session.call_tool(tool_name, kwargs)
-                    content = result.content[0]
-                    if hasattr(content, "text"):
-                        return content.text
-                    return str(content)
-        try:
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                return pool.submit(asyncio.run, call()).result(timeout=120)
-        except Exception as e:
-            return f"Error calling {tool_name}: {e}"
-    wrapper.__name__ = tool_name
-    wrapper.__doc__ = f"MCP tool: {tool_name}"
-    return wrapper
-
-for name in list(agent._custom_functions.keys()):
-    agent._custom_functions[name] = make_working_wrapper(name)
-
 agent.system_prompt = re.sub(
     r"Import file: mcp_servers\.[^\n]+\n=+\n",
-    "The following MCP tools are available directly in your namespace (call them as plain functions, NO import needed):\n",
+    "The following tools are available directly in your namespace:\n",
     agent.system_prompt,
 )
 
@@ -66,5 +38,22 @@ for name, func in agent._custom_functions.items():
     setattr(bio_mcp_mod, name, func)
     _persistent_namespace[name] = func
 
-print("Launching Gradio interface...")
-agent.launch_gradio_demo(share=True, server_name="0.0.0.0")
+def chat(message, history):
+    try:
+        result = agent.go(message)
+        return result
+    except Exception as e:
+        return f"Error: {e}"
+
+demo = gr.ChatInterface(
+    fn=chat,
+    title="Bioinformatics Tool-Discovery Agent",
+    description="输入任意生信任务，AI 自动选择工具并执行",
+    examples=[
+        "Run fastp quality control on data/sample.fastq and generate an HTML report",
+        "List all available tools",
+    ],
+    share=True,
+)
+
+demo.launch(server_name="0.0.0.0")
