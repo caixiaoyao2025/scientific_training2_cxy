@@ -1,4 +1,5 @@
 import os
+import re
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -16,6 +17,14 @@ agent = A1(
     expected_data_lake_files=[],
 )
 agent.add_mcp(config_path="./mcp_config_cluster.yaml")
+
+# Fix: replace "Import file: mcp_servers.*" with direct function call instructions
+# so the model doesn't try to import non-existent modules
+agent.system_prompt = re.sub(
+    r"Import file: mcp_servers\.[^\n]+\n=+\n",
+    "The following MCP tools are available directly in your namespace (call them as plain functions, NO import needed):\n",
+    agent.system_prompt,
+)
 
 result = agent.go("Use list_registered_tools tool to show all available tools")
 print(result)
