@@ -28,7 +28,7 @@ agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 # Fix: replace ALL broken MCP wrappers with working versions
 # The original make_mcp_wrapper in a1.py returns None (loop.create_task bug)
 def make_working_wrapper(tool_name):
-    def wrapper(**kwargs):
+    def wrapper(*args, **kwargs):
         async def call():
             params = StdioServerParameters(command="python", args=["server.py"])
             async with stdio_client(params) as (reader, writer):

@@ -29,7 +29,7 @@ agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 
 # Replace broken MCP wrappers with working versions
 def make_working_wrapper(tool_name):
-    def wrapper(**kwargs):
+    def wrapper(*args, **kwargs):
         async def call():
             params = StdioServerParameters(command="python", args=["server.py"])
             async with stdio_client(params) as (reader, writer):
