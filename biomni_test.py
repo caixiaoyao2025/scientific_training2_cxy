@@ -26,6 +26,15 @@ agent.system_prompt = re.sub(
     agent.system_prompt,
 )
 
+# Fix 1b: Add explicit instruction at the top of the system prompt
+agent.system_prompt = (
+    "CRITICAL RULES:\n"
+    "- DO NOT use 'import' or 'from ... import'. All MCP tools are already available as plain functions.\n"
+    "- Just call functions directly, e.g.: list_registered_tools()\n"
+    "- Always use print() to display results.\n"
+    "- Use ONLY ONE <execute> block per response.\n\n"
+) + agent.system_prompt
+
 # Fix 2: wrap all custom functions to auto-print results
 # exec() doesn't capture return values, so we force-print them
 def make_printing_wrapper(func):
@@ -40,5 +49,9 @@ def make_printing_wrapper(func):
 for name, func in agent._custom_functions.items():
     agent._custom_functions[name] = make_printing_wrapper(func)
 
-result = agent.go("Use list_registered_tools tool to show all available tools")
+result = agent.go(
+    "Call the function list_registered_tools() directly. "
+    "Do NOT use import. The function is already available. "
+    "Use print() to show the result."
+)
 print(result)
