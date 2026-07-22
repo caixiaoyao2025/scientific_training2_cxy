@@ -9,7 +9,6 @@ os.environ["MCP_APP_ROOT"] = "."
 
 from biomni.agent import A1
 from biomni.tool.support_tools import _persistent_namespace
-import gradio as gr
 
 api_key = os.environ.get("SILICONFLOW_API_KEY") or "sk-lufftravmhzgdpudfvbvzwrlfyctebizytmtlbynyiohtkij"
 
@@ -38,22 +37,5 @@ for name, func in agent._custom_functions.items():
     setattr(bio_mcp_mod, name, func)
     _persistent_namespace[name] = func
 
-def chat(message, history):
-    try:
-        result = agent.go(message)
-        return result
-    except Exception as e:
-        return f"Error: {e}"
-
-demo = gr.ChatInterface(
-    fn=chat,
-    title="Bioinformatics Tool-Discovery Agent",
-    description="输入任意生信任务，AI 自动选择工具并执行",
-    examples=[
-        "Run fastp quality control on data/sample.fastq and generate an HTML report",
-        "List all available tools",
-    ],
-    share=True,
-)
-
-demo.launch(server_name="0.0.0.0")
+print("Launching Gradio interface...")
+agent.launch_gradio_demo(share=True, server_name="0.0.0.0")
