@@ -6,7 +6,7 @@ MODEL_PATH = os.environ.get("MODEL_PATH", "/caixiaoyao/ollama_models/qwen2.5-14b
 PORT = int(os.environ.get("PORT", "11434"))
 
 print(f"Loading model: {MODEL_PATH}")
-llm = Llama(model_path=MODEL_PATH, n_gpu_layers=20, verbose=True, n_ctx=4096)
+llm = Llama(model_path=MODEL_PATH, n_gpu_layers=48, verbose=False, n_ctx=4096)
 print("Model loaded")
 
 class Handler(BaseHTTPRequestHandler):

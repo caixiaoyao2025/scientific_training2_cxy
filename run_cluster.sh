@@ -16,15 +16,23 @@ export MODEL_PATH=$MODEL_PATH
 nohup python llama_server.py > /tmp/llama_server.log 2>&1 &
 LLAMA_PID=$!
 echo "LLM server PID: $LLAMA_PID"
-sleep 5
 
-# Verify server is up
+# Wait for model to load (12GB Q6_K needs ~30-60s)
+echo "Waiting for model to load..."
+for i in $(seq 1 60); do
+    if curl -s http://localhost:11434/v1/models > /dev/null 2>&1; then
+        echo "LLM server is running (ready after ${i}s)"
+        break
+    fi
+    sleep 5
+    echo "  still loading... (${i}x5s)"
+done
+
 if ! curl -s http://localhost:11434/v1/models > /dev/null 2>&1; then
     echo "ERROR: LLM server failed to start. Check /tmp/llama_server.log"
-    cat /tmp/llama_server.log
+    tail -20 /tmp/llama_server.log
     exit 1
 fi
-echo "LLM server is running"
 
 echo "=== 运行 Bio-Agent 测试 ==="
 python biomni_test.py
