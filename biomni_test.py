@@ -15,6 +15,7 @@ from mcp import StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp import ClientSession
 
+PYTHON_EXE = sys.executable
 agent = A1(
     path="data",
     llm="Qwen/Qwen2.5-72B-Instruct",
@@ -30,7 +31,7 @@ agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 def make_working_wrapper(tool_name):
     def wrapper(*args, **kwargs):
         async def call():
-            params = StdioServerParameters(command="python", args=["server.py"])
+            params = StdioServerParameters(command=PYTHON_EXE, args=["server.py"])
             async with stdio_client(params) as (reader, writer):
                 async with ClientSession(reader, writer) as session:
                     await session.initialize()

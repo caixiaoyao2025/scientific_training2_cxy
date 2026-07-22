@@ -9,6 +9,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.environ["MCP_DATA_ROOT"] = "data"
 os.environ["MCP_APP_ROOT"] = "."
 
+PYTHON_EXE = sys.executable
+
 from biomni.agent import A1
 from biomni.tool.support_tools import _persistent_namespace
 from mcp import StdioServerParameters
@@ -31,7 +33,7 @@ agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 def make_working_wrapper(tool_name):
     def wrapper(*args, **kwargs):
         async def call():
-            params = StdioServerParameters(command="python", args=["server.py"])
+            params = StdioServerParameters(command=PYTHON_EXE, args=["server.py"])
             async with stdio_client(params) as (reader, writer):
                 async with ClientSession(reader, writer) as session:
                     await session.initialize()
