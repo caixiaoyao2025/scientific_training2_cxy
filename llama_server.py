@@ -2,7 +2,7 @@ import json, sys, os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from llama_cpp import Llama
 
-MODEL_PATH = os.environ.get("MODEL_PATH", "/caixiaoyao/ollama_models/qwen2.5-14b/qwen2.5-14b-instruct-q4_k_m.gguf")
+MODEL_PATH = os.environ.get("MODEL_PATH", "/caixiaoyao/ollama_models/qwen2.5-14b/qwen2.5-14b-instruct-q6_k.gguf")
 PORT = int(os.environ.get("PORT", "11434"))
 
 print(f"Loading model: {MODEL_PATH}")

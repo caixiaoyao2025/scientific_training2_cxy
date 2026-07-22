@@ -5,7 +5,7 @@
 set -e
 
 ENV_DIR=/caixiaoyao/envs/biomni311
-MODEL_PATH=/caixiaoyao/ollama_models/qwen2.5-14b/qwen2.5-14b-instruct-q4_k_m.gguf
+MODEL_PATH=/caixiaoyao/ollama_models/qwen2.5-14b/qwen2.5-14b-instruct-q6_k.gguf
 
 echo "=== 激活 Conda 环境 ==="
 source $(conda info --base)/etc/profile.d/conda.sh
