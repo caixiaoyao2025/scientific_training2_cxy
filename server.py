@@ -909,7 +909,7 @@ def main() -> None:
 
     transport = os.environ.get("MCP_TRANSPORT", "stdio").strip().lower()
     if transport == "stdio":
-        mcp.run(transport="stdio", show_banner=False)
+        mcp.run(transport="stdio")
         return
 
     host = os.environ.get("MCP_HOST", "127.0.0.1")
@@ -919,7 +919,7 @@ def main() -> None:
         port = int(port_raw)
     except ValueError as exc:
         raise RuntimeError(f"MCP_PORT must be an integer, got {port_raw!r}") from exc
-    mcp.run(transport=transport, show_banner=False, host=host, port=port, path=path)
+    mcp.run(transport=transport, host=host, port=port, path=path)
 
 
 if __name__ == "__main__":
