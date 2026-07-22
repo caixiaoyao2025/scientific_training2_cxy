@@ -1,0 +1,28 @@
+"""Demo: create a tiny synthetic FASTQ file for testing"""
+import os
+
+os.makedirs("data", exist_ok=True)
+
+# Synthetic paired-end FASTQ (4 reads)
+fastq_content = """@READ001 instrument:run:flowcell
+ATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCG
++
+IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+@READ002 instrument:run:flowcell
+GCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAGCTAG
++
+IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+@READ003 instrument:run:flowcell
+TTTTAAAACCCCGGGGTTTTAAAACCCCGGGGTTTTAAAACCCCGGGGTTTTA
++
+IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+@READ004 instrument:run:flowcell
+AAAAAAAGGGGGGGGTTTTTTTCCCCCCCCAAAAAAAGGGGGGGGTTTTTTTCCC
++
+IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+"""
+
+with open("data/sample.fastq", "w") as f:
+    f.write(fastq_content.strip() + "\n")
+
+print(f"Created data/sample.fastq ({os.path.getsize('data/sample.fastq')} bytes)")
