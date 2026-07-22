@@ -1,5 +1,6 @@
 import os
 import re
+import functools
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -18,13 +19,26 @@ agent = A1(
 )
 agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 
-# Fix: replace "Import file: mcp_servers.*" with direct function call instructions
-# so the model doesn't try to import non-existent modules
+# Fix 1: replace "Import file: mcp_servers.*" so model doesn't try to import
 agent.system_prompt = re.sub(
     r"Import file: mcp_servers\.[^\n]+\n=+\n",
     "The following MCP tools are available directly in your namespace (call them as plain functions, NO import needed):\n",
     agent.system_prompt,
 )
+
+# Fix 2: wrap all custom functions to auto-print results
+# exec() doesn't capture return values, so we force-print them
+def make_printing_wrapper(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if result is not None:
+            print(result)
+        return result
+    return wrapper
+
+for name, func in agent._custom_functions.items():
+    agent._custom_functions[name] = make_printing_wrapper(func)
 
 result = agent.go("Use list_registered_tools tool to show all available tools")
 print(result)
