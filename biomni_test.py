@@ -1,5 +1,7 @@
 import os
 import re
+import types
+import sys
 import functools
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -19,39 +21,15 @@ agent = A1(
 )
 agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 
-# Fix 1: replace "Import file: mcp_servers.*" so model doesn't try to import
-agent.system_prompt = re.sub(
-    r"Import file: mcp_servers\.[^\n]+\n=+\n",
-    "The following MCP tools are available directly in your namespace (call them as plain functions, NO import needed):\n",
-    agent.system_prompt,
-)
-
-# Fix 1b: Add explicit instruction at the top of the system prompt
-agent.system_prompt = (
-    "CRITICAL RULES:\n"
-    "- DO NOT use 'import' or 'from ... import'. All MCP tools are already available as plain functions.\n"
-    "- Just call functions directly, e.g.: list_registered_tools()\n"
-    "- Always use print() to display results.\n"
-    "- Use ONLY ONE <execute> block per response.\n\n"
-) + agent.system_prompt
-
-# Fix 2: wrap all custom functions to auto-print results
-# exec() doesn't capture return values, so we force-print them
-def make_printing_wrapper(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-        if result is not None:
-            print(result)
-        return result
-    return wrapper
+# Fix: create fake mcp_servers.bio_mcp module so "from mcp_servers.bio_mcp import xxx" works
+mcp_servers_mod = types.ModuleType("mcp_servers")
+bio_mcp_mod = types.ModuleType("mcp_servers.bio_mcp")
+mcp_servers_mod.bio_mcp = bio_mcp_mod
+sys.modules["mcp_servers"] = mcp_servers_mod
+sys.modules["mcp_servers.bio_mcp"] = bio_mcp_mod
 
 for name, func in agent._custom_functions.items():
-    agent._custom_functions[name] = make_printing_wrapper(func)
+    setattr(bio_mcp_mod, name, func)
 
-result = agent.go(
-    "Call the function list_registered_tools() directly. "
-    "Do NOT use import. The function is already available. "
-    "Use print() to show the result."
-)
+result = agent.go("Show all available tools using list_registered_tools")
 print(result)
