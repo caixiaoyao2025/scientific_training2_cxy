@@ -1,5 +1,5 @@
 mcp_servers:
   bio-mcp:
     command:
-      - "C:\\Users\\123456\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+      - "python"
       - "server.py"

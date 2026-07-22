@@ -2,17 +2,18 @@ import os
 import re
 import types
 import sys
+import asyncio
+import concurrent.futures
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.environ["MCP_DATA_ROOT"] = "data"
 os.environ["MCP_APP_ROOT"] = "."
 
-import server as srv
-srv.ensure_runtime_directories()
-srv.load_and_register_registry()
-
 from biomni.agent import A1
 from biomni.tool.support_tools import _persistent_namespace
+from mcp import StdioServerParameters
+from mcp.client.stdio import stdio_client
+from mcp import ClientSession
 
 api_key = os.environ.get("SILICONFLOW_API_KEY") or "sk-lufftravmhzgdpudfvbvzwrlfyctebizytmtlbynyiohtkij"
 
@@ -26,29 +27,29 @@ agent = A1(
 )
 agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 
-def make_direct_wrapper(tool_name):
+def make_working_wrapper(tool_name):
     def wrapper(*args, **kwargs):
+        async def call():
+            params = StdioServerParameters(command="python", args=["server.py"])
+            async with stdio_client(params) as (reader, writer):
+                async with ClientSession(reader, writer) as session:
+                    await session.initialize()
+                    result = await session.call_tool(tool_name, kwargs)
+                    content = result.content[0]
+                    if hasattr(content, "text"):
+                        return content.text
+                    return str(content)
         try:
-            result = srv.execute_registered_tool(tool_name, kwargs)
-            if isinstance(result, list):
-                parts = []
-                for item in result:
-                    if hasattr(item, "text"):
-                        parts.append(item.text)
-                    elif hasattr(item, "data"):
-                        parts.append(f"[Image: {item.mimeType}]")
-                    else:
-                        parts.append(str(item))
-                return "\n".join(parts)
-            return str(result)
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                return pool.submit(asyncio.run, call()).result(timeout=120)
         except Exception as e:
             return f"Error calling {tool_name}: {e}"
     wrapper.__name__ = tool_name
-    wrapper.__doc__ = f"Bio tool: {tool_name}"
+    wrapper.__doc__ = f"MCP tool: {tool_name}"
     return wrapper
 
 for name in list(agent._custom_functions.keys()):
-    agent._custom_functions[name] = make_direct_wrapper(name)
+    agent._custom_functions[name] = make_working_wrapper(name)
 
 agent.system_prompt = re.sub(
     r"Import file: mcp_servers\.[^\n]+\n=+\n",
