@@ -38,4 +38,4 @@ for name, func in agent._custom_functions.items():
     _persistent_namespace[name] = func
 
 print("Launching Gradio interface...")
-agent.launch_gradio_demo(share=True, server_name="0.0.0.0")
+agent.launch_gradio_demo(share=True, server_name="0.0.0.0", examples=[])
