@@ -9,13 +9,13 @@ bases = "ACGT"
 base_qual = {b: 0 for b in bases}
 
 def gen_qual(length, high_qual_prob=0.85):
-    """Most bases high quality (Illumina), some errors."""
+    """Most bases high quality (Illumina), some errors. Phred+33: chars 33-104 (Q0-Q71)."""
     quals = []
     for _ in range(length):
         if random.random() < high_qual_prob:
-            quals.append(chr(random.randint(53, 73)))  # Q20-Q40
+            quals.append(chr(random.randint(53, 104)))  # Q20-Q71
         else:
-            quals.append(chr(random.randint(18, 33)))   # Q0-Q15
+            quals.append(chr(random.randint(33, 48)))    # Q0-Q15
     return "".join(quals)
 
 def gen_seq(length):
