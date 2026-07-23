@@ -57,11 +57,7 @@ agent.system_prompt = re.sub(
     agent.system_prompt,
 )
 
-# Trim system prompt — keep under 60K chars (~15K tokens) for 128K context model
-MAX_PROMPT_CHARS = 60000
-if len(agent.system_prompt) > MAX_PROMPT_CHARS:
-    agent.system_prompt = agent.system_prompt[:MAX_PROMPT_CHARS]
-    print(f"Truncated system prompt to {MAX_PROMPT_CHARS} chars")
+# No truncation needed — Qwen2.5-72B-Instruct-128K handles full prompt
 
 mcp_servers_mod = types.ModuleType("mcp_servers")
 bio_mcp_mod = types.ModuleType("mcp_servers.bio_mcp")
