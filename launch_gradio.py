@@ -47,6 +47,8 @@ def make_direct_wrapper(tool_name):
     return wrapper
 
 for name in srv.registered_tool_names:
+    if not hasattr(agent, '_custom_functions'):
+        agent._custom_functions = {}
     agent._custom_functions[name] = make_direct_wrapper(name)
 
 agent.system_prompt = re.sub(
