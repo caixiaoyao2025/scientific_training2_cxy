@@ -25,9 +25,6 @@ agent = A1(
     expected_data_lake_files=[],
 )
 
-# Disable tool retriever — avoids repeated full-prompt API calls that burn TPM
-agent.config.use_tool_retriever = False
-
 def make_direct_wrapper(tool_name):
     def wrapper(*args, **kwargs):
         try:
