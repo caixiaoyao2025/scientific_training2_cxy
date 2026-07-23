@@ -7,6 +7,10 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.environ["MCP_DATA_ROOT"] = "data"
 os.environ["MCP_APP_ROOT"] = "."
 
+import server as srv
+srv.ensure_runtime_directories()
+srv.load_and_register_registry()
+
 from biomni.agent import A1
 from biomni.tool.support_tools import _persistent_namespace
 
@@ -21,6 +25,30 @@ agent = A1(
     expected_data_lake_files=[],
 )
 agent.add_mcp(config_path="./mcp_config_cluster.yaml")
+
+def make_direct_wrapper(tool_name):
+    def wrapper(*args, **kwargs):
+        try:
+            result = srv.execute_registered_tool(tool_name, kwargs)
+            if isinstance(result, list):
+                parts = []
+                for item in result:
+                    if hasattr(item, "text"):
+                        parts.append(item.text)
+                    elif hasattr(item, "data"):
+                        parts.append(f"[Image: {item.mimeType}]")
+                    else:
+                        parts.append(str(item))
+                return "\n".join(parts)
+            return str(result)
+        except Exception as e:
+            return f"Error calling {tool_name}: {e}"
+    wrapper.__name__ = tool_name
+    wrapper.__doc__ = f"Bio tool: {tool_name}"
+    return wrapper
+
+for name in list(agent._custom_functions.keys()):
+    agent._custom_functions[name] = make_direct_wrapper(name)
 
 agent.system_prompt = re.sub(
     r"Import file: mcp_servers\.[^\n]+\n=+\n",
