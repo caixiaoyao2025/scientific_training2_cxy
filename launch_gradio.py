@@ -61,7 +61,16 @@ agent.system_prompt = re.sub(
     agent.system_prompt,
 )
 
-# No truncation needed — Qwen2.5-72B-Instruct-128K handles full prompt
+# Force Qwen to use <execute> tags instead of markdown code blocks
+agent.system_prompt += (
+    "\n\n=== CRITICAL FORMATTING RULE ===\n"
+    "EVERY response that contains code to run MUST include an <execute> tag block.\n"
+    "Format: <execute>\\n#!bash\\n<your commands>\\n</execute>\n"
+    "Or: <execute>\\n#!python\\n<your code>\\n</execute>\n"
+    "Do NOT use markdown code blocks (```) for code execution.\n"
+    "Always output <execute> tags directly. This is mandatory.\n"
+    "=== END RULE ===\n"
+)
 
 # ── Monkey-patch: wrap LLM to convert markdown code blocks to <execute> tags ──
 # Qwen2.5 outputs ```bash ... ``` but Biomni's execute() only reads <execute> tags.
@@ -81,7 +90,21 @@ class _LLMProxy:
     def invoke(self, messages, *args, **kwargs):
         response = object.__getattribute__(self, "_llm").invoke(messages, *args, **kwargs)
         content = response.content if hasattr(response, "content") else str(response)
-        if isinstance(content, str) and "<execute>" not in content and "<solution>" not in content:
+
+        # Handle list content (some providers return list of blocks)
+        if isinstance(content, list):
+            text_parts = []
+            for block in content:
+                if isinstance(block, dict):
+                    part = block.get("text") or block.get("content") or ""
+                    if isinstance(part, str):
+                        text_parts.append(part)
+            content = "".join(text_parts)
+
+        if not isinstance(content, str):
+            return response
+
+        if "<execute>" not in content and "<solution>" not in content:
             code_block_re = re.compile(r'```(?:bash|sh|shell|python|py|r)?\s*\n(.*?)```', re.DOTALL)
             blocks = code_block_re.findall(content)
             if blocks:
@@ -92,6 +115,7 @@ class _LLMProxy:
                     code_type = "bash"
                 fixed = content + f"\n\n<execute>\n#!{code_type}\n{extracted}\n</execute>"
                 response = AIMessage(content=fixed)
+
         return response
 
 object.__setattr__(agent, "llm", _LLMProxy(_orig_llm))
