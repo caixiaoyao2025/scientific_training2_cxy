@@ -9,6 +9,7 @@ build/
 # Runtime data and agent-installed tools. Keep only directory placeholders.
 data/*
 !data/.gitkeep
+!data/sample.fastq
 !data/mcp_outputs/
 !data/mcp_outputs/.gitkeep
 !data/mcp_tools/

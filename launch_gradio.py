@@ -57,6 +57,13 @@ agent.system_prompt = re.sub(
     agent.system_prompt,
 )
 
+# Truncate system prompt to fit Qwen2.5-72B's 32768 token limit
+# (~4 chars/token; 32768 tokens ≈ 131072 chars; keep margin)
+MAX_PROMPT_CHARS = 125000
+if len(agent.system_prompt) > MAX_PROMPT_CHARS:
+    agent.system_prompt = agent.system_prompt[:MAX_PROMPT_CHARS]
+    print(f"Truncated system prompt to {MAX_PROMPT_CHARS} chars")
+
 mcp_servers_mod = types.ModuleType("mcp_servers")
 bio_mcp_mod = types.ModuleType("mcp_servers.bio_mcp")
 mcp_servers_mod.bio_mcp = bio_mcp_mod
