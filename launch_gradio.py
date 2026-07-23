@@ -68,25 +68,33 @@ agent.system_prompt = re.sub(
 # We intercept the LLM response and inject <execute> tags when missing.
 from langchain_core.messages import AIMessage
 
-_original_llm_invoke = agent.llm.invoke
+_orig_llm = agent.llm
 
-def _patched_llm_invoke(messages, *args, **kwargs):
-    response = _original_llm_invoke(messages, *args, **kwargs)
-    content = response.content if hasattr(response, "content") else str(response)
-    if isinstance(content, str) and "<execute>" not in content and "<solution>" not in content:
-        code_block_re = re.compile(r'```(?:bash|sh|shell|python|py|r)?\s*\n(.*?)```', re.DOTALL)
-        blocks = code_block_re.findall(content)
-        if blocks:
-            extracted = "\n".join(blocks)
-            first_type = re.search(r'```(\w+)', content)
-            code_type = "python"
-            if first_type and first_type.group(1).lower() in ("bash", "sh", "shell", "cli"):
-                code_type = "bash"
-            fixed = content + f"\n\n<execute>\n#!{code_type}\n{extracted}\n</execute>"
-            response = AIMessage(content=fixed)
-    return response
+class _LLMProxy:
+    """Thin proxy that wraps ChatOpenAI and post-processes responses."""
+    def __init__(self, llm):
+        object.__setattr__(self, "_llm", llm)
 
-agent.llm.invoke = _patched_llm_invoke
+    def __getattr__(self, name):
+        return getattr(object.__getattribute__(self, "_llm"), name)
+
+    def invoke(self, messages, *args, **kwargs):
+        response = object.__getattribute__(self, "_llm").invoke(messages, *args, **kwargs)
+        content = response.content if hasattr(response, "content") else str(response)
+        if isinstance(content, str) and "<execute>" not in content and "<solution>" not in content:
+            code_block_re = re.compile(r'```(?:bash|sh|shell|python|py|r)?\s*\n(.*?)```', re.DOTALL)
+            blocks = code_block_re.findall(content)
+            if blocks:
+                extracted = "\n".join(blocks)
+                first_type = re.search(r'```(\w+)', content)
+                code_type = "python"
+                if first_type and first_type.group(1).lower() in ("bash", "sh", "shell", "cli"):
+                    code_type = "bash"
+                fixed = content + f"\n\n<execute>\n#!{code_type}\n{extracted}\n</execute>"
+                response = AIMessage(content=fixed)
+        return response
+
+object.__setattr__(agent, "llm", _LLMProxy(_orig_llm))
 
 mcp_servers_mod = types.ModuleType("mcp_servers")
 bio_mcp_mod = types.ModuleType("mcp_servers.bio_mcp")
