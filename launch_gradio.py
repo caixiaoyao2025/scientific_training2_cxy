@@ -18,7 +18,7 @@ api_key = os.environ.get("SILICONFLOW_API_KEY") or "sk-lufftravmhzgdpudfvbvzwrlf
 
 agent = A1(
     path="data",
-    llm="Qwen/Qwen3-235B-A22B",
+    llm="Qwen/Qwen2.5-72B-Instruct-128K",
     source="Custom",
     base_url="https://api.siliconflow.cn/v1",
     api_key=api_key,
@@ -57,9 +57,8 @@ agent.system_prompt = re.sub(
     agent.system_prompt,
 )
 
-# Aggressively trim system prompt — keep core instructions + our7 tool names
-# Qwen3-235B has 131K context; keep prompt under 30K chars (~7500 tokens) for safety
-MAX_PROMPT_CHARS = 30000
+# Trim system prompt — keep under 60K chars (~15K tokens) for 128K context model
+MAX_PROMPT_CHARS = 60000
 if len(agent.system_prompt) > MAX_PROMPT_CHARS:
     agent.system_prompt = agent.system_prompt[:MAX_PROMPT_CHARS]
     print(f"Truncated system prompt to {MAX_PROMPT_CHARS} chars")
