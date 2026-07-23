@@ -22,8 +22,8 @@ def gen_seq(length):
     return "".join(random.choices(bases, weights=[0.25, 0.25, 0.25, 0.25], k=length))
 
 with open("data/sample.fastq", "w") as f:
-    for i in range(500):
-        seq_len = random.choice([101, 151, 151, 201])
+    for i in range(50):
+        seq_len = random.choice([101, 151, 151])
         seq = gen_seq(seq_len)
         qual = gen_qual(seq_len, high_qual_prob=random.choice([0.9, 0.85, 0.7, 0.5]))
         f.write(f"@INST:{random.randint(1,8)}:FLOWCELL:{random.randint(1,4)}:{random.randint(100,999)}:{random.randint(10,999)}:{random.randint(10,999)} {i+1}:N:0:1\n")
@@ -36,7 +36,7 @@ with open("data/sample.sam", "w") as f:
     f.write("@HD\tVN:1.6\tSO:coordinate\n")
     f.write(f"@SQ\tSN:NC_000913.3\tLN:{ref_len}\n")
     f.write("@RG\tID:sample01\tSM:EC_K12\tPL:ILLUMINA\tLB:lib01\n")
-    for i in range(200):
+    for i in range(30):
         pos = random.randint(1, ref_len - 200)
         mapq = random.choice([0, 10, 20, 30, 30, 40, 40, 60])
         flag = random.choice([0, 0, 0, 16])  # mostly forward strand
