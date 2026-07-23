@@ -46,6 +46,4 @@ The agent will execute each step and display results in real time.
 
 ## Screen Recording
 
-See the demo video below:
-
-![Demo Video](屏幕录制%202026-07-23%20212451.mp4)
+<video src="屏幕录制%202026-07-23%20212451.mp4" controls width="640"></video>
