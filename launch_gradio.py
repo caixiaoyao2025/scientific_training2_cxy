@@ -116,7 +116,6 @@ agent.system_prompt += (
     "Always output <execute> tags directly. This is mandatory.\n"
     "=== END RULE ===\n"
 )
-)
 
 _orig_llm = agent.llm
 
