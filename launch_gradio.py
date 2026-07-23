@@ -24,7 +24,6 @@ agent = A1(
     api_key=api_key,
     expected_data_lake_files=[],
 )
-agent.add_mcp(config_path="./mcp_config_cluster.yaml")
 
 def make_direct_wrapper(tool_name):
     def wrapper(*args, **kwargs):
@@ -47,7 +46,7 @@ def make_direct_wrapper(tool_name):
     wrapper.__doc__ = f"Bio tool: {tool_name}"
     return wrapper
 
-for name in list(agent._custom_functions.keys()):
+for name in srv.registered_tool_names:
     agent._custom_functions[name] = make_direct_wrapper(name)
 
 agent.system_prompt = re.sub(
