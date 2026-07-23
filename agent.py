@@ -13,7 +13,7 @@ except ImportError:
     HAS_PLAYWRIGHT = False
 
 # ============================================================
-# 记忆管理：记录已处理的论文
+# Memory management: track processed papers
 # ============================================================
 SEEN_FILE = "seen_papers.json"
 
@@ -40,7 +40,7 @@ def mark_paper_as_seen(paper_id):
     seen.add(paper_id)
     save_seen_papers(seen)
 # ============================================================
-# 1. 搜索论文（PubMed）
+# 1. Search papers (PubMed)
 # ============================================================
 def search_papers(query, max_results=10):
     """搜索PubMed，返回论文列表"""
@@ -80,7 +80,7 @@ def search_papers(query, max_results=10):
         
         papers.append({
             "pmid": uid,
-            "title": doc.get("title", "无标题"),
+            "title": doc.get("title", "No title"),
             "abstract": doc.get("abstract", ""),
             "doi": doi,
             "url": f"https://pubmed.ncbi.nlm.nih.gov/{uid}/"
@@ -89,7 +89,7 @@ def search_papers(query, max_results=10):
     return papers
 
 # ============================================================
-# 2. 使用Playwright获取JavaScript渲染后的内容
+# 2. Fetch content rendered by JavaScript using Playwright
 # ============================================================
 def fetch_with_playwright(url):
     """使用Playwright获取JavaScript渲染后的内容（攻克复杂出版社）"""
@@ -102,18 +102,18 @@ def fetch_with_playwright(url):
             page.set_default_timeout(60000)
             page.goto(url, timeout=60000)
             page.wait_for_selector('body', timeout=10000)
-            page.wait_for_timeout(3000)  # 等待动态内容加载
+            page.wait_for_timeout(3000)  # Wait for dynamic content to load
             content = page.content()
             browser.close()
             if content and len(content) > 500:
                 return content
             return None
     except Exception as e:
-        print(f"   ⚠️ Playwright获取失败: {e}")
+        print(f"   ⚠️ Playwright fetch failed: {e}")
         return None
 
 # ============================================================
-# 3. 直接解析HTML（BeautifulSoup）
+# 3. Parse HTML directly (BeautifulSoup)
 # ============================================================
 def parse_html_directly(html, url):
     """使用BeautifulSoup直接解析HTML"""
@@ -125,17 +125,17 @@ def parse_html_directly(html, url):
         content = ""
 
         if 'mdpi.com' in url:
-            print("   📡 检测到 MDPI 页面，使用专项解析...")
-            # MDPI 的正文通常在这个div里
+            print("   📡 Detected MDPI page, using specialized parsing...")
+            # MDPI main content is usually in this div
             main_div = soup.find('div', id='main-content') or soup.find('div', class_='article-content') or soup.find('div', class_='html-content')
             if main_div:
                 content = main_div.get_text(separator='\n', strip=True)
-            # 如果没找到，尝试用 <article> 标签
+            # If not found, try using <article> tag
             if not content or len(content) < 200:
                 article_tag = soup.find('article')
                 if article_tag:
                     content = article_tag.get_text(separator='\n', strip=True)
-            # 如果还是没有，尝试用包含 'content' 的 div 作为备选
+            # If still nothing, try div containing 'content' as fallback
             if not content or len(content) < 200:
                 for div in soup.find_all('div', class_=re.compile(r'content')):
                     div_text = div.get_text(separator='\n', strip=True)
@@ -147,45 +147,45 @@ def parse_html_directly(html, url):
             if main_content:
                 content = main_content.get_text(separator='\n', strip=True)
         
-        # 策略2: 查找包含关键class的div
+        # Strategy 2: Find divs with key CSS classes
         if not content or len(content) < 200:
             for div in soup.find_all('div', class_=re.compile(r'fulltext|article|main|content|body|abstract|pdf')):
                 div_text = div.get_text(separator='\n', strip=True)
                 if len(div_text) > len(content):
                     content = div_text
         
-        # 策略3: 收集所有段落
+        # Strategy 3: Collect all paragraphs
         if not content or len(content) < 200:
             paragraphs = soup.find_all('p')
             if paragraphs:
                 content = '\n'.join([p.get_text(strip=True) for p in paragraphs if len(p.get_text()) > 20])
         
-        # 策略4: 兜底使用body
+        # Strategy 4: Fallback to body
         if not content or len(content) < 100:
             body = soup.find('body')
             if body:
                 content = body.get_text(separator='\n', strip=True)
 
         if content and len(content) > 100:
-            print(f"   ✅ 直接解析成功，获取 {len(content)} 字符")
+            print(f"   ✅ Direct parsing succeeded, fetched {len(content)} chars")
             return content
         else:
-            print(f"   ⚠️ 直接解析内容过短 ({len(content) if content else 0} 字符)")
+            print(f"   ⚠️ Direct parsing content too short ({len(content) if content else 0} chars)")
             return None
 
     except Exception as e:
-        print(f"   ⚠️ 直接解析异常: {e}")
+        print(f"   ⚠️ Direct parsing exception: {e}")
         return None
 
 # ============================================================
-# 4. 增强版：获取论文全文（整合所有策略）
+# 4. Enhanced: fetch full paper text (integrated strategies)
 # ============================================================
 def fetch_html_from_doi(doi, retries=2):
     """增强版：使用Session + Playwright备选，获取论文全文"""
     if not doi:
         return None
 
-    # 增强的请求头，模拟真实浏览器
+    # Enhanced request headers to mimic real browser
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -202,84 +202,84 @@ def fetch_html_from_doi(doi, retries=2):
 
     paper_url = f"https://doi.org/{doi}"
     
-    # --- 第一阶段：使用Session获取重定向后的最终URL ---
+    # --- Phase 1: Get final URL after redirect using Session ---
     try:
         session = requests.Session()
         session.headers.update(headers)
         response = session.get(paper_url, timeout=30, allow_redirects=True)
         final_url = response.url
-        print(f"   📡 最终地址: {final_url}")
+        print(f"   📡 Final URL: {final_url}")
     except Exception as e:
-        print(f"   ⚠️ 请求失败: {e}")
+        print(f"   ⚠️ Request failed: {e}")
         return None
 
-    # --- 第二阶段：判断出版社，选择策略 ---
-    # 需要重点攻坚的复杂出版社列表
+    # --- Phase 2: Identify publisher, choose strategy ---
+    # List of complex publishers requiring special handling
     complex_publishers = ['elsevier', 'springer', 'tandfonline', 'wiley', 'nature', 'science', 'oup', 'oxford']
     
     if any(domain in final_url for domain in complex_publishers):
-        print(f"   📡 检测到复杂出版社({final_url.split('/')[2]})，使用多层策略...")
+        print(f"   📡 Detected complex publisher ({final_url.split('/')[2]}), using multi-layer strategy...")
         
-        # 策略A：尝试Playwright（模拟真实浏览器）
-        print(f"   🌐 尝试Playwright...")
+        # Strategy A: Try Playwright (mimic real browser)
+        print(f"   🌐 Trying Playwright...")
         playwright_content = fetch_with_playwright(final_url)
         if playwright_content and len(playwright_content) > 500:
-            print(f"   ✅ Playwright成功获取 {len(playwright_content)} 字符")
+            print(f"   ✅ Playwright successfully fetched {len(playwright_content)} chars")
             return playwright_content
         else:
-            print(f"   ⚠️ Playwright获取失败或内容过短")
+            print(f"   ⚠️ Playwright fetch failed or content too short")
         
-        # 策略B：尝试Jina Reader
-        print(f"   📡 尝试Jina Reader...")
+        # Strategy B: Try Jina Reader
+        print(f"   📡 Trying Jina Reader...")
         for attempt in range(retries + 1):
             try:
                 jina_url = f"https://r.jina.ai/{final_url}"
                 jina_response = requests.get(jina_url, headers={"User-Agent": headers["User-Agent"]}, timeout=30)
                 if jina_response.status_code == 200 and len(jina_response.text) > 500:
-                    print(f"   ✅ Jina Reader成功获取 {len(jina_response.text)} 字符")
+                    print(f"   ✅ Jina Reader successfully fetched {len(jina_response.text)} chars")
                     return jina_response.text
                 else:
-                    print(f"   ⚠️ Jina Reader尝试 {attempt+1}/{retries+1} 失败")
+                    print(f"   ⚠️ Jina Reader attempt {attempt+1}/{retries+1} failed")
                 time.sleep(2 ** attempt)
             except Exception as e:
-                print(f"   ⚠️ Jina Reader异常: {e}")
+                print(f"   ⚠️ Jina Reader exception: {e}")
                 time.sleep(2 ** attempt)
         
-        # 策略C：最终备选，直接解析
-        print(f"   📡 所有高级策略失败，尝试直接解析...")
+        # Strategy C: Final fallback, direct parsing
+        print(f"   📡 All advanced strategies failed, trying direct parsing...")
         return parse_html_directly(response.text, final_url)
 
-    # 简单出版社（如PMC、arXiv），直接解析
+    # Simple publishers (e.g. PMC, arXiv), parse directly
     elif any(domain in final_url for domain in ['ncbi.nlm.nih.gov', 'arxiv.org', 'pubmed']):
-        print(f"   📡 检测到简单出版社({final_url.split('/')[2]})，直接解析...")
+        print(f"   📡 Detected simple publisher ({final_url.split('/')[2]}), parsing directly...")
         return parse_html_directly(response.text, final_url)
 
-    # 未知出版社，尝试Jina Reader，然后直接解析
+    # Unknown publisher, try Jina Reader then parse directly
     else:
-        print(f"   📡 未知出版社({final_url.split('/')[2]})，先尝试Jina Reader...")
+        print(f"   📡 Unknown publisher ({final_url.split('/')[2]}), trying Jina Reader first...")
         for attempt in range(retries + 1):
             try:
                 jina_url = f"https://r.jina.ai/{final_url}"
                 jina_response = requests.get(jina_url, headers={"User-Agent": headers["User-Agent"]}, timeout=30)
                 if jina_response.status_code == 200 and len(jina_response.text) > 500:
-                    print(f"   ✅ Jina Reader成功获取 {len(jina_response.text)} 字符")
+                    print(f"   ✅ Jina Reader successfully fetched {len(jina_response.text)} chars")
                     return jina_response.text
                 time.sleep(2 ** attempt)
             except:
                 pass
         
-        print(f"   📡 Jina Reader失败，尝试直接解析...")
+        print(f"   📡 Jina Reader failed, trying direct parsing...")
         return parse_html_directly(response.text, final_url)
 
 # ============================================================
-# 5. 从文本中提取GitHub链接
+# 5. Extract GitHub links from text
 # ============================================================
 def extract_github_links(text):
     """从文本中提取GitHub链接，并过滤出生物信息学相关的"""
     if not text:
         return []
     
-    # 1. 先提取所有GitHub链接
+    # 1. First extract all GitHub links
     patterns = [
         r'(https?://github\.com/[^\s\)<>]+)',
         r'github\.com/([^\s\)<>]+)'
@@ -294,36 +294,36 @@ def extract_github_links(text):
             else:
                 raw_links.append(f"https://github.com/{match}")
     
-    # 去重
+    # Deduplicate
     raw_links = list(set(raw_links))
     
-    # 2. 过滤：只保留生物信息学/蛋白质工程相关的仓库
+    # 2. Filter: keep only bioinformatics/protein engineering related repos
     bio_keywords = [
-        # 蛋白质相关
+        # Protein-related
         'protein', 'peptide', 'enzyme', 'fold', 'structure', 'design',
         'alphafold', 'rosetta', 'mpnn', 'esm', 'proteinmpnn',
-        # 序列/基因组
+        # Sequence/genome
         'genome', 'sequence', 'alignment', 'blast', 'homology',
-        # 生物信息学通用
+        # Bioinformatics general
         'bio', 'bioinfo', 'bioinformatics', 'compbio', 'computational',
-        # 工具类型
+        # Tool types
         'tool', 'server', 'pipeline', 'workflow', 'package', 'library',
-        # 特定方法
+        # Specific methods
         'docking', 'simulation', 'molecular', 'dynamics', 'md',
         'machine learning', 'deep learning', 'neural', 'ai',
-        # 数据格式
+        # Data formats
         'pdb', 'cif', 'mmcif', 'fasta', 'sam', 'bam', 'vcf'
     ]
     
     filtered_links = []
     for link in raw_links:
-        # 把链接转小写，方便匹配
+        # Convert link to lowercase for matching
         link_lower = link.lower()
         
-        # 检查链接里是否包含任何关键词
+        # Check if link contains any keywords
         is_relevant = any(kw in link_lower for kw in bio_keywords)
         
-        # 额外过滤掉明显无关的（如前端库、通用工具）
+        # Additionally filter out obviously irrelevant ones (e.g. frontend libraries, general tools)
         irrelevant = ['normalize.css', 'jquery', 'bootstrap', 'react', 'angular', 'vue', 'd3', 'three.js']
         is_irrelevant = any(ir in link_lower for ir in irrelevant)
         
@@ -333,17 +333,17 @@ def extract_github_links(text):
     return filtered_links
 
 # ============================================================
-# 6. 主程序
+# 6. Main program
 # ============================================================
 def run_html_agent():
     query = "bioinformatics tools"
-    print(f"🔍 搜索: {query}")
+    print(f"🔍 Searching: {query}")
     
     papers = search_papers(query, max_results=10)
-    print(f"📄 找到 {len(papers)} 篇论文")
+    print(f"📄 Found {len(papers)} papers")
     
     seen = load_seen_papers()
-    print(f"📌 历史已处理: {len(seen)} 篇")
+    print(f"📌 Previously processed: {len(seen)} papers")
     
     results = []
     new_count = 0
@@ -352,38 +352,38 @@ def run_html_agent():
     for i, paper in enumerate(papers, 1):
         paper_id = paper.get('pmid') or paper.get('doi')
         
-        # 跳过已处理的
+        # Skip already processed
         if paper_id and paper_id in seen:
-            print(f"\n📖 [{i}/{len(papers)}] ⏭️ 跳过: {paper['title'][:50]}...")
+            print(f"\n📖 [{i}/{len(papers)}] ⏭️ Skipping: {paper['title'][:50]}...")
             skipped_count += 1
             continue
         
         print(f"\n📖 [{i}/{len(papers)}] {paper['title'][:70]}...")
         
-        # --- 获取全文 ---
+        # --- Fetch full text ---
         html_content = None
         if paper.get('doi'):
             print(f"   🔗 DOI: {paper['doi']}")
             html_content = fetch_html_from_doi(paper['doi'])
         
         if not html_content:
-            print("   ⚠️ 无法获取HTML全文，尝试用摘要")
+            print("   ⚠️ Cannot fetch HTML full text, trying abstract")
             html_content = paper.get('abstract', '')
         
         if not html_content or len(html_content) < 50:
-            print("   ❌ 没有可用内容")
-            # 即使没内容也标记为已处理，避免反复尝试
+            print("   ❌ No usable content")
+            # Mark as processed even with no content to avoid retrying
             if paper_id:
                 mark_paper_as_seen(paper_id)
             continue
         
-        print(f"   📝 获取了 {len(html_content)} 字符")
+        print(f"   📝 Fetched {len(html_content)} chars")
         
-        # --- 提取GitHub链接 ---
+        # --- Extract GitHub links ---
         github_links = extract_github_links(html_content)
         
         if github_links:
-            print(f"   🔗 发现GitHub链接:")
+            print(f"   🔗 Found GitHub links:")
             for link in github_links[:3]:
                 print(f"      {link}")
             results.append({
@@ -394,23 +394,23 @@ def run_html_agent():
             })
             new_count += 1
         else:
-            print("   ⏭️ 未发现GitHub链接")
+            print("   ⏭️ No GitHub links found")
         
-        # 标记为已处理
+        # Mark as processed
         if paper_id:
             mark_paper_as_seen(paper_id)
         
         time.sleep(1)
     
-    # 保存结果
+    # Save results
     with open("github_from_html.json", "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     
-    print(f"\n📊 本次: {len(results)} 个新工具 | 跳过 {skipped_count} 篇 | 累计 {len(load_seen_papers())} 篇")
-    print(f"📁 保存到 github_from_html.json")
+    print(f"\n📊 This run: {len(results)} new tools | Skipped {skipped_count} papers | Total {len(load_seen_papers())} papers")
+    print(f"📁 Saved to github_from_html.json")
 
 # ============================================================
-# 7. 运行
+# 7. Run
 # ============================================================
 if __name__ == "__main__":
     run_html_agent()

@@ -1,11 +1,11 @@
 import json
 import re
 
-# 加载工具库
+# Load tool library
 with open("tool_library.json", "r", encoding="utf-8") as f:
     tools = json.load(f)
 
-# 1. 过滤无关工具
+# 1. Filter irrelevant tools
 irrelevant_patterns = [
     r'normalize\.css',
     r'jquery',
@@ -23,18 +23,18 @@ for tool in tools:
     desc = tool.get("description", "").lower()
     combined = name + " " + desc
     
-    # 跳过无关工具
+    # Skip irrelevant tools
     is_irrelevant = any(re.search(p, combined) for p in irrelevant_patterns)
     if is_irrelevant:
-        print(f"⏭️ 跳过无关工具: {tool.get('name')}")
+        print(f"⏭️ Skipping irrelevant tool: {tool.get('name')}")
         continue
     
-    # 清理链接末尾的引号
+    # Clean trailing quotes from links
     github = tool.get("source", {}).get("github", "")
     if github.endswith('"') or github.endswith("'"):
         tool["source"]["github"] = github.rstrip('"\'')
     
-    # 根据描述推断更准确的类型
+    # Infer more accurate type from description
     desc = tool.get("description", "").lower()
     if "database" in desc or "ontology" in desc or "dictionary" in desc:
         tool["type"] = "database"
@@ -45,9 +45,9 @@ for tool in tools:
     elif "library" in desc or "package" in desc:
         tool["type"] = "library"
     else:
-        tool["type"] = "software"  # 保持默认
+        tool["type"] = "software"  # Keep default
     
-    # 添加一个有用的标签：从描述中提取领域关键词
+    # Add useful tags: extract domain keywords from description
     domain_keywords = ["protein", "dna", "rna", "genome", "sequence", "structure", 
                        "binding", "folding", "design", "evolution", "antibody"]
     for kw in domain_keywords:
@@ -57,20 +57,20 @@ for tool in tools:
     
     filtered_tools.append(tool)
 
-# 重新排序：按质量分降序
+# Re-sort by quality score descending
 filtered_tools.sort(key=lambda x: x.get("quality_score", 0), reverse=True)
 
-# 保存清理后的工具库
+# Save cleaned tool library
 with open("tool_library_clean.json", "w", encoding="utf-8") as f:
     json.dump(filtered_tools, f, ensure_ascii=False, indent=2)
 
-print(f"\n✅ 清理完成！保留 {len(filtered_tools)} 个工具")
-print(f"📁 保存到 tool_library_clean.json")
+print(f"\n✅ Cleaning done! Kept {len(filtered_tools)} tools")
+print(f"📁 Saved to tool_library_clean.json")
 
-# 打印摘要（优化输出）
-print("\n📊 清理后的工具列表:")
+# Print summary (optimized output)
+print("\n📊 Cleaned tool list:")
 print("-" * 60)
-print(f"{'工具名':<25} {'类型':<12} {'⭐ Stars':<10} {'质量分'}")
+print(f"{'Tool Name':<25} {'Type':<12} {'⭐ Stars':<10} {'Quality'}")
 print("-" * 60)
 for tool in filtered_tools:
     name = tool.get('name', '')[:24]
