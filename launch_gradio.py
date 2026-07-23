@@ -18,7 +18,7 @@ api_key = os.environ.get("SILICONFLOW_API_KEY") or "sk-lufftravmhzgdpudfvbvzwrlf
 
 agent = A1(
     path="data",
-    llm="Qwen/Qwen2.5-72B-Instruct",
+    llm="Qwen/Qwen3-235B-A22B",
     source="Custom",
     base_url="https://api.siliconflow.cn/v1",
     api_key=api_key,
@@ -61,9 +61,8 @@ agent.system_prompt = re.sub(
 )
 
 # Aggressively trim system prompt — keep core instructions + our7 tool names
-# Full Biomni prompt is ~32K tokens; Qwen2.5-72B limit is 32768 total
-# Keep under 8000 chars (~2000 tokens) so prompt+tools+query fits
-MAX_PROMPT_CHARS = 8000
+# Qwen3-235B has 131K context; keep prompt under 30K chars (~7500 tokens) for safety
+MAX_PROMPT_CHARS = 30000
 if len(agent.system_prompt) > MAX_PROMPT_CHARS:
     agent.system_prompt = agent.system_prompt[:MAX_PROMPT_CHARS]
     print(f"Truncated system prompt to {MAX_PROMPT_CHARS} chars")
