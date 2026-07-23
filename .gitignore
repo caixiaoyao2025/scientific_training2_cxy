@@ -10,6 +10,9 @@ build/
 data/*
 !data/.gitkeep
 !data/sample.fastq
+!data/sample.sam
+!data/sample.bed
+!data/sample_annotation.gff
 !data/mcp_outputs/
 !data/mcp_outputs/.gitkeep
 !data/mcp_tools/
