@@ -5,6 +5,9 @@ on:
     - cron: '0 8 * * *'  # 每天 UTC 08:00 (北京 16:00)
   workflow_dispatch:       # 手动触发
 
+permissions:
+  contents: write          # 允许 commit + push
+
 jobs:
   discover:
     runs-on: ubuntu-latest
@@ -21,10 +24,10 @@ jobs:
       - name: Run discovery pipeline
         run: python run_pipeline.py "bioinformatics protein engineering tools" 5
 
-      - name: Commit results
+      - name: Commit and push results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add github_from_html.json tool_library.json tool_library_clean.json discovered_registry.yaml seen_papers.json data/mcp_registry.yaml || true
           git diff --cached --quiet || git commit -m "auto: daily tool discovery $(date -u +%Y-%m-%d)"
-          git push
+          git push "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
