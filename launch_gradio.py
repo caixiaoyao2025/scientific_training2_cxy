@@ -7,11 +7,16 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.environ["MCP_DATA_ROOT"] = "data"
 os.environ["MCP_APP_ROOT"] = "."
 
+# Ensure bioinformatics tools are on PATH (Colab apt-get installs them here)
+_extra_paths = ["/usr/bin", "/usr/local/bin", "/usr/sbin"]
+os.environ["PATH"] = ":".join(_extra_paths) + ":" + os.environ.get("PATH", "")
+
 import server as srv
 srv.ensure_runtime_directories()
 srv.load_and_register_registry()
 
 from biomni.agent import A1
+from biomni.utils import run_with_timeout, run_bash_script, run_python_repl
 from biomni.tool.support_tools import _persistent_namespace
 
 api_key = os.environ.get("SILICONFLOW_API_KEY") or "sk-lufftravmhzgdpudfvbvzwrlfyctebizytmtlbynyiohtkij"
@@ -58,6 +63,31 @@ agent.system_prompt = re.sub(
 )
 
 # No truncation needed — Qwen2.5-72B-Instruct-128K handles full prompt
+
+# ── Monkey-patch: wrap LLM to convert markdown code blocks to <execute> tags ──
+# Qwen2.5 outputs ```bash ... ``` but Biomni's execute() only reads <execute> tags.
+# We intercept the LLM response and inject <execute> tags when missing.
+from langchain_core.messages import AIMessage
+
+_original_llm_invoke = agent.llm.invoke
+
+def _patched_llm_invoke(messages, *args, **kwargs):
+    response = _original_llm_invoke(messages, *args, **kwargs)
+    content = response.content if hasattr(response, "content") else str(response)
+    if isinstance(content, str) and "<execute>" not in content and "<solution>" not in content:
+        code_block_re = re.compile(r'```(?:bash|sh|shell|python|py|r)?\s*\n(.*?)```', re.DOTALL)
+        blocks = code_block_re.findall(content)
+        if blocks:
+            extracted = "\n".join(blocks)
+            first_type = re.search(r'```(\w+)', content)
+            code_type = "python"
+            if first_type and first_type.group(1).lower() in ("bash", "sh", "shell", "cli"):
+                code_type = "bash"
+            fixed = content + f"\n\n<execute>\n#!{code_type}\n{extracted}\n</execute>"
+            response = AIMessage(content=fixed)
+    return response
+
+agent.llm.invoke = _patched_llm_invoke
 
 mcp_servers_mod = types.ModuleType("mcp_servers")
 bio_mcp_mod = types.ModuleType("mcp_servers.bio_mcp")

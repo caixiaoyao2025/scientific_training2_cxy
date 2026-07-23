@@ -44,7 +44,7 @@ tools:
   - name: "fastp_qc"
     type: "cli"
     command: "fastp -i {fq_path} -o {filtered_fq_path} -h {html_report_path} -j {json_report_path} -R MCP_fastp_report"
-    description: "Run FASTQ quality control with fastp and produce HTML/JSON reports. Install fastp first if it is not present in the image."
+    description: "Run FASTQ quality control with fastp. Example: fastp -i input.fq -o trimmed.fq -h report.html -j report.json. NOTE: -j is for JSON report, -o is for trimmed FASTQ output (not JSON)."
     output_control:
       intercept_large_output: true
       max_preview_lines: 30
