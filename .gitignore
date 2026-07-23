@@ -15,6 +15,7 @@ data/*
 !data/sample_annotation.gff
 !data/mcp_outputs/
 !data/mcp_outputs/.gitkeep
+!data/mcp_registry.yaml
 !data/mcp_tools/
 !data/mcp_tools/.gitkeep
 !data/mcp_tools/bin/
@@ -25,13 +26,7 @@ storage/*
 !storage/.gitkeep
 
 # Generated pipeline outputs (regeneratable)
-github_from_html.json
-tool_library.json
-tool_library_clean.json
 tool_summary.json
-discovered_registry.yaml
-seen_papers.json
-mcp_registry.yaml
 
 # Docker build artifacts from broken PowerShell
 CACHED
