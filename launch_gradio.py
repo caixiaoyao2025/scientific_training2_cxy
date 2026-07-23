@@ -25,6 +25,9 @@ agent = A1(
     expected_data_lake_files=[],
 )
 
+# Disable tool retriever — avoids repeated full-prompt API calls that burn TPM
+agent.config.use_tool_retriever = False
+
 def make_direct_wrapper(tool_name):
     def wrapper(*args, **kwargs):
         try:
@@ -57,9 +60,10 @@ agent.system_prompt = re.sub(
     agent.system_prompt,
 )
 
-# Truncate system prompt to fit Qwen2.5-72B's 32768 token limit
-# (~4 chars/token; 32768 tokens ≈ 131072 chars; keep margin)
-MAX_PROMPT_CHARS = 125000
+# Aggressively trim system prompt — keep core instructions + our7 tool names
+# Full Biomni prompt is ~32K tokens; Qwen2.5-72B limit is 32768 total
+# Keep under 8000 chars (~2000 tokens) so prompt+tools+query fits
+MAX_PROMPT_CHARS = 8000
 if len(agent.system_prompt) > MAX_PROMPT_CHARS:
     agent.system_prompt = agent.system_prompt[:MAX_PROMPT_CHARS]
     print(f"Truncated system prompt to {MAX_PROMPT_CHARS} chars")
