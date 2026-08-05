@@ -45,6 +45,7 @@ OUTPUT_ROOT = DATA_ROOT / "mcp_outputs"
 os.environ["PATH"] = f"{TOOL_BIN_ROOT}{os.pathsep}{os.environ.get('PATH', '')}"
 
 VALID_TOOL_TYPES = {"cli", "java", "script"}
+VALID_EXECUTION_TYPES = {"cli", "python", "api", "docker"}
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 TOOL_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]*$")
 APT_PACKAGE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+_.:-]*$")
@@ -154,6 +155,7 @@ def validate_tool_spec(spec: dict[str, Any], existing_names: set[str] | None = N
     name = spec.get("name")
     tool_type = spec.get("type")
     command = spec.get("command")
+    execution = spec.get("execution")
     description = spec.get("description", "")
     inputs = spec.get("inputs", {})
     output_control = spec.get("output_control", {})
@@ -163,10 +165,36 @@ def validate_tool_spec(spec: dict[str, Any], existing_names: set[str] | None = N
         raise RegistryError(f"Invalid tool name: {name!r}")
     if existing_names is not None and name in existing_names:
         raise RegistryError(f"Duplicate tool name: {name}")
-    if tool_type not in VALID_TOOL_TYPES:
-        raise RegistryError(f"Tool '{name}' has unsupported type: {tool_type!r}")
-    if not isinstance(command, str) or not command.strip():
-        raise RegistryError(f"Tool '{name}' must define a non-empty command string.")
+
+    if isinstance(execution, dict):
+        exec_type = execution.get("type")
+        if exec_type not in VALID_EXECUTION_TYPES:
+            raise RegistryError(
+                f"Tool '{name}' has unsupported execution type: {exec_type!r}. "
+                f"Use one of {sorted(VALID_EXECUTION_TYPES)}."
+            )
+        if exec_type in {"cli", "docker"}:
+            exec_command = execution.get("command")
+            if not isinstance(exec_command, str) or not exec_command.strip():
+                raise RegistryError(
+                    f"Tool '{name}' execution of type '{exec_type}' must define a non-empty command."
+                )
+        elif exec_type == "python":
+            entry_point = execution.get("entry_point")
+            if not isinstance(entry_point, str) or ":" not in entry_point:
+                raise RegistryError(
+                    f"Tool '{name}' python execution must define entry_point as 'module:function'."
+                )
+        elif exec_type == "api":
+            if not isinstance(execution.get("endpoint"), str) or not execution["endpoint"].strip():
+                raise RegistryError(f"Tool '{name}' api execution must define an endpoint URL.")
+    else:
+        if tool_type not in VALID_TOOL_TYPES:
+            raise RegistryError(f"Tool '{name}' has unsupported type: {tool_type!r}")
+        if not isinstance(command, str) or not command.strip():
+            raise RegistryError(f"Tool '{name}' must define a non-empty command string.")
+        execution = {"type": tool_type, "command": command}
+
     if not isinstance(description, str):
         raise RegistryError(f"Tool '{name}' description must be a string.")
     if not isinstance(inputs, dict):
@@ -183,20 +211,23 @@ def validate_tool_spec(spec: dict[str, Any], existing_names: set[str] | None = N
         if not isinstance(output, dict) or not isinstance(output.get("name"), str):
             raise RegistryError(f"Tool '{name}' has an invalid expected_outputs entry.")
 
-    placeholders = {
-        field_name.split(".", 1)[0].split("[", 1)[0]
-        for _, field_name, _, _ in string.Formatter().parse(command)
-        if field_name
-    }
-    missing_placeholders = sorted(placeholders - set(inputs))
-    if missing_placeholders:
-        raise RegistryError(
-            f"Tool '{name}' command references undefined inputs: {missing_placeholders}"
-        )
+    exec_command = execution.get("command")
+    if exec_command:
+        placeholders = {
+            field_name.split(".", 1)[0].split("[", 1)[0]
+            for _, field_name, _, _ in string.Formatter().parse(exec_command)
+            if field_name
+        }
+        missing_placeholders = sorted(placeholders - set(inputs))
+        if missing_placeholders:
+            raise RegistryError(
+                f"Tool '{name}' command references undefined inputs: {missing_placeholders}"
+            )
 
     normalized = dict(spec)
     normalized["description"] = description
     normalized["inputs"] = inputs
+    normalized["execution"] = execution
     normalized["output_control"] = {
         "intercept_large_output": bool(output_control.get("intercept_large_output", False)),
         "max_preview_lines": int(output_control.get("max_preview_lines", 100)),
@@ -483,6 +514,175 @@ def render_expected_outputs(
     return content_blocks, output_metadata
 
 
+def resolve_execution(spec: dict[str, Any]) -> dict[str, Any]:
+    execution = spec.get("execution")
+    if isinstance(execution, dict) and execution.get("type"):
+        return execution
+    return {"type": spec.get("type", "cli"), "command": spec.get("command", "")}
+
+
+def _capture_subprocess(argv: list[str], timeout: int) -> dict[str, Any]:
+    try:
+        completed = subprocess.run(
+            argv,
+            cwd=str(DATA_ROOT),
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=timeout,
+        )
+        return {
+            "status": "ok",
+            "return_code": completed.returncode,
+            "stdout": completed.stdout or "",
+            "stderr": completed.stderr or "",
+            "argv": argv,
+        }
+    except subprocess.CalledProcessError as exc:
+        return {
+            "status": "command_error",
+            "return_code": exc.returncode,
+            "stdout": exc.stdout or "",
+            "stderr": exc.stderr or "",
+            "argv": argv,
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "status": "timeout",
+            "return_code": None,
+            "stdout": exc.stdout or "",
+            "stderr": exc.stderr or "",
+            "argv": argv,
+        }
+
+
+def _run_cli_engine(spec: dict[str, Any], execution: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
+    argv = render_command(execution["command"], arguments)
+    timeout = int(spec.get("timeout_seconds", DEFAULT_TIMEOUT_SECONDS))
+    return _capture_subprocess(argv, timeout)
+
+
+def _run_docker_engine(
+    spec: dict[str, Any], execution: dict[str, Any], arguments: dict[str, Any]
+) -> dict[str, Any]:
+    image = execution["image"]
+    command_argv: list[str] = []
+    if execution.get("command"):
+        command_argv = render_command(execution["command"], arguments)
+    argv = ["docker", "run", "--rm", image, *command_argv]
+    timeout = int(spec.get("timeout_seconds", DEFAULT_TIMEOUT_SECONDS))
+    return _capture_subprocess(argv, timeout)
+
+
+def _run_python_engine(
+    spec: dict[str, Any], execution: dict[str, Any], arguments: dict[str, Any]
+) -> dict[str, Any]:
+    import contextlib
+    import importlib
+    import io
+
+    entry_point = execution["entry_point"]
+    module_name, _, function_name = entry_point.partition(":")
+    if not function_name:
+        raise ValueError(f"entry_point must be 'module:function', got {entry_point!r}")
+
+    module = importlib.import_module(module_name)
+    function = getattr(module, function_name)
+    stdout_buffer = io.StringIO()
+    result = None
+    try:
+        with contextlib.redirect_stdout(stdout_buffer):
+            result = function(**arguments)
+    except Exception as exc:
+        return {
+            "status": "command_error",
+            "return_code": 1,
+            "stdout": stdout_buffer.getvalue(),
+            "stderr": f"{type(exc).__name__}: {exc}",
+            "argv": [entry_point],
+        }
+
+    output_text = stdout_buffer.getvalue()
+    if result is not None and not isinstance(result, str):
+        output_text += json.dumps(result, ensure_ascii=False, default=str) + "\n"
+    elif isinstance(result, str):
+        output_text += result + "\n"
+    return {
+        "status": "ok",
+        "return_code": 0,
+        "stdout": output_text,
+        "stderr": "",
+        "argv": [entry_point],
+    }
+
+
+def _run_api_engine(
+    spec: dict[str, Any], execution: dict[str, Any], arguments: dict[str, Any]
+) -> dict[str, Any]:
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    endpoint = execution["endpoint"]
+    method = str(execution.get("method", "POST")).upper()
+    timeout = int(spec.get("timeout_seconds", DEFAULT_TIMEOUT_SECONDS))
+
+    quoted_arguments = {key: urllib.parse.quote(str(value)) for key, value in arguments.items()}
+    rendered_url = endpoint.format(**quoted_arguments)
+    try:
+        if method == "GET":
+            query_args = {key: value for key, value in arguments.items() if "{" + key + "}" not in endpoint}
+            if query_args:
+                query = urllib.parse.urlencode(query_args)
+                full_url = rendered_url + ("&" if "?" in rendered_url else "?") + query
+            else:
+                full_url = rendered_url
+            request = urllib.request.Request(full_url, method="GET")
+        else:
+            request = urllib.request.Request(
+                rendered_url,
+                data=json.dumps(arguments).encode("utf-8"),
+                method=method,
+                headers={"Content-Type": "application/json"},
+            )
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            body = response.read().decode("utf-8", errors="replace")
+            return {
+                "status": "ok",
+                "return_code": response.status,
+                "stdout": body,
+                "stderr": "",
+                "argv": [rendered_url],
+            }
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        return {
+            "status": "command_error",
+            "return_code": exc.code,
+            "stdout": "",
+            "stderr": body,
+            "argv": [rendered_url],
+        }
+    except (urllib.error.URLError, TimeoutError) as exc:
+        return {
+            "status": "command_error",
+            "return_code": None,
+            "stdout": "",
+            "stderr": str(exc),
+            "argv": [rendered_url],
+        }
+
+
+EXECUTION_ENGINE: dict[str, Any] = {
+    "cli": _run_cli_engine,
+    "python": _run_python_engine,
+    "api": _run_api_engine,
+    "docker": _run_docker_engine,
+    "java": _run_cli_engine,
+    "script": _run_cli_engine,
+}
+
+
 def execute_registered_tool(tool_name: str, arguments: dict[str, Any]) -> list[Any]:
     if tool_name not in registry_cache:
         return [
@@ -494,7 +694,7 @@ def execute_registered_tool(tool_name: str, arguments: dict[str, Any]) -> list[A
     spec = registry_cache[tool_name]
     try:
         sanitized_args = sanitize_command_arguments(spec, arguments)
-        argv = render_command(spec["command"], sanitized_args)
+        execution = resolve_execution(spec)
     except Exception as exc:
         logger.exception("Failed preparing tool %s", tool_name)
         return [
@@ -510,32 +710,25 @@ def execute_registered_tool(tool_name: str, arguments: dict[str, Any]) -> list[A
             )
         ]
 
-    logger.info("Executing tool %s with argv[0]=%s", tool_name, argv[0])
+    exec_type = execution.get("type", "cli")
+    runner = EXECUTION_ENGINE.get(exec_type)
+    if runner is None:
+        return [
+            text_content(
+                json.dumps(
+                    {
+                        "tool": tool_name,
+                        "status": "unsupported_execution",
+                        "reason": f"No runner for execution type {exec_type!r}.",
+                    },
+                    indent=2,
+                )
+            )
+        ]
+
+    logger.info("Executing tool %s via %s runner", tool_name, exec_type)
     try:
-        completed = subprocess.run(
-            argv,
-            cwd=str(DATA_ROOT),
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=int(spec.get("timeout_seconds", DEFAULT_TIMEOUT_SECONDS)),
-        )
-        status = "ok"
-        return_code = completed.returncode
-        stdout = completed.stdout or ""
-        stderr = completed.stderr or ""
-    except subprocess.CalledProcessError as exc:
-        logger.exception("Tool %s failed with exit code %s", tool_name, exc.returncode)
-        status = "command_error"
-        return_code = exc.returncode
-        stdout = exc.stdout or ""
-        stderr = exc.stderr or ""
-    except subprocess.TimeoutExpired as exc:
-        logger.exception("Tool %s timed out", tool_name)
-        status = "timeout"
-        return_code = None
-        stdout = exc.stdout or ""
-        stderr = exc.stderr or ""
+        run_result = runner(spec, execution, sanitized_args)
     except FileNotFoundError as exc:
         logger.exception("Executable not found for tool %s", tool_name)
         return [
@@ -544,7 +737,7 @@ def execute_registered_tool(tool_name: str, arguments: dict[str, Any]) -> list[A
                     {
                         "tool": tool_name,
                         "status": "executable_not_found",
-                        "argv": argv,
+                        "execution": exec_type,
                         "reason": str(exc),
                     },
                     indent=2,
@@ -553,15 +746,16 @@ def execute_registered_tool(tool_name: str, arguments: dict[str, Any]) -> list[A
         ]
 
     output_control = spec["output_control"]
-    stdout_info = firewall_text(stdout, "stdout", output_control)
-    stderr_info = firewall_text(stderr, "stderr", output_control)
+    stdout_info = firewall_text(run_result.get("stdout", ""), "stdout", output_control)
+    stderr_info = firewall_text(run_result.get("stderr", ""), "stderr", output_control)
     rendered_outputs, output_metadata = render_expected_outputs(spec, sanitized_args)
 
     notification = {
         "tool": tool_name,
-        "status": status,
-        "return_code": return_code,
-        "argv": argv,
+        "status": run_result.get("status", "ok"),
+        "return_code": run_result.get("return_code"),
+        "execution": exec_type,
+        "argv": run_result.get("argv"),
         "stdout": stdout_info,
         "stderr": stderr_info,
         "expected_outputs": output_metadata,

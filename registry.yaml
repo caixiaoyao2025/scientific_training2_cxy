@@ -127,3 +127,57 @@ tools:
       - name: "metrics_tsv_path"
         render_as: "dataframe"
         max_rows: 30
+
+  - name: "count_lines_python"
+    description: "Count the lines and byte size of a text file using the Python execution runner."
+    output_control:
+      intercept_large_output: false
+      max_preview_lines: 50
+    execution:
+      type: "python"
+      entry_point: "tool_helpers:count_lines"
+    inputs:
+      file_path:
+        type: "string"
+        description: "Path to a text file inside /data."
+
+  - name: "fasta_contig_stats_python"
+    description: "Count sequences and total bases in a FASTA file using the Python execution runner."
+    output_control:
+      intercept_large_output: false
+      max_preview_lines: 50
+    execution:
+      type: "python"
+      entry_point: "tool_helpers:fasta_contig_stats"
+    inputs:
+      fasta_path:
+        type: "string"
+        description: "Path to a FASTA file inside /data."
+
+  - name: "ensembl_sequence_lookup"
+    description: "Fetch a DNA sequence by Ensembl gene/transcript ID via the Ensembl REST API."
+    output_control:
+      intercept_large_output: true
+      max_preview_lines: 20
+    execution:
+      type: "api"
+      method: "GET"
+      endpoint: "https://rest.ensembl.org/sequence/id/{id}"
+    inputs:
+      id:
+        type: "string"
+        description: "Ensembl stable ID such as ENSG00000141510."
+
+  - name: "docker_fasta_gc"
+    description: "Compute GC content of a FASTA file inside the staphb/fastqc image using the Docker runner."
+    output_control:
+      intercept_large_output: true
+      max_preview_lines: 50
+    execution:
+      type: "docker"
+      image: "alpine:3.20"
+      command: "sh -c \"grep -v '^>' {fasta_path} | tr -d '\\n' | awk '{{gc=gsub(/[GgCc]/,\\\"\\\"); total=length($0); print \\\"GC%=\\\" (gc/total)*100}}'\""
+    inputs:
+      fasta_path:
+        type: "string"
+        description: "Path to a FASTA file inside /data."
