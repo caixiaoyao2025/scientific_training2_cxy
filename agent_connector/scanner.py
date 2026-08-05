@@ -387,7 +387,7 @@ def build_schema(
 
 
 CONFIG_FILE_HINTS = ("tool", "registry", "config", "mcp", "plugin")
-WIRING_TOOLS_KWARG_RE = re.compile(r"\btools\s*=\s*\[")
+WIRING_TOOLS_KWARG_RE = re.compile(r"(?<!\.)\btools\s*=\s*(\[|\w)", re.MULTILINE)
 
 
 def detect_wiring_style(repo_path: str, registration_method: str | None = None) -> str | None:
