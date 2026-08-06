@@ -14,6 +14,33 @@ def load_raw_results(filename="github_from_html.json"):
         print(f"⚠️ {filename} not found, please run agent.py first")
         return []
 
+
+def normalize_github_url(link):
+    """Same cleaner as agent.extract_github_links; keeps convert.py self-contained."""
+    if not link:
+        return ""
+    link = link.strip().strip('"\'.,;:()[]')
+    link = link.replace('git+', '').replace('ssh://', '')
+    if not link.lower().startswith(('http://', 'https://')):
+        link = "https://" + link
+    try:
+        parts = link.split("github.com", 1)
+        if len(parts) < 2:
+            return ""
+        path = parts[1].split("#", 1)[0].split("?", 1)[0].strip("/")
+        path = path.rstrip(".").strip('"')
+        segs = [s for s in path.split("/") if s]
+        if len(segs) < 2:
+            return ""
+        owner, repo = segs[0], segs[1]
+        repo = repo.removesuffix(".git")
+        repo = repo.rstrip(".,;:)\"'")
+        if not owner or not repo:
+            return ""
+        return f"https://github.com/{owner}/{repo}"
+    except Exception:
+        return ""
+
 # ============================================================
 # 2. Guess tool type from repository name
 # ============================================================
@@ -57,7 +84,8 @@ def get_github_repo_info(repo_url):
                 "description": data.get("description", ""),
                 "language": data.get("language", ""),
                 "updated_at": data.get("updated_at", ""),
-                "forks": data.get("forks_count", 0)
+                "forks": data.get("forks_count", 0),
+                "full_name": data.get("full_name", ""),
             }
     except:
         pass
@@ -137,30 +165,42 @@ def convert_to_standard(raw_results):
     
     # First deduplicate by GitHub link, merge info from multiple papers
     tool_map = {}
-    
+
     for item in raw_results:
         github_links = item.get("github_links", [])
         if not github_links:
             continue
-        
-        # Take only the first GitHub link (usually just one)
-        github_url = github_links[0]
-        
-        if github_url not in tool_map:
-            tool_map[github_url] = {
-                "github_url": github_url,
-                "paper_titles": [],
-                "paper_dois": [],
-                "github_info": get_github_repo_info(github_url)
-            }
-        
-        tool_map[github_url]["paper_titles"].append(item.get("title", ""))
-        if item.get("doi"):
-            tool_map[github_url]["paper_dois"].append(item.get("doi"))
+
+        # Normalize every link; dedup on lowercase owner/repo.
+        seen_keys = set()
+        for raw_link in github_links:
+            github_url = normalize_github_url(raw_link)
+            if not github_url:
+                continue
+            key = github_url.lower()
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+
+            if key not in tool_map:
+                tool_map[key] = {
+                    "github_url": github_url,
+                    "paper_titles": [],
+                    "paper_dois": [],
+                    "github_info": get_github_repo_info(github_url)
+                }
+
+            tool_map[key]["paper_titles"].append(item.get("title", ""))
+            if item.get("doi"):
+                tool_map[key]["paper_dois"].append(item.get("doi"))
     
     # Convert to standardized format
-    for github_url, data in tool_map.items():
+    for _key, data in tool_map.items():
+        github_url = data["github_url"]
         github_info = data["github_info"]
+        full_name = github_info.get("full_name", "")
+        if full_name:
+            github_url = f"https://github.com/{full_name}"
         tool_name = github_url.split("/")[-1] or "unknown_tool"
         
         # Get description from GitHub or paper title

@@ -72,6 +72,96 @@ def _find_sample_input(repo_dir: str) -> str:
     return ""
 
 
+def _parse_console_scripts(repo_dir: str) -> list[str]:
+    """Parse [project.scripts] / entry_points / console_scripts from a cloned repo.
+
+    Returns the real command names a package declares (e.g. `fingerprint` for
+    RiSpy) instead of guessing from the repo name.
+    """
+    names: list[str] = []
+
+    pyproject = os.path.join(repo_dir, "pyproject.toml")
+    if os.path.exists(pyproject):
+        try:
+            content = open(pyproject, "r", encoding="utf-8", errors="replace").read()
+        except Exception:
+            content = ""
+        # [project.scripts] section:  name = "module:fn"
+        m = re.search(r"\[project\.scripts\](.*?)(?=\n\[|\Z)", content, re.S)
+        if m:
+            for line in m.group(1).splitlines():
+                line = line.strip()
+                if not line or line.startswith(("#", "[")):
+                    continue
+                key = re.split(r"\s*[=:]\s*", line, 1)[0].strip().strip('"\'')
+                if key:
+                    names.append(key)
+        # tool.poetry.scripts:  name = "module:fn"
+        m = re.search(r"\[tool\.poetry\.scripts\](.*?)(?=\n\[|\Z)", content, re.S)
+        if m:
+            for line in m.group(1).splitlines():
+                line = line.strip()
+                if not line or line.startswith(("#", "[")):
+                    continue
+                key = re.split(r"\s*[=:]\s*", line, 1)[0].strip().strip('"\'')
+                if key:
+                    names.append(key)
+
+    setup_py = os.path.join(repo_dir, "setup.py")
+    if os.path.exists(setup_py):
+        try:
+            content = open(setup_py, "r", encoding="utf-8", errors="replace").read()
+        except Exception:
+            content = ""
+        # entry_points={...'console_scripts': [...]}  or  console_scripts=[
+        m = re.search(r"console_scripts\s*[=:]\s*\[(.*?)\]", content, re.S)
+        if m:
+            for line in m.group(1).splitlines():
+                line = line.strip().strip("'\",")
+                if not line or line.startswith(("#", "[")):
+                    continue
+                key = line.split("=", 1)[0].strip()
+                if key:
+                    names.append(key)
+        m = re.search(r"entry_points\s*=.*?console_scripts\s*=\s*\[(.*?)\]", content, re.S)
+        if m:
+            for line in m.group(1).splitlines():
+                line = line.strip().strip("'\",")
+                if not line or line.startswith(("#", "[")):
+                    continue
+                key = line.split("=", 1)[0].strip()
+                if key:
+                    names.append(key)
+
+    setup_cfg = os.path.join(repo_dir, "setup.cfg")
+    if os.path.exists(setup_cfg):
+        try:
+            content = open(setup_cfg, "r", encoding="utf-8", errors="replace").read()
+        except Exception:
+            content = ""
+        m = re.search(r"console_scripts\s*=(.*?)(?=\n\[|\Z)", content, re.S)
+        if m:
+            for line in m.group(1).splitlines():
+                line = line.strip()
+                if not line or line.startswith(("#", "[")):
+                    continue
+                key = line.split("=", 1)[0].strip()
+                if key:
+                    names.append(key)
+
+    # de-dup, preserve order, drop obviously bad tokens
+    seen: set[str] = set()
+    out = []
+    for n in names:
+        n = n.strip().strip("'\"")
+        if not n or n.lower() in ("python", "pip", "py", "setup"):
+            continue
+        if n not in seen:
+            seen.add(n)
+            out.append(n)
+    return out
+
+
 def _command_candidates(repo_url: str, entry_scripts: list[str], name: str) -> list[str]:
     stem = re.sub(r"[^a-zA-Z0-9_]", "_", name).lower().strip("_")
     cands: list[str] = []
@@ -180,7 +270,10 @@ def execute_test(repo_url: str, install_method: str = "",
         bin_dir = _venv_bin(venv_dir)
         env = dict(os.environ)
         env["PATH"] = bin_dir + os.pathsep + env.get("PATH", "")
+        declared = _parse_console_scripts(repo_dir)
         cands = _command_candidates(repo_url, entry_scripts, name)
+        # declared console scripts (e.g. `fingerprint` for RiSpy) take priority
+        cands = declared + [c for c in cands if c not in declared]
         runs: list[str] = []
         for cand in cands:
             exe = os.path.join(bin_dir, cand + (".exe" if os.name == "nt" else ""))

@@ -311,6 +311,37 @@ def fetch_html_from_doi(doi, retries=2):
 # ============================================================
 # 5. Extract GitHub links from text
 # ============================================================
+def normalize_github_url(link):
+    """Clean a raw github link into owner/repo form (https://github.com/owner/repo).
+
+    Strips trailing quotes/punctuation, .git suffix, anchors, query strings,
+    and non-repo paths (blob/tree/wiki/releases/etc).
+    """
+    if not link:
+        return ""
+    link = link.strip().strip('"\'.,;:()[]')
+    link = link.replace('git+', '').replace('ssh://', '')
+    if not link.lower().startswith(('http://', 'https://')):
+        link = "https://" + link
+    try:
+        parts = link.split("github.com", 1)
+        if len(parts) < 2:
+            return ""
+        path = parts[1].split("#", 1)[0].split("?", 1)[0].strip("/")
+        path = path.rstrip(".").strip('"')
+        segs = [s for s in path.split("/") if s]
+        if len(segs) < 2:
+            return ""
+        owner, repo = segs[0], segs[1]
+        repo = repo.removesuffix(".git")
+        repo = repo.rstrip(".,;:)\"'")
+        if not owner or not repo:
+            return ""
+        return f"https://github.com/{owner}/{repo}"
+    except Exception:
+        return ""
+
+
 def extract_github_links(text):
     """从文本中提取GitHub链接，并过滤出生物信息学相关的"""
     if not text:
@@ -333,6 +364,15 @@ def extract_github_links(text):
     
     # Deduplicate
     raw_links = list(set(raw_links))
+
+    # 0. Normalize: strip quotes/.git/anchor/blob paths + canonicalize case.
+    normalized = {}
+    for link in raw_links:
+        clean = normalize_github_url(link)
+        if clean:
+            key = clean.lower()
+            if key not in normalized:
+                normalized[key] = clean
     
     # 2. Filter: keep only bioinformatics/protein engineering related repos
     bio_keywords = [
@@ -353,7 +393,7 @@ def extract_github_links(text):
     ]
     
     filtered_links = []
-    for link in raw_links:
+    for link in normalized.values():
         # Convert link to lowercase for matching
         link_lower = link.lower()
         
