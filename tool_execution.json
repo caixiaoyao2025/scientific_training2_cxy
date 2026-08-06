@@ -3,12 +3,12 @@
     "tool": "RiSpy",
     "repo_url": "https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
     "status": "failed",
-    "reason": "`rispy /tmp/execute_g0t70nmt/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127; `src/fingerprint_cli/cli /tmp/execute_g0t70nmt/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127",
+    "reason": "`rispy /tmp/execute_3j4j5_ow/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127; `src/fingerprint_cli/cli /tmp/execute_3j4j5_ow/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
     "run_evidence": "no candidate exited 0 with output",
-    "checked_at": "2026-08-06T10:11:47.610981"
+    "checked_at": "2026-08-06T10:34:13.928407"
   },
   {
     "tool": "ext_ldsc_brain\"",
