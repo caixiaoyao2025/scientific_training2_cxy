@@ -23,6 +23,8 @@ jobs:
         run: |
           pip install --quiet requests beautifulsoup4 pyyaml
           sudo apt-get update -qq && sudo apt-get install -y -qq git >/dev/null 2>&1 || true
+          pip install --quiet playwright
+          python -m playwright install --with-deps chromium >/dev/null 2>&1 || true
 
       - name: Run discovery pipeline
         run: python run_pipeline.py "bioinformatics protein engineering tools" 5
