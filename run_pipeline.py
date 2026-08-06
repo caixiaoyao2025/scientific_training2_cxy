@@ -197,7 +197,17 @@ def run_full_pipeline(query="bioinformatics protein engineering tools", max_resu
     print("TOOL-DISCOVERY AGENT PIPELINE")
     print("=" * 60)
 
-    step1_discover(query=query, max_results=max_results)
+    discovered = step1_discover(query=query, max_results=max_results)
+    if not discovered:
+        print("\nNo new papers with tools found. Skipping conversion/verification "
+              "and resetting stale intermediates so old data is not re-processed.")
+        for stale in ("tool_library.json", "tool_library_clean.json",
+                      "tool_verification.json", "tool_execution.json",
+                      "discovered_registry.yaml"):
+            if os.path.exists(stale):
+                os.remove(stale)
+        print("PIPELINE COMPLETE (nothing new)")
+        return
     step2_convert()
     step3_clean()
     step3_5_verify()

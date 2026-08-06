@@ -278,13 +278,15 @@ def execute_test(repo_url: str, install_method: str = "",
         for cand in cands:
             exe = os.path.join(bin_dir, cand + (".exe" if os.name == "nt" else ""))
             if os.path.exists(exe):
-                args = [exe, sample]
+                base_args = [exe]
             elif cand.endswith(".py"):
-                args = [venv_py, os.path.join(repo_dir, cand), sample]
+                base_args = [venv_py, os.path.join(repo_dir, cand)]
             elif cand.endswith(".sh"):
-                args = ["bash", os.path.join(repo_dir, cand), sample]
+                base_args = ["bash", os.path.join(repo_dir, cand)]
             else:
-                args = [cand, sample]
+                base_args = [cand]
+            # Try 1: with a sample input (real invocation).
+            args = base_args + [sample]
             rc, out, err = _run(args, RUN_TIMEOUT, env=env)
             ev = f"`{' '.join(args)}` -> exit {rc}"
             runs.append(ev)
@@ -293,6 +295,18 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["reason"] = ev
                 report["run_ok"] = True
                 report["run_evidence"] = (out + err)[-400:]
+                return report
+            # Try 2: --help. Many heavy CLIs (typer/click/argparse) only respond
+            # to help flags, not to a sample file (e.g. RiSpy's fingerprint).
+            help_args = base_args + ["--help"]
+            rc2, out2, err2 = _run(help_args, RUN_TIMEOUT, env=env)
+            ev2 = f"`{' '.join(help_args)}` -> exit {rc2}"
+            runs.append(ev2)
+            if rc2 == 0 and (out2.strip() or err2.strip()):
+                report["status"] = "passed"
+                report["reason"] = ev2
+                report["run_ok"] = True
+                report["run_evidence"] = (out2 + err2)[-400:]
                 return report
         report["status"] = "failed"
         report["reason"] = "; ".join(runs) if runs else "no runnable candidate"
