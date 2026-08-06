@@ -45,6 +45,36 @@ def _run(args: list[str], timeout: int, cwd: Optional[str] = None,
         return 1, "", str(exc)
 
 
+def _classify_failure(output: str) -> str:
+    """Classify a failed run/install into env_issue vs incomplete vs failed.
+
+    - env_issue : missing dependency in the test environment (ModuleNotFoundError,
+      ImportError, No module named) -> NOT the repo's fault.
+    - incomplete: the repo's own code is broken (SyntaxError, NameError, etc.)
+    - failed    : anything else (wrong args, timeout, no output).
+    """
+    if not output:
+        return "failed"
+    low = output.lower()
+    env_patterns = (
+        "modulenotfounderror", "importerror", "no module named",
+        "cannot import", "not installed", "could not be found", "no such file",
+        "command not found", "undefined symbol", "nomodulenamed",
+    )
+    incomplete_patterns = (
+        "syntaxerror", "indentationerror", "nameerror", "attributeerror",
+        "typeerror", "valueerror", "indexerror", "keyerror",
+        "traceback (most recent call last)",
+    )
+    for pat in env_patterns:
+        if pat in low:
+            return "env_issue"
+    for pat in incomplete_patterns:
+        if pat in low:
+            return "incomplete"
+    return "failed"
+
+
 def _venv_python(venv_dir: str) -> str:
     return os.path.join(venv_dir, "Scripts", "python.exe") if os.name == "nt" \
         else os.path.join(venv_dir, "bin", "python")
@@ -254,7 +284,9 @@ def execute_test(repo_url: str, install_method: str = "",
         rc, out, err = _run(args, INSTALL_TIMEOUT)
         report["install_evidence"] = (out + err)[-400:]
         if rc != 0:
-            report["status"], report["reason"] = "failed", \
+            cls = _classify_failure((out + err)[-1200:])
+            report["status"] = cls if cls != "failed" else "failed"
+            report["reason"] = \
                 f"install failed (exit {rc}): {(out + err)[-200:]}"
             return report
         report["install_ok"] = True
@@ -275,6 +307,7 @@ def execute_test(repo_url: str, install_method: str = "",
         # declared console scripts (e.g. `fingerprint` for RiSpy) take priority
         cands = declared + [c for c in cands if c not in declared]
         runs: list[str] = []
+        worst = "failed"  # track most specific failure reason
         for cand in cands:
             exe = os.path.join(bin_dir, cand + (".exe" if os.name == "nt" else ""))
             if os.path.exists(exe):
@@ -296,6 +329,11 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["run_ok"] = True
                 report["run_evidence"] = (out + err)[-400:]
                 return report
+            cls = _classify_failure((out + err)[-1200:])
+            if cls == "incomplete":
+                worst = "incomplete"
+            elif cls == "env_issue" and worst != "incomplete":
+                worst = "env_issue"
             # Try 2: --help. Many heavy CLIs (typer/click/argparse) only respond
             # to help flags, not to a sample file (e.g. RiSpy's fingerprint).
             help_args = base_args + ["--help"]
@@ -308,7 +346,12 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["run_ok"] = True
                 report["run_evidence"] = (out2 + err2)[-400:]
                 return report
-        report["status"] = "failed"
+            cls2 = _classify_failure((out2 + err2)[-1200:])
+            if cls2 == "incomplete":
+                worst = "incomplete"
+            elif cls2 == "env_issue" and worst != "incomplete":
+                worst = "env_issue"
+        report["status"] = worst
         report["reason"] = "; ".join(runs) if runs else "no runnable candidate"
         report["run_evidence"] = "no candidate exited 0 with output"
         return report
@@ -356,8 +399,13 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     n_pass = sum(1 for r in results if r.get("status") == "passed")
+    n_env = sum(1 for r in results if r.get("status") == "env_issue")
+    n_inc = sum(1 for r in results if r.get("status") == "incomplete")
+    n_fail = sum(1 for r in results if r.get("status") == "failed")
+    n_skip = sum(1 for r in results if r.get("status") == "skipped")
     print(f"\nSaved execution report -> {out_json}")
-    print(f"passed: {n_pass} / {len(results)}")
+    print(f"passed: {n_pass} | env_issue: {n_env} | incomplete: {n_inc} "
+          f"| failed: {n_fail} | skipped: {n_skip}  (total {len(results)})")
     return results
 
 

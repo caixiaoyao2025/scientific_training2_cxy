@@ -146,9 +146,12 @@ def step3_6_execute():
     print("Installing each verified/repo_ok tool into a venv and smoke-running it...")
     results = execute_tool_library("tool_verification.json", "tool_execution.json")
     n_pass = sum(1 for r in results if r.get("status") == "passed")
+    n_env = sum(1 for r in results if r.get("status") == "env_issue")
+    n_inc = sum(1 for r in results if r.get("status") == "incomplete")
     n_fail = sum(1 for r in results if r.get("status") == "failed")
-    print(f"  -> {n_pass} passed, {n_fail} failed, "
-          f"{len(results) - n_pass - n_fail} skipped")
+    n_skip = sum(1 for r in results if r.get("status") == "skipped")
+    print(f"  -> {n_pass} passed, {n_env} env_issue, {n_inc} incomplete, "
+          f"{n_fail} failed, {n_skip} skipped")
 
 def step4_to_registry():
     print("\n" + "=" * 60)
