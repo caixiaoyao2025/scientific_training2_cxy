@@ -3,7 +3,7 @@
     "name": "RiSpy",
     "github": "https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
     "status": "exec-failed",
-    "reason": "`rispy /tmp/execute_7zgpk85y/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127; `src/fingerprint_cli/cli /tmp/execute_7zgpk85y/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127",
+    "reason": "`/tmp/execute_yz8lax2w/venv/bin/fingerprint /tmp/execute_yz8lax2w/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 2; `rispy /tmp/execute_yz8lax2w/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127; `src/fingerprint_cli/cli /tmp/execute_yz8lax2w/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127",
     "install_cmd": "pip install https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
     "has_license": true,
     "paper_title": "RiSpy: a feature selection-based fingerprinting framework for accurate identification of genome-edit"

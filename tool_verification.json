@@ -20,7 +20,7 @@
       "src/fingerprint_cli/cli.py"
     ],
     "clone_error": "",
-    "checked_at": "2026-08-06T10:52:38.501627",
+    "checked_at": "2026-08-06T12:24:19.103404",
     "tool": "RiSpy"
   },
   {
@@ -39,8 +39,8 @@
     "license_path": "",
     "license_text_snippet": "",
     "entry_scripts": [],
-    "clone_error": "Cloning into '/tmp/verify_n__rvtnk/ext_ldsc_brain'...\nfatal: could not read Username for 'https://github.com': No such device or address\n",
-    "checked_at": "2026-08-06T10:52:39.137528",
+    "clone_error": "Cloning into '/tmp/verify_268wpqk_/ext_ldsc_brain'...\nfatal: could not read Username for 'https://github.com': No such device or address\n",
+    "checked_at": "2026-08-06T12:24:20.382408",
     "tool": "ext_ldsc_brain\""
   }
 ]
