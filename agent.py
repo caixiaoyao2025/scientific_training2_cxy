@@ -180,6 +180,26 @@ def parse_html_directly(html, url):
 # ============================================================
 # 4. Enhanced: fetch full paper text (integrated strategies)
 # ============================================================
+def fetch_pmc_fulltext(doi, timeout=30):
+    """Fetch PMC open-access full text XML for a DOI (eutils, no API key)."""
+    try:
+        search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+        resp = requests.get(search_url, params={
+            "db": "pmc", "term": f'"{doi}"[DOI]', "retmode": "json", "retmax": 1,
+        }, timeout=timeout)
+        ids = resp.json().get("esearchresult", {}).get("idlist", [])
+        if not ids:
+            return None
+        efetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+        r2 = requests.get(efetch_url, params={
+            "db": "pmc", "id": ids[0], "retmode": "xml",
+        }, timeout=timeout)
+        return r2.text if r2.status_code == 200 else None
+    except Exception as exc:  # noqa: BLE001
+        print(f"   ⚠️ PMC fetch failed: {exc}")
+        return None
+
+
 def fetch_html_from_doi(doi, retries=2):
     """增强版：使用Session + Playwright备选，获取论文全文"""
     if not doi:
@@ -213,7 +233,24 @@ def fetch_html_from_doi(doi, retries=2):
         print(f"   ⚠️ Request failed: {e}")
         return None
 
-    # --- Phase 2: Identify publisher, choose strategy ---
+    # --- Phase 1b: NCBI PMC full text first (fast & reliable, has GitHub refs).
+    # PMC open-access articles carry the "Data availability" section, which is
+    # where most bioinformatics tool links live. Skip the slow Playwright path
+    # whenever PMC has the paper.
+    pmc_text = fetch_pmc_fulltext(doi)
+    if pmc_text and len(pmc_text) > 500:
+        print(f"   📄 PMC full text fetched ({len(pmc_text)} chars)")
+        return pmc_text
+
+    # --- Phase 2 (fast path): direct parse FIRST.
+    # The full HTML is already in `response.text`; for most open papers this is
+    # enough and avoids the slow Playwright / Jina round-trips.
+    fast_content = parse_html_directly(response.text, final_url)
+    if fast_content and len(fast_content) >= 200:
+        print(f"   ⚡ Direct parse succeeded ({len(fast_content)} chars)")
+        return fast_content
+
+    # --- Phase 3: fall back to advanced strategies only if direct parse failed ---
     # List of complex publishers requiring special handling
     complex_publishers = ['elsevier', 'springer', 'tandfonline', 'wiley', 'nature', 'science', 'oup', 'oxford']
     

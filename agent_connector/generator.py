@@ -43,7 +43,7 @@ class {class_name}:
     def {method}(self, **kwargs):
         return format_result(run_tool_spec(_TOOL_SPEC, kwargs))
 
-    def invoke(self, tool_input):
+    def call_with_args(self, tool_input):
         if isinstance(tool_input, str):
             tool_input = _json.loads(tool_input)
         return self.{method}(**tool_input)

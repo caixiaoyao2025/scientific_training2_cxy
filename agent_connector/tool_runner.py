@@ -3,13 +3,23 @@
 Dispatches a ToolSpec's `execution` block to the right runner without
 depending on the MCP server package. Mirrors the Execution Engine in
 server.py (cli / python / api / docker).
+
+Isolation rules:
+  - cli / docker: already run in a separate subprocess.
+  - python: now also runs in a separate subprocess (dedicated interpreter),
+    so tool code can never crash, pollute (sys.path / os.environ) or
+    conflict (shared packages) with the host agent process.
+  - api: pure HTTP request, no subprocess needed.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import re
 import shlex
 import subprocess
+import sys
 from typing import Any
 
 
@@ -22,11 +32,56 @@ def _render_command(command_template: str, arguments: dict[str, Any]) -> list[st
     return argv
 
 
+def _coerce_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
+    """Cast str args to the types declared in ToolSpec.inputs.
+
+    Wrappers receive everything as str (LLM output); a declared `type:
+    int` argument should reach the tool as an int, not "42".
+    """
+    coerced = dict(arguments)
+    for name, meta in (spec.get("inputs") or {}).items():
+        if name not in coerced:
+            continue
+        v = coerced[name]
+        t = (meta or {}).get("type", "string")
+        try:
+            if t in ("int", "integer") and not isinstance(v, bool):
+                coerced[name] = int(v)
+            elif t in ("float", "number") and not isinstance(v, bool):
+                coerced[name] = float(v)
+            elif t in ("bool", "boolean"):
+                if isinstance(v, str):
+                    coerced[name] = v.strip().lower() in ("1", "true", "yes")
+                else:
+                    coerced[name] = bool(v)
+        except (TypeError, ValueError):
+            pass  # keep original value; the tool may still handle it
+    return coerced
+
+
 def _run_cli(command: str, arguments: dict[str, Any], timeout: int = 600) -> dict[str, Any]:
     argv = _render_command(command, arguments)
-    completed = subprocess.run(
-        argv, capture_output=True, text=True, check=False, timeout=timeout
-    )
+    try:
+        completed = subprocess.run(
+            argv, capture_output=True, text=True, check=False,
+            timeout=timeout, encoding="utf-8", errors="replace",
+        )
+    except FileNotFoundError:
+        return {
+            "status": "command_error",
+            "return_code": 127,
+            "stdout": "",
+            "stderr": f"command not found: {argv[0]}",
+            "argv": argv,
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "status": "command_error",
+            "return_code": None,
+            "stdout": (exc.stdout or "") if isinstance(exc.stdout, str) else "",
+            "stderr": f"timed out after {timeout}s",
+            "argv": argv,
+        }
     return {
         "status": "ok" if completed.returncode == 0 else "command_error",
         "return_code": completed.returncode,
@@ -36,34 +91,84 @@ def _run_cli(command: str, arguments: dict[str, Any], timeout: int = 600) -> dic
     }
 
 
-def _run_python(entry_point: str, arguments: dict[str, Any]) -> dict[str, Any]:
-    import contextlib
-    import importlib
-    import io
+# Runs in a dedicated interpreter: import module, call function, return JSON
+# on stdout. Never runs in the host agent process.
+_PYTHON_RUNNER_SOURCE = r'''
+import importlib
+import json
+import sys
 
+entry_point = sys.argv[1]
+arguments = json.loads(sys.argv[2])
+module_name, _, function_name = entry_point.partition(":")
+try:
+    module = importlib.import_module(module_name)
+    function = getattr(module, function_name)
+    result = function(**arguments)
+except BaseException as exc:  # noqa: BLE001 - report any failure, incl. sys.exit
+    print(json.dumps({"error": f"{type(exc).__name__}: {exc}"}))
+    sys.exit(1)
+if result is not None and not isinstance(result, str):
+    output = json.dumps(result, ensure_ascii=False, default=str)
+elif isinstance(result, str):
+    output = result
+else:
+    output = ""
+print(json.dumps({"output": output}))
+'''
+
+
+def _run_python(entry_point: str, arguments: dict[str, Any], timeout: int = 600) -> dict[str, Any]:
     module_name, _, function_name = entry_point.partition(":")
     if not function_name:
         raise ValueError(f"entry_point must be 'module:function', got {entry_point!r}")
-    module = importlib.import_module(module_name)
-    function = getattr(module, function_name)
-    buffer = io.StringIO()
+    env = os.environ.copy()
+    # Let the child interpreter resolve the same modules as the host process
+    # (e.g. tool_helpers living in the tools repo, added to sys.path at setup).
+    env["PYTHONPATH"] = os.pathsep.join(sys.path)
+    argv = [sys.executable, "-c", _PYTHON_RUNNER_SOURCE, entry_point,
+            json.dumps(arguments, ensure_ascii=False)]
     try:
-        with contextlib.redirect_stdout(buffer):
-            result = function(**arguments)
-    except Exception as exc:  # noqa: BLE001
+        completed = subprocess.run(
+            argv, capture_output=True, text=True, check=False,
+            timeout=timeout, encoding="utf-8", errors="replace", env=env,
+        )
+    except FileNotFoundError:
         return {
             "status": "command_error",
-            "return_code": 1,
-            "stdout": buffer.getvalue(),
-            "stderr": f"{type(exc).__name__}: {exc}",
-            "argv": [entry_point],
+            "return_code": 127,
+            "stdout": "",
+            "stderr": f"python executable not found: {argv[0]}",
+            "argv": argv,
         }
-    output = buffer.getvalue()
-    if result is not None and not isinstance(result, str):
-        output += json.dumps(result, ensure_ascii=False, default=str) + "\n"
-    elif isinstance(result, str):
-        output += result + "\n"
-    return {"status": "ok", "return_code": 0, "stdout": output, "stderr": "", "argv": [entry_point]}
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "status": "command_error",
+            "return_code": None,
+            "stdout": (exc.stdout or "") if isinstance(exc.stdout, str) else "",
+            "stderr": f"timed out after {timeout}s",
+            "argv": argv,
+        }
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    if stdout.strip():
+        try:
+            payload = json.loads(stdout)
+        except json.JSONDecodeError:
+            payload = None  # not our protocol; surface raw output
+        if payload is not None and "error" in payload:
+            # child reported a failure -> move the message to stderr
+            stderr = (payload["error"] + ("\n" + stderr if stderr else "")).strip()
+            stdout = ""
+        elif payload is not None and completed.returncode == 0:
+            stdout = payload.get("output", "")
+    return {
+        "status": "ok" if completed.returncode == 0 else "command_error",
+        "return_code": completed.returncode,
+        "stdout": stdout,
+        "stderr": stderr,
+        "argv": argv,
+    }
 
 
 def _run_api(execution: dict[str, Any], arguments: dict[str, Any], timeout: int = 60) -> dict[str, Any]:
@@ -73,6 +178,16 @@ def _run_api(execution: dict[str, Any], arguments: dict[str, Any], timeout: int 
 
     endpoint = execution["endpoint"]
     method = str(execution.get("method", "POST")).upper()
+    placeholders = re.findall(r"\{(\w+)\}", endpoint)
+    missing = [k for k in placeholders if k not in arguments]
+    if missing:
+        return {
+            "status": "command_error",
+            "return_code": None,
+            "stdout": "",
+            "stderr": f"missing args for URL template: {missing}",
+            "argv": [endpoint],
+        }
     quoted = {key: urllib.parse.quote(str(value)) for key, value in arguments.items()}
     rendered_url = endpoint.format(**quoted)
     try:
@@ -118,8 +233,37 @@ def _run_docker(execution: dict[str, Any], arguments: dict[str, Any], timeout: i
     command_argv: list[str] = []
     if execution.get("command"):
         command_argv = _render_command(execution["command"], arguments)
-    argv = ["docker", "run", "--rm", execution["image"], *command_argv]
-    completed = subprocess.run(argv, capture_output=True, text=True, check=False, timeout=timeout)
+    argv = ["docker", "run", "--rm"]
+    volumes = execution.get("volumes") or []
+    if volumes:
+        for vol in volumes:
+            argv += ["-v", str(vol)]
+    elif os.path.isdir("data"):
+        # ToolSpec paths are described as "/data/..."; bind the repo data dir
+        # so the container can actually see them.
+        argv += ["-v", f"{os.path.abspath('data')}:/data"]
+    argv += [execution["image"], *command_argv]
+    try:
+        completed = subprocess.run(
+            argv, capture_output=True, text=True, check=False,
+            timeout=timeout, encoding="utf-8", errors="replace",
+        )
+    except FileNotFoundError:
+        return {
+            "status": "command_error",
+            "return_code": 127,
+            "stdout": "",
+            "stderr": "docker not found on PATH; install Docker to use this tool",
+            "argv": argv,
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "status": "command_error",
+            "return_code": None,
+            "stdout": (exc.stdout or "") if isinstance(exc.stdout, str) else "",
+            "stderr": f"timed out after {timeout}s",
+            "argv": argv,
+        }
     return {
         "status": "ok" if completed.returncode == 0 else "command_error",
         "return_code": completed.returncode,
@@ -136,9 +280,10 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
         execution = {"type": spec.get("type", "cli"), "command": spec.get("command", "")}
     exec_type = execution.get("type", "cli")
     timeout = int(spec.get("timeout_seconds", 600))
+    arguments = _coerce_arguments(spec, arguments)
 
     if exec_type == "python":
-        return _run_python(execution["entry_point"], arguments)
+        return _run_python(execution["entry_point"], arguments, timeout=timeout)
     if exec_type == "api":
         return _run_api(execution, arguments, timeout=timeout)
     if exec_type == "docker":

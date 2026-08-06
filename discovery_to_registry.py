@@ -1,10 +1,21 @@
 import json
+import os
 import re
 import yaml
 
 def load_tool_library(filename="tool_library_clean.json"):
     with open(filename, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_verification(filename="tool_verification.json"):
+    """Return {github_url -> verify result dict}. Absent file -> {}."""
+    if not os.path.exists(filename):
+        return {}
+    with open(filename, "r", encoding="utf-8") as f:
+        results = json.load(f)
+    return {r.get("repo_url", ""): r for r in results if r.get("repo_url")}
+
 
 def guess_install_method(tool):
     lang = tool.get("github_metadata", {}).get("language", "").lower()
@@ -18,12 +29,14 @@ def guess_install_method(tool):
     else:
         return "pip_url", github_url
 
+
 def guess_command(tool):
     name = tool.get("name", "").replace(" ", "_").replace("-", "_")
     name = re.sub(r'[^a-zA-Z0-9_]', '', name)
     return f"{name.lower()} {{{{input_file}}}}"
 
-def tool_to_registry_entry(tool):
+
+def tool_to_registry_entry(tool, verification=None):
     name = tool.get("name", "unknown")
     clean_name = re.sub(r'[^a-zA-Z0-9_.-]', '_', name).strip('_').lower()
     description = tool.get("description", "No description available.")
@@ -35,8 +48,19 @@ def tool_to_registry_entry(tool):
     paper_doi = tool.get("source", {}).get("paper_doi", "")
     paper_title = tool.get("source", {}).get("paper_title", "")
 
+    v = (verification or {}).get(github_url) or {}
+    e = load_execution().get(github_url) or {}
+
     install_method, install_url = guess_install_method(tool)
     command_template = guess_command(tool)
+
+    # Override the *guesses* with verified evidence when available.
+    if v.get("install_method") and v.get("install_cmd"):
+        install_method = v["install_method"]
+        install_url = v["install_cmd"] if not v["install_cmd"].startswith("http") else github_url
+    verified_cmd = v.get("command") or ""
+    if verified_cmd:
+        command_template = f"{verified_cmd} {{{{input_file}}}}"
 
     entry = {
         "name": clean_name,
@@ -63,27 +87,104 @@ def tool_to_registry_entry(tool):
             "paper_title": paper_title,
             "install_method": install_method,
             "install_url": install_url,
+            # --- verification evidence (from verify_repo.py) ---
+            "verified_status": v.get("status", "unverified"),
+            "verified_reason": v.get("reason", "not verified"),
+            "verified_license": v.get("has_license", False),
+            "verified_license_path": v.get("license_path", ""),
+            "verified_entry_scripts": v.get("entry_scripts", []),
+            "verified_checked_at": v.get("checked_at", ""),
+            # --- execution evidence (from execute_test.py, step 3.6) ---
+            "exec_status": e.get("status", ""),
+            "exec_reason": e.get("reason", ""),
+            "exec_install_evidence": e.get("install_evidence", ""),
+            "exec_run_evidence": e.get("run_evidence", ""),
         }
     }
 
     return entry
 
-def convert_to_registry(tools, output_file="discovered_registry.yaml"):
+
+def load_execution(filename="tool_execution.json"):
+    """Return {github_url -> execution result dict}. Absent file -> {}."""
+    if not os.path.exists(filename):
+        return {}
+    with open(filename, "r", encoding="utf-8") as f:
+        results = json.load(f)
+    return {r.get("repo_url", ""): r for r in results if r.get("repo_url")}
+
+
+def convert_to_registry(tools, output_file="discovered_registry.yaml",
+                        verification_file="tool_verification.json",
+                        min_status=("verified", "repo_ok"),
+                        excluded_file="excluded_tools.json",
+                        require_passed=False):
+    """Convert only tools whose repo passed verification.
+
+    Tools whose repo could not be verified (clone failure / no entry point /
+    no license marker) are written to `excluded_file` with the reason, instead
+    of silently producing a placeholder entry that would fail at runtime.
+
+    When `require_passed=True`, only tools that ALSO survived the step 3.6
+    execution smoke test (installed + ran on a sample input) enter the
+    registry; everything else goes to `excluded_file`.
+    """
+    verification = load_verification(verification_file)
+    execution = load_execution()
     registry = {"tools": []}
+    excluded = []
 
     for tool in tools:
-        entry = tool_to_registry_entry(tool)
+        github_url = tool.get("source", {}).get("github", "")
+        v = verification.get(github_url) or {}
+        e = execution.get(github_url) or {}
+        status = v.get("status", "unverified")
+
+        if status not in min_status:
+            excluded.append({
+                "name": tool.get("name", "unknown"),
+                "github": github_url,
+                "status": status,
+                "reason": v.get("reason", "no verification record"),
+                "install_cmd": v.get("install_cmd", ""),
+                "has_license": v.get("has_license", False),
+                "paper_title": tool.get("source", {}).get("paper_title", ""),
+            })
+            continue
+
+        # step 3.6 execution gate: only tools that actually ran make it in
+        if require_passed and e.get("status") != "passed":
+            excluded.append({
+                "name": tool.get("name", "unknown"),
+                "github": github_url,
+                "status": f"exec-{e.get('status', 'unknown')}",
+                "reason": e.get("reason", "no execution record"),
+                "install_cmd": v.get("install_cmd", ""),
+                "has_license": v.get("has_license", False),
+                "paper_title": tool.get("source", {}).get("paper_title", ""),
+            })
+            continue
+
+        entry = tool_to_registry_entry(tool, verification)
         registry["tools"].append(entry)
 
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(registry, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
-    print(f"Converted {len(tools)} tools to {output_file}")
+    with open(excluded_file, "w", encoding="utf-8") as f:
+        json.dump(excluded, f, ensure_ascii=False, indent=2)
 
-    high_quality = [t for t in tools if t.get("quality_score", 0) >= 40]
+    print(f"Converted {len(registry['tools'])} tools to {output_file}")
+    print(f"Excluded {len(excluded)} unverified tools -> {excluded_file}")
+    for e in excluded[:10]:
+        print(f"  - {e['name']}: {e['reason'][:70]}")
+
+    high_quality = [t for t in registry["tools"] if
+                    t.get("_discovery_metadata", {}).get("quality_score", 0) >= 40]
     print(f"High quality tools (score>=40): {len(high_quality)}")
     for t in high_quality[:5]:
         print(f"  - {t['name']}: {t.get('description', '')[:60]}...")
+
 
 if __name__ == "__main__":
     tools = load_tool_library()

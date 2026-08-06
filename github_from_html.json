@@ -1,0 +1,20 @@
+[
+  {
+    "title": "RiSpy: a feature selection-based fingerprinting framework for accurate identification of genome-edit",
+    "doi": "10.1093/bib/bbag406",
+    "github_links": [
+      "https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
+      "https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy\""
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/42537001/"
+  },
+  {
+    "title": "An Initial Genetic Correlation Analysis of Externalizing Behavior and Neuroimaging Phenotypes in the",
+    "doi": "10.64898/2026.07.13.26358013",
+    "github_links": [
+      "https://github.com/mw742/ext_ldsc_brain\"",
+      "https://github.com/mw742/ext_ldsc_brain"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/42528627/"
+  }
+]

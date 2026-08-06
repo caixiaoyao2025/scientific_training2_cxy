@@ -1,0 +1,98 @@
+tools:
+- name: baselines
+  type: cli
+  command: baselines {{input_file}}
+  description: '[Auto-discovered] A comprehensive benchmark on the performances of
+    multiple protein backbone generative models. (⭐69, Python)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+- name: anarcii
+  type: cli
+  command: anarcii {{input_file}}
+  description: '[Auto-discovered] A language model suite for numbering antigen receptor
+    sequences. (⭐53, Jupyter Notebook)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+- name: pathogenesis-gene-ontology
+  type: cli
+  command: pathogenesis_gene_ontology {{input_file}}
+  description: '[Auto-discovered] An ontology for the functional annotation of genes
+    and gene products involved in pathogenesis (⭐1, C++)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+- name: rgtbind.
+  type: cli
+  command: rgtbind {{input_file}}
+  description: '[Auto-discovered] RGTBind: RBF-gate graph transformer with spatially
+    biased attention for protein-DNA binding-site pre (⭐0, )'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+- name: protformer-site
+  type: cli
+  command: protformer_site {{input_file}}
+  description: '[Auto-discovered] ProtFormer-Site: Ultra-fast and Accurate Prediction
+    of Protein-Protein Interaction Sites with Protei (⭐0, )'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+- name: prossf
+  type: cli
+  command: prossf {{input_file}}
+  description: '[Auto-discovered] ProSSF: integrating sequence, structure, and gene
+    ontology for prediction of protein stability, inte (⭐0, )'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+- name: tsamp
+  type: cli
+  command: tsamp {{input_file}}
+  description: '[Auto-discovered] a comprehensive framework combining the ESM1v protein
+    language model with multidimensional feature extraction for accurate and generalizable
+    AMP identification and strain-specific MIC prediction (⭐1, Python)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+- name: giggles
+  type: cli
+  command: giggles {{input_file}}
+  description: '[Auto-discovered] Building and applying pangenome references to capture
+    genetic diversity. (⭐0, )'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.

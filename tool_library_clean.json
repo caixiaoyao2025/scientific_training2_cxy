@@ -1,0 +1,58 @@
+[
+  {
+    "name": "RiSpy",
+    "description": "RiSpy: a feature selection-based fingerprinting framework for accurate identification of genome-edit",
+    "source": {
+      "github": "https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
+      "paper_doi": "10.1093/bib/bbag406",
+      "paper_title": "RiSpy: a feature selection-based fingerprinting framework for accurate identification of genome-edit"
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "rispy",
+      "genome",
+      "software"
+    ],
+    "quality_score": 5.0,
+    "github_metadata": {
+      "stars": 0,
+      "language": "",
+      "forks": 0
+    },
+    "discovered_at": "2026-08-06T17:41:57.331174"
+  },
+  {
+    "name": "ext_ldsc_brain\"",
+    "description": "An Initial Genetic Correlation Analysis of Externalizing Behavior and Neuroimaging Phenotypes in the",
+    "source": {
+      "github": "https://github.com/mw742/ext_ldsc_brain",
+      "paper_doi": "10.64898/2026.07.13.26358013",
+      "paper_title": "An Initial Genetic Correlation Analysis of Externalizing Behavior and Neuroimaging Phenotypes in the"
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "ldsc",
+      "brain",
+      "ext",
+      "software",
+      "rna"
+    ],
+    "quality_score": 5.0,
+    "github_metadata": {
+      "stars": 0,
+      "language": "",
+      "forks": 0
+    },
+    "discovered_at": "2026-08-06T17:41:57.331174"
+  }
+]

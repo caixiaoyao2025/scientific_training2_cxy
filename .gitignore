@@ -48,3 +48,9 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Local binaries / scratch
+fastp.exe
+.pybiomart.sqlite
+*.bak
+

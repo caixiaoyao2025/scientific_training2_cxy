@@ -1,0 +1,19 @@
+[
+  {
+    "tool": "RiSpy",
+    "repo_url": "https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
+    "status": "failed",
+    "reason": "install failed (exit 1): 笉鍒版寚瀹氱殑鏂囦欢銆\\x82\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'pysam' when getting requirements to build wheel\n",
+    "install_ok": false,
+    "install_evidence": " in _execute_child\n          hp, ht, pid, tid = _winapi.CreateProcess(executable, args,\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n      FileNotFoundError: [WinError 2] 绯荤粺鎵句笉鍒版寚瀹氱殑鏂囦欢銆\\x82\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'pysam' when getting requirements to build wheel\n",
+    "run_ok": false,
+    "run_evidence": "",
+    "checked_at": "2026-08-06T18:02:29.074724"
+  },
+  {
+    "tool": "ext_ldsc_brain\"",
+    "repo_url": "https://github.com/mw742/ext_ldsc_brain",
+    "status": "skipped",
+    "reason": "repo verification = unverified"
+  }
+]
