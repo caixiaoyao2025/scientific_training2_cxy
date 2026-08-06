@@ -60,6 +60,10 @@ def _classify_failure(output: str) -> str:
         "modulenotfounderror", "importerror", "no module named",
         "cannot import", "not installed", "could not be found", "no such file",
         "command not found", "undefined symbol", "nomodulenamed",
+        # pip dependency-resolution failures (version conflicts, unfindable)
+        "cannot install", "conflicting dependencies", "conflict is caused by",
+        "resolutionimpossible", "no matching distribution",
+        "could not find a version", "dependency resolver",
     )
     incomplete_patterns = (
         "syntaxerror", "indentationerror", "nameerror", "attributeerror",
@@ -275,6 +279,7 @@ def execute_test(repo_url: str, install_method: str = "",
         "run_ok": False,
         "run_evidence": "",
         "params_schema": [],
+        "installed_versions": [],
         "checked_at": __import__("datetime").datetime.now().isoformat(),
     }
 
@@ -339,6 +344,15 @@ def execute_test(repo_url: str, install_method: str = "",
                 f"install failed (exit {rc}): {(out + err)[-200:]}"
             return report
         report["install_ok"] = True
+
+        # record the actually-installed package versions (reproducibility
+        # evidence, step 3.6): exact pins make the tool's env reproducible.
+        _frz_rc, freeze_out, _frz_err = _run(
+            [venv_py, "-m", "pip", "freeze"], 60)
+        if _frz_rc == 0:
+            pins = [ln.strip() for ln in freeze_out.splitlines()
+                    if ln.strip() and not ln.startswith("-")]
+            report["installed_versions"] = pins[:80]
 
         # ---- 3. prepare a sample input ----
         sample = _find_sample_input(repo_dir)

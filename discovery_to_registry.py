@@ -119,6 +119,7 @@ def tool_to_registry_entry(tool, verification=None):
             "exec_install_evidence": e.get("install_evidence", ""),
             "exec_run_evidence": e.get("run_evidence", ""),
             "exec_params_schema": e.get("params_schema", []),
+            "exec_installed_versions": e.get("installed_versions", []),
             "inputs_source": inputs_src,
         }
     }
