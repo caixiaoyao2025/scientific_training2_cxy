@@ -75,6 +75,54 @@ def _classify_failure(output: str) -> str:
     return "failed"
 
 
+def _parse_help_params(help_output: str) -> list[dict[str, str]]:
+    """Extract CLI parameters from a --help / usage string.
+
+    Handles common formats (argparse, typer, click, optparse):
+      --reference PATH   Reference genome
+      -r, --reference PATH
+      <input_file>       Input FASTA
+    Returns a list of {name, type, description}.
+    """
+    if not help_output:
+        return []
+    params: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for line in help_output.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        m = re.match(r'^\s*(?:-\w,\s+)?(--?[\w][\w-]*)\s+([A-Z_]+|\{[^}]+\}|<[^>]+>)?\s*(.*)$',
+                     line, re.IGNORECASE)
+        if not m:
+            continue
+        flag, metavar, desc = m.group(1), m.group(2) or "", m.group(3) or ""
+        # skip the standard help flag itself; it's not a real tool parameter
+        if flag in ("--help", "-h"):
+            continue
+        # only flags (--x) make sense as named params; skip bare -v etc.
+        if flag.startswith("--") and flag not in seen:
+            seen.add(flag)
+            ptype = "string"
+            if metavar and metavar.lower() in ("path", "file", "dir", "directory", "infile", "outfile"):
+                ptype = "path"
+            elif metavar and metavar.lower() in ("int", "integer", "n", "count", "number"):
+                ptype = "integer"
+            elif metavar and metavar.lower() in ("float", "double"):
+                ptype = "float"
+            # keep only the human description, drop argparse noise like
+            # [required], [default: x], [choices: a|b]
+            desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$", "", desc).strip()
+            params.append({
+                "name": flag,
+                "type": ptype,
+                "description": desc or f"CLI flag {flag}",
+            })
+        elif flag.startswith("--"):
+            continue
+    return params[:20]
+
+
 def _venv_python(venv_dir: str) -> str:
     return os.path.join(venv_dir, "Scripts", "python.exe") if os.name == "nt" \
         else os.path.join(venv_dir, "bin", "python")
@@ -226,6 +274,7 @@ def execute_test(repo_url: str, install_method: str = "",
         "install_evidence": "",
         "run_ok": False,
         "run_evidence": "",
+        "params_schema": [],
         "checked_at": __import__("datetime").datetime.now().isoformat(),
     }
 
@@ -345,6 +394,7 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["reason"] = ev2
                 report["run_ok"] = True
                 report["run_evidence"] = (out2 + err2)[-400:]
+                report["params_schema"] = _parse_help_params(out2 or err2)
                 return report
             cls2 = _classify_failure((out2 + err2)[-1200:])
             if cls2 == "incomplete":

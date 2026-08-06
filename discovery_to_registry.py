@@ -62,6 +62,30 @@ def tool_to_registry_entry(tool, verification=None):
     if verified_cmd:
         command_template = f"{verified_cmd} {{{{input_file}}}}"
 
+    # inputs schema: prefer params parsed from the tool's real --help output
+    # (execute_test.py step 3.6). Fall back to a placeholder, tagged with source
+    # so reviewers can tell real evidence from guesses.
+    parsed = e.get("params_schema") or []
+    if parsed:
+        inputs = {
+            p["name"].lstrip("-").replace("-", "_"): {
+                "type": p.get("type", "string"),
+                "description": p.get("description", ""),
+                "source": "help_parsed",
+            }
+            for p in parsed
+        }
+        inputs_src = "help_parsed"
+    else:
+        inputs = {
+            "input_file": {
+                "type": "string",
+                "description": "Input file path inside /data.",
+                "source": "placeholder",
+            }
+        }
+        inputs_src = "placeholder"
+
     entry = {
         "name": clean_name,
         "type": "cli",
@@ -71,12 +95,7 @@ def tool_to_registry_entry(tool, verification=None):
             "intercept_large_output": True,
             "max_preview_lines": 50,
         },
-        "inputs": {
-            "input_file": {
-                "type": "string",
-                "description": "Input file path inside /data."
-            }
-        },
+        "inputs": inputs,
         "_discovery_metadata": {
             "github": github_url,
             "stars": stars,
@@ -99,6 +118,8 @@ def tool_to_registry_entry(tool, verification=None):
             "exec_reason": e.get("reason", ""),
             "exec_install_evidence": e.get("install_evidence", ""),
             "exec_run_evidence": e.get("run_evidence", ""),
+            "exec_params_schema": e.get("params_schema", []),
+            "inputs_source": inputs_src,
         }
     }
 
