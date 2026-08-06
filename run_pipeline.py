@@ -23,10 +23,29 @@ def step1_discover(query="bioinformatics protein engineering tools", max_results
     import time
     import threading
 
-    papers = search_papers(query, max_results=max_results)
-    print(f"Found {len(papers)} papers")
-
     seen = load_seen_papers()
+
+    # Keep paging PubMed until we collect `max_results` *unseen* papers.
+    # Papers already processed in earlier runs don't count against the limit.
+    # Pull a 50-paper window per request to reduce round-trips.
+    batch = max(max_results, 50)
+    start = 0
+    papers = []
+    while len(papers) < max_results and start < 200:
+        page = search_papers(query, max_results=batch, retstart=start)
+        if not page:
+            break
+        fresh = [p for p in page if (p.get('pmid') or p.get('doi')) not in seen]
+        papers.extend(fresh)
+        print(f"  batch@{start}: {len(page)} papers, {len(fresh)} new "
+              f"(need {max_results - len(papers)} more)")
+        if len(page) < batch:
+            break
+        start += batch
+        time.sleep(0.5)
+    papers = papers[:max_results]
+    print(f"Found {len(papers)} new papers ({len(seen)} already seen total)")
+
     results = []
 
     def _fetch_with_timeout(doi):

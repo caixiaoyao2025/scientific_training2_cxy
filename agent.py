@@ -42,13 +42,14 @@ def mark_paper_as_seen(paper_id):
 # ============================================================
 # 1. Search papers (PubMed)
 # ============================================================
-def search_papers(query, max_results=10):
+def search_papers(query, max_results=10, retstart=0):
     """搜索PubMed，返回论文列表"""
     search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     params = {
         "db": "pubmed",
         "term": query,
         "retmax": max_results,
+        "retstart": retstart,
         "retmode": "json"
     }
     
