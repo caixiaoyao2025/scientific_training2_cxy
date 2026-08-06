@@ -3,7 +3,7 @@
     "name": "RiSpy",
     "github": "https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
     "status": "exec-failed",
-    "reason": "install failed (exit 1): 笉鍒版寚瀹氱殑鏂囦欢銆\\x82\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'pysam' when getting requirements to build wheel\n",
+    "reason": "`rispy /tmp/execute_g0t70nmt/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127; `src/fingerprint_cli/cli /tmp/execute_g0t70nmt/RiSpy/src/fingerprint_cli/test_data/test_reference.fasta` -> exit 127",
     "install_cmd": "pip install https://github.com/BioinformaticsPlatformWIV-ISP/RiSpy",
     "has_license": true,
     "paper_title": "RiSpy: a feature selection-based fingerprinting framework for accurate identification of genome-edit"
