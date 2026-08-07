@@ -86,11 +86,22 @@ def tool_to_registry_entry(tool, verification=None):
         }
         inputs_src = "placeholder"
 
+    # license status is surfaced to end users in the description (the MCP
+    # registry / tool list drops _discovery_metadata, so this is the only
+    # user-visible channel). No license -> explicit "research-use only" note.
+    license_note = ""
+    if v:
+        if v.get("has_license"):
+            lic = v.get("license_path", "").split("/")[-1] or "license"
+            license_note = f" (license: {lic})"
+        else:
+            license_note = " (NO license - research use only)"
+
     entry = {
         "name": clean_name,
         "type": "cli",
         "command": command_template,
-        "description": f"[Auto-discovered] {description} (⭐{stars}, {language})",
+        "description": f"[Auto-discovered] {description} (⭐{stars}, {language}){license_note}",
         "output_control": {
             "intercept_large_output": True,
             "max_preview_lines": 50,
