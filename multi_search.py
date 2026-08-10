@@ -38,6 +38,8 @@ QUERIES = [
 ]
 
 MAX_PER_QUERY = 10
+NEW_PER_QUERY = 10          # stop a keyword once this many new papers collected
+MAX_TOTAL_PER_QUERY = 100
 PAPER_TIMEOUT = 30
 MAX_QUERIES = len(QUERIES)
 
@@ -70,21 +72,20 @@ def discover():
         print(f"\n=== query {qi + 1}: {query[:70]}")
         start = 0
         scanned = 0
-        found_any_new = False
-        while start < 200 and scanned < MAX_TOTAL_PER_QUERY:
+        new_count = 0
+        while start < 200 and scanned < MAX_TOTAL_PER_QUERY and new_count < NEW_PER_QUERY:
             page = search_papers(query, max_results=MAX_PER_QUERY, retstart=start)
             if not page:
                 break
             fresh = [p for p in page if (p.get("pmid") or p.get("doi")) not in seen]
-            if fresh:
-                found_any_new = True
             scanned += len(page)
             print(f"  batch@{start}: {len(page)} papers, {len(fresh)} new "
-                  f"(scanned {scanned}/{MAX_TOTAL_PER_QUERY})")
+                  f"(scanned {scanned}/{MAX_TOTAL_PER_QUERY}, new {new_count}/{NEW_PER_QUERY})")
             for paper in fresh:
                 paper_id = paper.get("pmid") or paper.get("doi")
                 if paper_id and paper_id in used_keys:
                     continue
+                new_count += 1
                 print(f"  [{paper['title'][:60]}] ...")
                 html = None
                 if paper.get("doi"):
@@ -121,9 +122,8 @@ def discover():
         # persist seen progress after each query
         with open("seen_papers.json", "w", encoding="utf-8") as f:
             json.dump(sorted(seen), f, ensure_ascii=False, indent=2)
-        # if the whole 100-paper window yielded no new papers at all, skip
-        # this keyword and move on (all its results are already processed).
-        if not found_any_new:
+        # if no new paper was found in the whole window, skip this keyword
+        if new_count == 0:
             print(f"  !! no new papers in {scanned} scanned, skipping this keyword")
 
     with open("github_from_html.json", "w", encoding="utf-8") as f:
