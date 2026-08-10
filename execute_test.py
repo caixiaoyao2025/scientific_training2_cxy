@@ -617,6 +617,36 @@ def execute_test(repo_url: str, install_method: str = "",
             report["status"] = "failed"
             report["reason"] = "make build ok but no runnable binary smoke passed"
             return report
+        elif install_method == "npm":
+            # Node repo: npm install then smoke via bin/ from node_modules/.bin
+            rc_n, out_n, err_n = _run(
+                ["npm", "install", "--prefix", repo_dir], 1800)
+            report["install_evidence"] = (out_n + err_n)[-400:]
+            if rc_n != 0:
+                report["status"] = "failed"
+                report["reason"] = f"npm install failed (exit {rc_n}): {(out_n + err_n)[-200:]}"
+                return report
+            report["install_ok"] = True
+            nbin = os.path.join(repo_dir, "node_modules", ".bin")
+            # try the repo-name binary, else any binary that looks like the tool
+            exe_cand = [name]
+            if os.path.isdir(nbin):
+                installed_bins = [f for f in os.listdir(nbin) if not f.endswith((".cmd", ".ps1"))]
+                exe_cand += [b for b in installed_bins if name.lower() in b.lower() or b.lower() in name.lower()]
+            for cand in exe_cand:
+                exe = os.path.join(nbin, cand) if os.path.isdir(nbin) else ""
+                if os.path.exists(exe):
+                    rc_s, out_s, err_s = _run([exe, "--help"], RUN_TIMEOUT)
+                    if rc_s == 0 and (out_s.strip() or err_s.strip()):
+                        report["status"] = "passed"
+                        report["reason"] = f"`{exe} --help` -> exit 0"
+                        report["run_ok"] = True
+                        report["run_evidence"] = (out_s + err_s)[-400:]
+                        report["executable"] = cand
+                        return report
+            report["status"] = "failed"
+            report["reason"] = "npm install ok but no runnable binary smoke passed"
+            return report
         elif install_method == "docker":
             # build + smoke the container in this environment (docker present
             # on GH runners). If docker is unavailable, we fall back to

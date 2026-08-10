@@ -396,6 +396,10 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
             # C/C++ repo: make / cmake build
             res.install_method, res.install_cmd = "make", \
                 f"make -C {repo_url} && ./{res.repo_name}"
+        elif res.language == "Node":
+            # Node repo: npm install (may build native deps)
+            res.install_method, res.install_cmd = "npm", \
+                f"npm install --prefix {repo_url}"
         elif res.entry_scripts:
             # source-run style repo: has entry scripts but no dependency file.
             # Install method 'python_script' -> execute_test runs them directly.
