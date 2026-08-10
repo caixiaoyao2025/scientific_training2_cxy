@@ -139,6 +139,8 @@ def tool_to_registry_entry(tool, verification=None):
             "exec_params_schema": e.get("params_schema", []),
             "exec_installed_versions": e.get("installed_versions", []),
             "exec_executable": e.get("executable", ""),
+            "exec_retries": e.get("exec_retries", 0),
+            "exec_heal_evidence": e.get("heal_evidence", ""),
             "inputs_source": inputs_src,
         }
     }

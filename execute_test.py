@@ -444,6 +444,38 @@ def _clone(url: str, dest: str) -> tuple[int, str]:
     return _run(["git", "clone", "--depth", "1", url, dest], 120)
 
 
+def _self_heal_command(fail_output: str, known_candidates: list[str],
+                       bin_dir: str) -> tuple[str, str]:
+    """Wrapper self-heal: extract a better command from failure output.
+
+    Looks for `command not found: X` / `X: command not found` in the stderr and
+    matches X against the binaries actually installed in the venv bin dir.
+    Returns (new_command_name, evidence) or ("", "").
+    """
+    m = re.search(r"(?:command not found|not found|No such file or directory)[:\s]+([\w.\-]+)",
+                  fail_output, re.IGNORECASE)
+    if not m:
+        # format 2: `bash: pygenomeviz: command not found` (name BEFORE the marker)
+        m = re.search(r"(?:bash|sh|/bin/sh|zsh|fish)?\s*[:]?\s*([\w.\-]+):\s+(?:command not found|not found)\b",
+                      fail_output, re.IGNORECASE)
+    if not m:
+        return "", ""
+    guessed = m.group(1).strip()
+    # try to match the missing name against installed binaries (case/underscore-insensitive)
+    if os.path.isdir(bin_dir):
+        installed = os.listdir(bin_dir)
+        norm = lambda s: re.sub(r"[^a-z0-9]", "", s.lower())
+        target = norm(guessed)
+        for f in installed:
+            if norm(f) == target and f not in ("activate", "pip", "python", "wheel"):
+                return f, f"healed: {guessed} -> installed binary {f}"
+    # fall back: if the missing command matches a known candidate loosely
+    for c in known_candidates:
+        if norm(c) == target:
+            return c, f"healed: {guessed} -> known candidate {c}"
+    return "", ""
+
+
 def execute_test(repo_url: str, install_method: str = "",
                  install_cmd: str = "", entry_scripts: Optional[list[str]] = None,
                  repo_name: str = "") -> dict[str, Any]:
@@ -463,6 +495,8 @@ def execute_test(repo_url: str, install_method: str = "",
         "executable": "",
         "params_schema": [],
         "installed_versions": [],
+        "exec_retries": 0,
+        "heal_evidence": "",
         "checked_at": __import__("datetime").datetime.now().isoformat(),
     }
 
@@ -705,6 +739,32 @@ def execute_test(repo_url: str, install_method: str = "",
                 worst = "incomplete"
             elif cls_imp == "env_issue" and worst != "incomplete":
                 worst = "env_issue"
+
+        # 4c. wrapper self-heal: if all candidates failed, mine the failure
+        # output for the real command name and retry once (max 2 heal attempts).
+        retries_used = 0
+        heal_evidence = ""
+        while retries_used < 2:
+            combined = "\n".join(runs)
+            healed, evidence = _self_heal_command(combined, cands, bin_dir)
+            if not healed or healed in cands:
+                break
+            heal_evidence = evidence
+            cands.append(healed)
+            retries_used += 1
+            if _try([healed, sample]):
+                report["reason"] = f"{report['reason']} (self-heal: {heal_evidence})"
+                report["exec_retries"] = retries_used
+                report["heal_evidence"] = heal_evidence
+                return report
+            if _try([healed, "--help"]):
+                report["reason"] = f"{report['reason']} (self-heal: {heal_evidence})"
+                report["exec_retries"] = retries_used
+                report["heal_evidence"] = heal_evidence
+                return report
+        if heal_evidence:
+            report["heal_evidence"] = heal_evidence
+            report["exec_retries"] = retries_used
         report["status"] = worst
         report["reason"] = "; ".join(runs) if runs else "no runnable candidate"
         report["run_evidence"] = "no candidate exited 0 with output"
