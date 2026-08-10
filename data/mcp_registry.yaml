@@ -211,3 +211,79 @@ tools:
       type: string
       description: Input file path inside /data.
       source: placeholder
+- name: morphic-provenance
+  type: cli
+  command: morphic_provenance {{input_file}}
+  description: '[Auto-discovered] Chromap Suite: an open-source single-binary platform
+    for agentic multiomic RNA + ATAC profiling. (⭐0, ) (NO license - research use
+    only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+- name: kaptain
+  type: cli
+  command: kaptain {{input_file}}
+  description: '[Auto-discovered] Filtering for truth: high-precision taxonomic classification
+    in nanopore shotgun metagenomics data t (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    output:
+      type: string
+      description: / --subsampling 500M --fdr 5
+      source: help_parsed
+    db:
+      type: string
+      description: Basename of KMA database. Database exists of four
+      source: help_parsed
+    db_lookup:
+      type: string
+      description: CLI flag --db-lookup
+      source: help_parsed
+    dir_working:
+      type: string
+      description: CLI flag --dir-working
+      source: help_parsed
+    output_html:
+      type: string
+      description: CLI flag --output-html
+      source: help_parsed
+    subsampling:
+      type: string
+      description: '[{200M,500M,1000M,1500M,2000M,None} ...]'
+      source: help_parsed
+    fdr:
+      type: string
+      description: '[{15,10,5,1} ...]'
+      source: help_parsed
+    threads:
+      type: string
+      description: 'Number of threads (default: 4)'
+      source: help_parsed
+    version:
+      type: string
+      description: version and exit
+      source: help_parsed
+    log:
+      type: string
+      description: 'out log information to file (default: False)'
+      source: help_parsed
+- name: biopipelines
+  type: cli
+  command: biopipelines {{input_file}}
+  description: '[Auto-discovered] BioPipelines: Accessible Computational Protein and
+    Ligand Design for Chemical Biologists. (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
