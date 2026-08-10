@@ -420,13 +420,16 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         res.command, res.command_evidence = found_cmd, evidence
 
         # ---- grading ----
+        has_code = (res.entry_scripts or res.has_requirements or res.has_container
+                    or bool(res.language))
         if found_cmd:
             res.status = "verified"
             res.reason = f"command '{found_cmd}' invocable"
-        elif res.entry_scripts or res.has_license or res.has_requirements or res.has_container \
-                or res.language:
+        elif has_code:
             # a recognized language (Rust/Go/R/C/Node...) with its build file is
-            # a valid installable repo even without requirements.txt
+            # a valid installable repo even without requirements.txt. A repo with
+            # code but no LICENSE is still repo_ok (license is recorded, not
+            # required); a bare LICENSE with NO code signal is docs-only -> excluded.
             res.status = "repo_ok"
             res.reason = ("repo healthy (entry scripts: "
                           + (", ".join(res.entry_scripts) if res.entry_scripts else "none")
@@ -434,10 +437,11 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
                           + (", ".join(res.requirements_paths[:2]) if res.requirements_paths else "")
                           + (" docker" if res.has_container else "")
                           + (f" lang={res.language}" if res.language else "")
+                          + (" license" if res.has_license else " no-license")
                           + "); command not installed")
         else:
             res.status = "unverified"
-            res.reason = "no entry point / license / dependency files found"
+            res.reason = "no entry point / dependency / language signals (docs/data-only repo)"
         return res
     finally:
         if tmp and os.path.isdir(tmp) and not keep_dir:
