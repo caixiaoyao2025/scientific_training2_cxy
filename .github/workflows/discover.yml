@@ -21,6 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
           pip install --quiet requests beautifulsoup4 pyyaml
           sudo apt-get update -qq && sudo apt-get install -y -qq git >/dev/null 2>&1 || true
           pip install --quiet playwright
@@ -31,6 +32,14 @@ jobs:
           python-version: '3.11'
           auto-update-conda: true
           activate-environment: test
+          channels: conda-forge,bioconda,defaults
+
+      - name: Configure conda mirror
+        run: |
+          conda config --add channels conda-forge
+          conda config --add channels bioconda
+          conda config --set channel_priority strict
+          conda config --set show_channel_urls true
 
       - name: Discover tools (multi-keyword search)
         run: python multi_search.py

@@ -208,6 +208,10 @@ def _test_docker(repo_dir: str, name: str, timeout: int = 600) -> dict[str, Any]
         return report
     tag = f"disc_{re.sub(r'[^a-zA-Z0-9_.-]', '_', name).lower()[:40]}"
     rc, out, err = _run(["docker", "build", "-t", tag, repo_dir], timeout)
+    if rc == 124:
+        report["status"] = "timeout"
+        report["reason"] = f"docker build timed out after {timeout}s (image pull/build heavy)"
+        return report
     if rc != 0:
         report["status"] = "failed"
         report["reason"] = f"docker build failed (exit {rc}): {(out + err)[-200:]}"
@@ -243,22 +247,32 @@ def _test_conda(repo_dir: str, name: str, install_cmd: str,
         report["reason"] = "conda not installed in this environment"
         return report
     env_name = f"disc_{re.sub(r'[^a-zA-Z0-9_.-]', '_', name).lower()[:30]}"
+
+    def _create_result(rc: int, what: str, out: str, err: str) -> Optional[dict]:
+        if rc == 124:
+            return {"status": "timeout",
+                    "reason": f"{what} timed out after {timeout}s (heavy env init)"}
+        if rc != 0:
+            return {"status": "failed",
+                    "reason": f"{what} failed (exit {rc}): {(out + err)[-200:]}"}
+        return None
+
     # 1. create the env (from environment.yml if present)
     env_yml = os.path.join(repo_dir, "environment.yml")
     if os.path.exists(env_yml):
         rc, out, err = _run(
             ["conda", "env", "create", "-n", env_name, "-f", env_yml],
             timeout)
-        if rc != 0:
-            report["status"] = "failed"
-            report["reason"] = f"conda env create failed (exit {rc}): {(out + err)[-200:]}"
+        bad = _create_result(rc, "conda env create", out, err)
+        if bad:
+            report.update(bad)
             return report
     else:
         rc, out, err = _run(
             ["conda", "create", "-n", env_name, "-y", "python=3.11"], timeout)
-        if rc != 0:
-            report["status"] = "failed"
-            report["reason"] = f"conda create failed (exit {rc}): {(out + err)[-200:]}"
+        bad = _create_result(rc, "conda create", out, err)
+        if bad:
+            report.update(bad)
             return report
     # 2. install repo deps if a requirements.txt exists
     req = ""
@@ -269,8 +283,14 @@ def _test_conda(repo_dir: str, name: str, install_cmd: str,
                 if not req or p.count(os.sep) < req.count(os.sep):
                     req = p
     if req:
-        _run(["conda", "run", "-n", env_name, "pip", "install", "-q", "-r", req],
-             timeout)
+        rc_r, out_r, err_r = _run(
+            ["conda", "run", "-n", env_name, "pip", "install", "-q", "-r", req],
+            timeout)
+        if rc_r == 124:
+            report["status"] = "timeout"
+            report["reason"] = (f"conda env deps install timed out after {timeout}s "
+                                "(heavy env init)")
+            return report
     # 3. smoke: try python -c 'import <name>' inside the env
     import_name = re.sub(r"[^a-zA-Z0-9_]", "", name).lstrip("_")
     rc3, out3, err3 = _run(
@@ -519,6 +539,57 @@ def execute_test(repo_url: str, install_method: str = "",
         elif install_method == "conda_env":
             conda_report = _test_conda(repo_dir, name, install_cmd)
             report.update(conda_report)
+            return report
+        elif install_method == "cargo":
+            # Rust repo: cargo build into the venv's bin dir, smoke-run from there
+            rc_c, out_c, err_c = _run(
+                ["cargo", "build", "--release", "--manifest-path",
+                 os.path.join(repo_dir, "Cargo.toml")],
+                1800)
+            report["install_evidence"] = (out_c + err_c)[-400:]
+            if rc_c != 0:
+                report["status"] = "failed"
+                report["reason"] = f"cargo build failed (exit {rc_c}): {(out_c + err_c)[-200:]}"
+                return report
+            report["install_ok"] = True
+            # smoke via the built binary in target/release
+            built = os.path.join(repo_dir, "target", "release", name)
+            if os.path.exists(built):
+                rc_s, out_s, err_s = _run([built, "--help"], RUN_TIMEOUT)
+                if rc_s == 0 and (out_s.strip() or err_s.strip()):
+                    report["status"] = "passed"
+                    report["reason"] = f"`{built} --help` -> exit 0"
+                    report["run_ok"] = True
+                    report["run_evidence"] = (out_s + err_s)[-400:]
+                    report["executable"] = os.path.basename(built)
+                    return report
+            report["status"] = "failed"
+            report["reason"] = "cargo build ok but no runnable binary smoke passed"
+            return report
+        elif install_method == "go":
+            # Go repo: go build the main package, smoke-run the binary
+            rc_g, out_g, err_g = _run(
+                ["go", "build", "-o", os.path.join(workdir, safe_name + "_go"),
+                 "."],
+                1800, cwd=repo_dir)
+            report["install_evidence"] = (out_g + err_g)[-400:]
+            if rc_g != 0:
+                report["status"] = "failed"
+                report["reason"] = f"go build failed (exit {rc_g}): {(out_g + err_g)[-200:]}"
+                return report
+            report["install_ok"] = True
+            built = os.path.join(workdir, safe_name + "_go")
+            if os.path.exists(built):
+                rc_s, out_s, err_s = _run([built, "--help"], RUN_TIMEOUT)
+                if rc_s == 0 and (out_s.strip() or err_s.strip()):
+                    report["status"] = "passed"
+                    report["reason"] = f"`{built} --help` -> exit 0"
+                    report["run_ok"] = True
+                    report["run_evidence"] = (out_s + err_s)[-400:]
+                    report["executable"] = os.path.basename(built)
+                    return report
+            report["status"] = "failed"
+            report["reason"] = "go build ok but no runnable binary smoke passed"
             return report
         else:
             report["status"], report["reason"] = "not_tested", \
