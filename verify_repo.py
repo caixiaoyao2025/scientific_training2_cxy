@@ -32,7 +32,7 @@ from typing import Any, Optional
 CLONE_TIMEOUT = 90          # seconds; blobless clone of a small repo is fast
 CHECK_TIMEOUT = 30          # seconds per command probe
 REQUIREMENTS_FILES = ("requirements.txt", "requirements_full.txt",
-                      "environment.yml", "setup.py", "pyproject.toml")
+                      "environment.yml", "setup.py", "setup.cfg", "pyproject.toml")
 CONTAINER_FILES = ("Dockerfile", "docker-compose.yml", "docker-compose.yaml",
                    "containerfile", "environment.docker.yml")
 LICENSE_NAMES = ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING", "COPYING.md",
@@ -333,7 +333,7 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
 
         # language hint
         bases = set(f.split("/")[-1] for f in files)
-        if "setup.py" in bases or "pyproject.toml" in bases:
+        if "setup.py" in bases or "pyproject.toml" in bases or "setup.cfg" in bases:
             res.language = "Python"
         elif "Cargo.toml" in bases:
             res.language = "Rust"
@@ -365,7 +365,8 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         res.readme_hint = readme_hint
 
         # ---- install command (evidence-based) ----
-        if "setup.py" in res.requirements_paths or "pyproject.toml" in res.requirements_paths:
+        if any(p.split("/")[-1] in ("setup.py", "pyproject.toml", "setup.cfg")
+               for p in res.requirements_paths):
             res.install_method, res.install_cmd = "pip_pkg", f"pip install {repo_url}"
         elif any(p.endswith("environment.yml") for p in res.requirements_paths):
             # conda env file is NOT pip-installable (can live in a subfolder)
