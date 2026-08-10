@@ -257,9 +257,14 @@ def _test_conda(repo_dir: str, name: str, install_cmd: str,
                     "reason": f"{what} failed (exit {rc}): {(out + err)[-200:]}"}
         return None
 
-    # 1. create the env (from environment.yml if present)
-    env_yml = os.path.join(repo_dir, "environment.yml")
-    if os.path.exists(env_yml):
+    # 1. create the env (from environment.yml if present, at any depth)
+    env_yml = ""
+    for root, _dirs, files in os.walk(repo_dir):
+        if "environment.yml" in files:
+            p = os.path.join(root, "environment.yml")
+            if not env_yml or p.count(os.sep) < env_yml.count(os.sep):
+                env_yml = p
+    if env_yml:
         rc, out, err = _run(
             ["conda", "env", "create", "-n", env_name, "-f", env_yml],
             timeout)

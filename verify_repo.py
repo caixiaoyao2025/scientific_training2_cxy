@@ -367,10 +367,12 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         # ---- install command (evidence-based) ----
         if "setup.py" in res.requirements_paths or "pyproject.toml" in res.requirements_paths:
             res.install_method, res.install_cmd = "pip_pkg", f"pip install {repo_url}"
-        elif "environment.yml" in res.requirements_paths:
-            # conda env file is NOT pip-installable
+        elif any(p.endswith("environment.yml") for p in res.requirements_paths):
+            # conda env file is NOT pip-installable (can live in a subfolder)
+            env_yml = next((p for p in res.requirements_paths
+                            if p.endswith("environment.yml")), "environment.yml")
             res.install_method, res.install_cmd = (
-                "conda_env", f"conda env create -f environment.yml")
+                "conda_env", f"conda env create -f {env_yml}")
         elif res.has_container:
             # docker-based repo: only deployable via container image
             res.install_method, res.install_cmd = "docker", \
