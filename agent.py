@@ -316,7 +316,7 @@ def normalize_github_url(link):
     """Clean a raw github link into owner/repo form (https://github.com/owner/repo).
 
     Strips trailing quotes/punctuation, .git suffix, anchors, query strings,
-    and non-repo paths (blob/tree/wiki/releases/etc).
+    percent-encoding (%20 -> space), and non-repo paths (blob/tree/wiki/etc).
     """
     if not link:
         return ""
@@ -334,9 +334,17 @@ def normalize_github_url(link):
         if len(segs) < 2:
             return ""
         owner, repo = segs[0], segs[1]
+        # percent-encoded characters in a repo name indicate the URL ran into
+        # trailing text (e.g. ".../cmdbench https://..."). Decode then reject
+        # any repo that still contains a space or % -- it isn't a real repo.
+        import urllib.parse
+        owner = urllib.parse.unquote(owner)
+        repo = urllib.parse.unquote(repo)
         repo = repo.removesuffix(".git")
         repo = repo.rstrip(".,;:)\"'")
         if not owner or not repo:
+            return ""
+        if any(c.isspace() for c in (owner + repo)) or "%" in repo:
             return ""
         return f"https://github.com/{owner}/{repo}"
     except Exception:

@@ -33,9 +33,14 @@ def normalize_github_url(link):
         if len(segs) < 2:
             return ""
         owner, repo = segs[0], segs[1]
+        import urllib.parse
+        owner = urllib.parse.unquote(owner)
+        repo = urllib.parse.unquote(repo)
         repo = repo.removesuffix(".git")
         repo = repo.rstrip(".,;:)\"'")
         if not owner or not repo:
+            return ""
+        if any(c.isspace() for c in (owner + repo)) or "%" in repo:
             return ""
         return f"https://github.com/{owner}/{repo}"
     except Exception:
