@@ -31,14 +31,15 @@ KEYWORDS = [
     "proteomics data analysis",
 ]
 
+# One query per keyword, so every keyword gets searched exactly once.
 QUERIES = [
     f"({kw}) AND (software OR tool OR pipeline) AND (code OR github OR repository)"
     for kw in KEYWORDS
-] + [f"{kw} bioinformatics" for kw in KEYWORDS]
+]
 
 MAX_PER_QUERY = 10
 PAPER_TIMEOUT = 30
-MAX_QUERIES = 10
+MAX_QUERIES = len(QUERIES)
 
 
 def _fetch_with_timeout(doi, timeout=PAPER_TIMEOUT):
