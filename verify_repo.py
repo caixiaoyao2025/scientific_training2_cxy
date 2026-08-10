@@ -422,13 +422,17 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         if found_cmd:
             res.status = "verified"
             res.reason = f"command '{found_cmd}' invocable"
-        elif res.entry_scripts or res.has_license or res.has_requirements or res.has_container:
+        elif res.entry_scripts or res.has_license or res.has_requirements or res.has_container \
+                or res.language:
+            # a recognized language (Rust/Go/R/C/Node...) with its build file is
+            # a valid installable repo even without requirements.txt
             res.status = "repo_ok"
             res.reason = ("repo healthy (entry scripts: "
                           + (", ".join(res.entry_scripts) if res.entry_scripts else "none")
                           + "; deps: "
                           + (", ".join(res.requirements_paths[:2]) if res.requirements_paths else "")
                           + (" docker" if res.has_container else "")
+                          + (f" lang={res.language}" if res.language else "")
                           + "); command not installed")
         else:
             res.status = "unverified"
