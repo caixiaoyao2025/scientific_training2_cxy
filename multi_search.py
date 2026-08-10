@@ -65,15 +65,22 @@ def discover():
 
     results = []
     used_keys = set()
+    MAX_TOTAL_PER_QUERY = 100  # stop paging a keyword once this many papers scanned
     for qi, query in enumerate(QUERIES[:MAX_QUERIES]):
         print(f"\n=== query {qi + 1}: {query[:70]}")
         start = 0
-        while start < 200:
+        scanned = 0
+        found_any_new = False
+        while start < 200 and scanned < MAX_TOTAL_PER_QUERY:
             page = search_papers(query, max_results=MAX_PER_QUERY, retstart=start)
             if not page:
                 break
             fresh = [p for p in page if (p.get("pmid") or p.get("doi")) not in seen]
-            print(f"  batch@{start}: {len(page)} papers, {len(fresh)} new")
+            if fresh:
+                found_any_new = True
+            scanned += len(page)
+            print(f"  batch@{start}: {len(page)} papers, {len(fresh)} new "
+                  f"(scanned {scanned}/{MAX_TOTAL_PER_QUERY})")
             for paper in fresh:
                 paper_id = paper.get("pmid") or paper.get("doi")
                 if paper_id and paper_id in used_keys:
@@ -114,6 +121,10 @@ def discover():
         # persist seen progress after each query
         with open("seen_papers.json", "w", encoding="utf-8") as f:
             json.dump(sorted(seen), f, ensure_ascii=False, indent=2)
+        # if the whole 100-paper window yielded no new papers at all, skip
+        # this keyword and move on (all its results are already processed).
+        if not found_any_new:
+            print(f"  !! no new papers in {scanned} scanned, skipping this keyword")
 
     with open("github_from_html.json", "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
