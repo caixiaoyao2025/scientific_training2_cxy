@@ -23,8 +23,12 @@ import tempfile
 import urllib.parse
 from typing import Any, Optional
 
-INSTALL_TIMEOUT = 300          # seconds per pip install
+INSTALL_TIMEOUT = 300          # seconds per pip install (default)
+INSTALL_TIMEOUT_ML = 1800      # heavy ML deps (torch/tf/jax/cuda) need longer
 RUN_TIMEOUT = 60               # seconds per smoke run
+HEAVY_DEPS = ("torch", "tensorflow", "torchvision", "torchaudio", "jax",
+              "cuda", "cupy", "paddle", "onnxruntime-gpu", "triton",
+              "pytorch", "transformers", "diffusers", "esm")
 SAMPLE_FASTA = """>seq1\nACGTACGTACGT\n>seq2\nTTTTTTGGGGGG\n>seq3\nCCCGGGAAATTT\n"""
 
 
@@ -77,6 +81,22 @@ def _classify_failure(output: str) -> str:
         if pat in low:
             return "incomplete"
     return "failed"
+
+
+def _detect_heavy_deps(repo_dir: str) -> bool:
+    """True if the repo declares heavy ML deps that need a long install window."""
+    texts = []
+    for fname in ("requirements.txt", "pyproject.toml", "setup.py", "setup.cfg",
+                  "environment.yml"):
+        p = os.path.join(repo_dir, fname)
+        if os.path.exists(p):
+            try:
+                texts.append(open(p, "r", encoding="utf-8",
+                                  errors="replace").read().lower())
+            except OSError:
+                pass
+    blob = "\n".join(texts)
+    return any(d in blob for d in HEAVY_DEPS)
 
 
 def _parse_help_params(help_output: str) -> list[dict[str, str]]:
@@ -352,6 +372,12 @@ def execute_test(repo_url: str, install_method: str = "",
                 _run([venv_py, "-m", "pip", "install", "-q", "-r", req],
                      INSTALL_TIMEOUT)
             args = [venv_py, "-c", "import sys; sys.exit(0)"]  # no-op install
+        elif install_method == "docker":
+            # container build + run is too heavy for a smoke test: skip, but
+            # record it as a *known install path* instead of "no install command".
+            report["status"], report["reason"] = "skipped", \
+                "docker build/run too heavy for smoke test; dockerfile detected"
+            return report
         elif install_method == "conda_env":
             report["status"], report["reason"] = "skipped", \
                 "conda env install too heavy for smoke test"
@@ -361,8 +387,20 @@ def execute_test(repo_url: str, install_method: str = "",
                 f"install method '{install_method}' not supported in smoke test"
             return report
 
-        rc, out, err = _run(args, INSTALL_TIMEOUT)
+        # tiered install timeout: heavy ML deps (torch/tf/jax) need far longer
+        install_timeout = INSTALL_TIMEOUT_ML if _detect_heavy_deps(repo_dir) \
+            else INSTALL_TIMEOUT
+        rc, out, err = _run(args, install_timeout)
         report["install_evidence"] = (out + err)[-400:]
+        if rc == 124:
+            # install timed out - this is NOT "tool is broken". It means the
+            # environment init (torch download etc.) exceeded our window.
+            report["status"] = "timeout"
+            report["reason"] = ("execution deferred: dependency install timed out "
+                                f"after {install_timeout}s (heavy env init, e.g. ML "
+                                "deps); not a code failure")
+            report["install_evidence"] = (out + err)[-400:]
+            return report
         if rc != 0:
             cls = _classify_failure((out + err)[-1200:])
             report["status"] = cls if cls != "failed" else "failed"
@@ -493,9 +531,11 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
     n_inc = sum(1 for r in results if r.get("status") == "incomplete")
     n_fail = sum(1 for r in results if r.get("status") == "failed")
     n_skip = sum(1 for r in results if r.get("status") == "skipped")
+    n_time = sum(1 for r in results if r.get("status") == "timeout")
     print(f"\nSaved execution report -> {out_json}")
     print(f"passed: {n_pass} | env_issue: {n_env} | incomplete: {n_inc} "
-          f"| failed: {n_fail} | skipped: {n_skip}  (total {len(results)})")
+          f"| failed: {n_fail} | timeout: {n_time} | skipped: {n_skip}  "
+          f"(total {len(results)})")
     return results
 
 

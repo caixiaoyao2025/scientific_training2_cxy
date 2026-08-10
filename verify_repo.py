@@ -33,6 +33,8 @@ CLONE_TIMEOUT = 90          # seconds; blobless clone of a small repo is fast
 CHECK_TIMEOUT = 30          # seconds per command probe
 REQUIREMENTS_FILES = ("requirements.txt", "requirements_full.txt",
                       "environment.yml", "setup.py", "pyproject.toml")
+CONTAINER_FILES = ("Dockerfile", "docker-compose.yml", "docker-compose.yaml",
+                   "containerfile", "environment.docker.yml")
 LICENSE_NAMES = ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING", "COPYING.md",
                  "LICENSE.rst", "LICENSES/")
 ENTRY_HINTS = ("predict.py", "main.py", "cli.py", "__main__.py", "run.sh",
@@ -52,6 +54,10 @@ class VerifyResult:
     language: str = ""
     has_requirements: bool = False
     requirements_paths: list = field(default_factory=list)
+    has_container: bool = False
+    container_files: list = field(default_factory=list)
+    readme_hint: str = ""       # conda | docker | "" (from README text)
+    external_commands: list = field(default_factory=list)  # system deps
     has_license: bool = False
     license_path: str = ""
     license_text_snippet: str = ""
@@ -72,6 +78,9 @@ class VerifyResult:
             "language": self.language,
             "has_requirements": self.has_requirements,
             "requirements_paths": self.requirements_paths,
+            "has_container": self.has_container,
+            "container_files": self.container_files,
+            "readme_hint": self.readme_hint,
             "has_license": self.has_license,
             "license_path": self.license_path,
             "license_text_snippet": self.license_text_snippet,
@@ -165,6 +174,86 @@ def _find_entry_scripts(files: list[str]) -> list[str]:
     return out[:10]
 
 
+def _scan_external_commands(repo: "BloblessRepo", files: list[str],
+                            max_files: int = 60) -> list[str]:
+    """Environment grounding: find external system commands a repo invokes.
+
+    Scans Python sources with AST for subprocess.run/call/Popen, os.system,
+    os.popen and shutil.which first-string-argument calls, plus common `sys`
+    pattern. These are commands (samtools, blastn, gmx, ...) that must exist on
+    the SYSTEM, not in the venv -- exactly the deps the smoke test can't
+    provide. Only the first string-literal argument is captured.
+    """
+    import ast
+    cmds: set[str] = set()
+    py_files = [f for f in files if f.endswith(".py") and f.count("/") <= 3
+                and not f.startswith("test") and "/test" not in f
+                and "/example" not in f and "/benchmark" not in f]
+    py_files = py_files[:max_files]
+    for f in py_files:
+        src = repo.show(f)
+        if not src or len(src) > 400_000:
+            continue
+        src = src.lstrip("\ufeff")  # strip BOM so ast.parse doesn't fail
+        try:
+            tree = ast.parse(src)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                fname = node.func.attr
+                if fname in ("run", "call", "Popen", "check_call", "check_output"):
+                    # subprocess.run(["cmd", ...]) or subprocess.run("cmd ...")
+                    arg = node.args[0] if node.args else None
+                    cmd = _first_cmd_literal(arg)
+                    if cmd:
+                        cmds.add(cmd)
+                elif fname in ("system", "popen") and isinstance(node.func.value, ast.Name) \
+                        and node.func.value.id == "os":
+                    cmd = _first_cmd_literal(node.args[0] if node.args else None)
+                    if cmd:
+                        cmds.add(cmd)
+                elif fname == "which" and isinstance(node.func.value, ast.Name) \
+                        and node.func.value.id == "shutil":
+                    cmd = _first_cmd_literal(node.args[0] if node.args else None)
+                    if cmd:
+                        cmds.add(cmd)
+    # drop shell-ish / non-command tokens, keep only plausible executables
+    out = []
+    for c in sorted(cmds):
+        c = c.strip().strip("'\"")
+        if not c or not re.match(r"^[a-zA-Z0-9_.+\-/]+$", c):
+            continue
+        if c in ("ls", "cat", "echo", "mkdir", "rm", "cp", "mv", "grep",
+                 "sed", "awk", "head", "tail", "sort", "wc", "find", "python",
+                 "python3", "bash", "sh", "cd", "export", "source", "true",
+                 "false", "pwd", "touch", "chmod", "chown", "sleep", "date",
+                 "uname", "which", "env", "tee", "printf", "cut", "tr", "uniq"):
+            continue
+        if c.startswith(("-", "~", "/usr", "/bin", "/etc", "{")) or " " in c:
+            continue
+        out.append(c)
+    return out[:30]
+
+
+def _first_cmd_literal(arg) -> str:
+    """Extract the executable name from subprocess's first arg (string or list)."""
+    import ast as _ast
+    if arg is None:
+        return ""
+    if isinstance(arg, _ast.Constant) and isinstance(arg.value, str):
+        return arg.value.split()[0] if arg.value.strip() else ""
+    if isinstance(arg, _ast.List):
+        first = arg.elts[0] if arg.elts else None
+        if isinstance(first, _ast.Constant) and isinstance(first.value, str):
+            return first.value
+    if isinstance(arg, _ast.JoinedStr):
+        parts = [p for p in arg.values if isinstance(p, _ast.Constant)]
+        if parts:
+            return str(parts[0].value).split()[0]
+    return ""
+
+
 def _command_candidates(repo_name: str, files: list[str], entry_scripts: list[str]) -> list[str]:
     cands: list[str] = []
     stem = re.sub(r"[^a-zA-Z0-9_]", "_", repo_name).lower().strip("_")
@@ -232,6 +321,11 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         # ---- structural evidence ----
         res.requirements_paths = _find_requirements(files)
         res.has_requirements = bool(res.requirements_paths)
+        res.has_container = bool(res.container_files)
+        res.container_files = [f for f in files
+                               if f.split("/")[-1] in CONTAINER_FILES
+                               and f.count("/") <= 1]
+        res.has_container = bool(res.container_files)
         res.has_license, res.license_path = _find_license(files)
         if res.has_license:
             res.license_text_snippet = repo.show(res.license_path).strip().replace("\n", " ")[:120]
@@ -248,6 +342,23 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         elif "package.json" in bases:
             res.language = "Node"
 
+        # ---- README install hint (conda/docker text, no dep file needed) ----
+        # Many paper repos document `conda create ... && python script.py` or
+        # `docker run ...` in the README with no requirements/env file. Catch
+        # that so those repos aren't misclassified as "no install command".
+        readme_hint = ""
+        for f in files:
+            base = f.split("/")[-1].lower()
+            if base.startswith(("readme", "installation", "quickstart", "usage")):
+                text = repo.show(f).lower()
+                if "conda " in text or "conda install" in text or "conda create" in text:
+                    readme_hint = "conda"
+                elif "docker run" in text or "docker build" in text:
+                    readme_hint = readme_hint or "docker"
+                if readme_hint:
+                    break
+        res.readme_hint = readme_hint
+
         # ---- install command (evidence-based) ----
         if "setup.py" in res.requirements_paths or "pyproject.toml" in res.requirements_paths:
             res.install_method, res.install_cmd = "pip_pkg", f"pip install {repo_url}"
@@ -255,6 +366,16 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
             # conda env file is NOT pip-installable
             res.install_method, res.install_cmd = (
                 "conda_env", f"conda env create -f environment.yml")
+        elif res.has_container:
+            # docker-based repo: only deployable via container image
+            res.install_method, res.install_cmd = "docker", \
+                f"docker build -t {res.repo_name} . && docker run {res.repo_name}"
+        elif readme_hint == "docker":
+            res.install_method, res.install_cmd = "docker", \
+                "docker build (per README) && docker run"
+        elif readme_hint == "conda":
+            res.install_method, res.install_cmd = "conda_env", \
+                "conda env create (per README), then python entry script"
         elif res.requirements_paths:
             res.install_method, res.install_cmd = (
                 "pip_requirements", f"pip install -r {res.requirements_paths[0]}")
@@ -282,10 +403,13 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         if found_cmd:
             res.status = "verified"
             res.reason = f"command '{found_cmd}' invocable"
-        elif res.entry_scripts or res.has_license or res.has_requirements:
+        elif res.entry_scripts or res.has_license or res.has_requirements or res.has_container:
             res.status = "repo_ok"
             res.reason = ("repo healthy (entry scripts: "
                           + (", ".join(res.entry_scripts) if res.entry_scripts else "none")
+                          + "; deps: "
+                          + (", ".join(res.requirements_paths[:2]) if res.requirements_paths else "")
+                          + (" docker" if res.has_container else "")
                           + "); command not installed")
         else:
             res.status = "unverified"

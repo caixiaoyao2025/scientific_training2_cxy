@@ -124,6 +124,13 @@ def tool_to_registry_entry(tool, verification=None):
             "verified_license_path": v.get("license_path", ""),
             "verified_entry_scripts": v.get("entry_scripts", []),
             "verified_checked_at": v.get("checked_at", ""),
+            # --- environment grounding (system deps the venv can't provide) ---
+            "dependencies": {
+                "system_commands": v.get("external_commands", []),
+                "readme_hint": v.get("readme_hint", ""),
+                "container_files": v.get("container_files", []),
+                "install_method": install_method,
+            },
             # --- execution evidence (from execute_test.py, step 3.6) ---
             "exec_status": e.get("status", ""),
             "exec_reason": e.get("reason", ""),
