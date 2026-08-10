@@ -1,121 +1,9 @@
 tools:
-- name: cooltools
+- name: silent_tools
   type: cli
-  command: cooltools {{input_file}}
-  description: '[Auto-discovered] The tools for your .cool''s (⭐168, Jupyter Notebook)
-    (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    verbose:
-      type: string
-      description: logging
-      source: help_parsed
-    debug:
-      type: string
-      description: mortem debugging
-      source: help_parsed
-    version:
-      type: string
-      description: the version and exit.
-      source: help_parsed
-  _discovery_metadata:
-    github: https://github.com/open2c/cooltools
-    stars: 168
-    language: Jupyter Notebook
-    tags:
-    - software
-    - genome
-    - cooltools
-    quality_score: 55
-    paper_doi: 10.1186/s13059-026-03938-x
-    paper_title: Harmonizing single-cell 3D genome data with STARK and scNucleome.
-    install_method: pip_pkg
-    install_url: pip install https://github.com/open2c/cooltools
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: cooltools/__main__.py; deps: pyproject.toml,
-      requirements.txt); command not installed'
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_entry_scripts:
-    - cooltools/__main__.py
-    verified_checked_at: '2026-08-10T10:55:52.979719'
-    dependencies:
-      system_commands: []
-      readme_hint: ''
-      container_files: []
-      install_method: pip_pkg
-    exec_status: passed
-    exec_reason: '`/tmp/execute_w_d0v7wp/venv/bin/cooltools --help` -> exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "e diamond insulation scores and call...\n  pileup        \
-      \  Perform retrieval of the snippets from .cool file.\n  random-sample   Pick\
-      \ a random sample of contacts from a Hi-C map.\n  rearrange       Rearrange\
-      \ data from a cooler according to a new genomic...\n  saddle          Calculate\
-      \ saddle statistics and generate saddle plots...\n  virtual4c       Generate\
-      \ virtual 4C profile from a contact map by...\n"
-    exec_params_schema:
-    - name: --verbose
-      type: string
-      description: logging
-    - name: --debug
-      type: string
-      description: mortem debugging
-    - name: --version
-      type: string
-      description: the version and exit.
-    exec_installed_versions:
-    - asciitree==0.3.3
-    - bioframe==0.8.0
-    - certifi==2026.7.22
-    - charset-normalizer==3.4.9
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cooler==0.10.4
-    - cooltools @ file:///tmp/execute_w_d0v7wp/cooltools
-    - cycler==0.12.1
-    - Cython==3.2.9
-    - cytoolz==1.1.0
-    - dill==0.4.1
-    - fonttools==4.63.0
-    - h5py==3.16.0
-    - idna==3.18
-    - ImageIO==2.37.4
-    - joblib==1.5.3
-    - kiwisolver==1.5.0
-    - lazy-loader==0.5
-    - llvmlite==0.48.0
-    - matplotlib==3.11.1
-    - multiprocess==0.70.19
-    - narwhals==2.24.0
-    - networkx==3.6.1
-    - numba==0.66.0
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - pillow==12.3.0
-    - pyfaidx==0.9.0.4
-    - pyparsing==3.3.2
-    - python-dateutil==2.9.0.post0
-    - PyYAML==6.0.3
-    - requests==2.34.2
-    - scikit-image==0.26.0
-    - scikit-learn==1.9.0
-    - scipy==1.17.1
-    - simplejson==4.1.1
-    - six==1.17.0
-    - threadpoolctl==3.6.0
-    - tifffile==2026.3.3
-    - toolz==1.1.0
-    - urllib3==2.7.0
-    exec_executable: cooltools
-    inputs_source: help_parsed
-- name: openfold-3
-  type: cli
-  command: openfold_3 {{input_file}}
-  description: '[Auto-discovered] A fully open source biomolecular structure prediction
-    model based on AlphaFold3 (⭐816, Python) (license: LICENSE)'
+  command: silent_tools {{input_file}}
+  description: '[Auto-discovered] A bunch of shell utilities for dealing the silent
+    files (⭐80, Python) (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
@@ -125,124 +13,154 @@ tools:
       description: Input file path inside /data.
       source: placeholder
   _discovery_metadata:
-    github: https://github.com/aqlaboratory/openfold-3
-    stars: 816
+    github: https://github.com/bcov77/silent_tools
+    stars: 80
     language: Python
     tags:
-    - molecular
-    - openfold
+    - tools
+    - protein
+    - design
     - software
-    - structure
+    - silent
     quality_score: 55
-    paper_doi: 10.1021/acs.jcim.5c03137
-    paper_title: The Open Molecular Software Foundation (OMSF) and the Growing Role
-      of Open Source Software in Molecu
+    paper_doi: 10.1002/pro.70464
+    paper_title: 'ProteinDJ: A high-performance and modular protein design pipeline.'
     install_method: pip_pkg
-    install_url: pip install https://github.com/aqlaboratory/openfold-3
+    install_url: pip install https://github.com/bcov77/silent_tools
     verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml, docs/environment.yml);
-      command not installed'
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
+      license); command not installed'
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-10T10:55:53.718945'
+    verified_checked_at: '2026-08-10T12:10:10.247649'
     dependencies:
       system_commands: []
-      readme_hint: conda
+      readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_v9ejwpu9/venv/bin/run_openfold --help` -> exit 0'
+    exec_reason: '`python -c ''import silent_tools''` -> exit 0'
     exec_install_evidence: ''
-    exec_run_evidence: "Usage: run_openfold [OPTIONS] COMMAND [ARGS]...\n\nOptions:\n\
-      \  --help  Show this message and exit.\n\nCommands:\n  align-msa-server  Run\
-      \ MSA server alignment only with ColabFold MSA server.\n  predict          \
-      \ Perform inference on a set of queries defined in the...\n  train         \
-      \    Perform a training experiment with a preprepared...\n"
+    exec_run_evidence: 'IMPORT_OK silent_tools
+
+      '
     exec_params_schema: []
     exec_installed_versions:
-    - absl-py==2.5.0
-    - aiohappyeyeballs==2.7.1
-    - aiohttp==3.14.3
-    - aiosignal==1.4.0
-    - annotated-types==0.8.0
-    - attrs==26.1.0
-    - awscli==1.46.0
-    - awscrt==0.36.1
-    - biotite==1.6.0
-    - biotraj==1.2.2
-    - boto3==1.43.67
-    - botocore==1.43.67
-    - certifi==2026.7.22
-    - charset-normalizer==3.4.9
-    - click==8.4.2
-    - colorama==0.4.6
-    - cuda-bindings==13.3.1
-    - cuda-pathfinder==1.6.0
-    - cuda-toolkit==13.0.3.0
-    - docutils==0.19
-    - filelock==3.32.2
-    - frozenlist==1.8.0
-    - fsspec==2026.7.0
-    - func_timeout==4.3.5
-    - gemmi==0.7.5
-    - idna==3.18
-    - ijson==3.5.1
-    - Jinja2==3.1.6
-    - jmespath==1.1.0
-    - kalign-python==3.6.0
-    - lightning-utilities==0.15.3
-    - lmdb==2.3.0
-    - MarkupSafe==3.0.3
-    - memory-profiler==0.61.0
-    - ml_collections==1.1.0
-    - mpmath==1.3.0
-    - msgpack==1.2.1
-    - multidict==6.7.1
-    - networkx==3.6.1
     - numpy==2.4.6
-    - nvidia-cublas==13.1.1.3
-    - nvidia-cuda-cupti==13.0.85
-    - nvidia-cuda-nvrtc==13.0.88
-    - nvidia-cuda-runtime==13.0.96
-    - nvidia-cudnn-cu13==9.20.0.48
-    - nvidia-cufft==12.0.0.61
-    - nvidia-cufile==1.15.1.6
-    - nvidia-curand==10.4.0.35
-    - nvidia-cusolver==12.0.4.66
-    - nvidia-cusparse==12.6.3.3
-    - nvidia-cusparselt-cu13==0.8.1
-    - nvidia-nccl-cu13==2.29.7
-    - nvidia-nvjitlink==13.3.33
-    - nvidia-nvshmem-cu13==3.4.5
-    - nvidia-nvtx==13.0.85
-    - openfold3 @ file:///tmp/execute_v9ejwpu9/openfold-3
     - packaging==26.3
-    - pandas==3.0.5
-    - pdbeccdutils==1.0.4
-    - pillow==12.3.0
-    - platformdirs==4.11.1
-    - propcache==0.5.2
-    - protobuf==7.35.1
-    - psutil==7.2.2
-    - pyasn1==0.6.4
-    - pydantic==2.13.4
-    - pydantic_core==2.46.4
-    - python-dateutil==2.9.0.post0
-    - pytorch-lightning==2.6.5
-    - PyYAML==6.0.3
-    - rdkit==2025.9.6
-    - requests==2.34.2
-    - rsa==4.7.2
-    - s3transfer==0.19.2
-    - scipy==1.17.1
-    - sentry-sdk==2.66.1
-    - six==1.17.0
-    - sympy==1.14.0
-    - torch==2.13.0
-    - torchmetrics==1.9.0
-    exec_executable: run_openfold
+    - silent_tools @ file:///tmp/execute_opdt0vkj/silent_tools
+    exec_executable: silent_tools
+    exec_retries: 0
+    exec_heal_evidence: ''
     inputs_source: placeholder
+- name: haddock3
+  type: cli
+  command: haddock3 {{input_file}}
+  description: '[Auto-discovered] Official repo of the modular BioExcel version of
+    HADDOCK (⭐261, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    restart:
+      type: string
+      description: Restart the run from a given step. Previous folders
+      source: help_parsed
+    extend_run:
+      type: string
+      description: CLI flag --extend-run
+      source: help_parsed
+    setup:
+      type: string
+      description: setup the run, do not execute
+      source: help_parsed
+    log_level:
+      type: string
+      description: CLI flag --log-level
+      source: help_parsed
+    version:
+      type: string
+      description: version
+      source: help_parsed
+  _discovery_metadata:
+    github: https://github.com/haddocking/haddock3
+    stars: 261
+    language: Python
+    tags:
+    - sequence
+    - software
+    - haddock
+    quality_score: 55
+    paper_doi: 10.1093/bioinformatics/btae583
+    paper_title: Towards the accurate modelling of antibody-antigen complexes from
+      sequence using machine learning an
+    install_method: pip_pkg
+    install_url: pip install https://github.com/haddocking/haddock3
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml, setup.py
+      docker lang=Python license); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-10T12:10:19.512292'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files:
+      - Dockerfile
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_ibgzumv5/venv/bin/haddock3 --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: " be deleted.\n  --extend-run EXTEND_RUN\n                \
+      \        Start a run from a run directory previously prepared\n            \
+      \            with the `haddock3-copy` CLI. Provide the run\n               \
+      \         directory created with `haddock3-copy` CLI.\n  --setup           \
+      \    Only setup the run, do not execute\n  --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}\n\
+      \  -v, --version         show version\n"
+    exec_params_schema:
+    - name: --restart
+      type: string
+      description: Restart the run from a given step. Previous folders
+    - name: --extend-run
+      type: string
+      description: CLI flag --extend-run
+    - name: --setup
+      type: string
+      description: setup the run, do not execute
+    - name: --log-level
+      type: string
+      description: CLI flag --log-level
+    - name: --version
+      type: string
+      description: version
+    exec_installed_versions:
+    - biopython==1.88
+    - freesasa==2.2.1
+    - gdock==0.5.0
+    - haddock3 @ file:///tmp/execute_ibgzumv5/haddock3
+    - jsonpickle==4.1.2
+    - narwhals==2.24.0
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==2.3.3
+    - pdb-tools==2.7.0
+    - plotly==6.9.0
+    - prodigy-lig==1.1.4
+    - prodigy-prot==2.3.0
+    - psutil==7.2.2
+    - python-dateutil==2.9.0.post0
+    - pytz==2026.3.post1
+    - PyYAML==6.0.3
+    - scipy==1.17.1
+    - six==1.17.0
+    - toml==0.10.2
+    - tzdata==2026.3
+    exec_executable: haddock3
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: help_parsed
 - name: ncbi-genome-download
   type: cli
   command: ncbi_genome_download {{input_file}}
@@ -309,31 +227,31 @@ tools:
     stars: 1082
     language: Python
     tags:
-    - download
     - web_server
     - genome
+    - download
     - ncbi
     quality_score: 55
-    paper_doi: 10.1128/mbio.03396-25
-    paper_title: Linking the epidemiology of coccidioidomycosis and environmental
-      exposure through targeted genomic e
+    paper_doi: 10.1128/mSystems.00190-20
+    paper_title: 'Bactopia: a Flexible Pipeline for Complete Analysis of Bacterial
+      Genomes.'
     install_method: pip_pkg
     install_url: pip install https://github.com/kblin/ncbi-genome-download
     verified_status: repo_ok
     verified_reason: 'repo healthy (entry scripts: ncbi_genome_download/__main__.py;
-      deps: requirements.txt, setup.py); command not installed'
+      deps: requirements.txt, setup.cfg lang=Python license); command not installed'
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts:
     - ncbi_genome_download/__main__.py
-    verified_checked_at: '2026-08-10T10:55:54.648439'
+    verified_checked_at: '2026-08-10T12:10:37.260624'
     dependencies:
       system_commands: []
       readme_hint: conda
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_nlc3k75p/venv/bin/ncbi-genome-download --help` ->
+    exec_reason: '`/tmp/execute_eyf631et/venv/bin/ncbi-genome-download --help` ->
       exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "             comma-separated list of relatons. For example:\n\
@@ -387,243 +305,20 @@ tools:
     - certifi==2026.7.22
     - charset-normalizer==3.4.9
     - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_nlc3k75p/ncbi-genome-download
+    - ncbi-genome-download @ file:///tmp/execute_eyf631et/ncbi-genome-download
     - packaging==26.3
     - requests==2.34.2
     - tqdm==4.70.0
     - urllib3==2.7.0
     exec_executable: ncbi-genome-download
+    exec_retries: 0
+    exec_heal_evidence: ''
     inputs_source: help_parsed
-- name: cwltool
+- name: vairo
   type: cli
-  command: cwltool {{input_file}}
-  description: '[Auto-discovered] Common Workflow Language reference implementation
-    (⭐376, Python) (license: LICENSE.txt)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    basedir:
-      type: string
-      description: CLI flag --basedir
-      source: help_parsed
-    outdir:
-      type: string
-      description: Output directory. The default is the current
-      source: help_parsed
-    parallel:
-      type: string
-      description: jobs in parallel.
-      source: help_parsed
-    parallel_max:
-      type: string
-      description: CLI flag --parallel-max
-      source: help_parsed
-    skip_schemas:
-      type: string
-      description: loading of schemas
-      source: help_parsed
-    enable_dev:
-      type: string
-      description: loading and running unofficial development
-      source: help_parsed
-    enable_ext:
-      type: string
-      description: loading and running `cwltool:` extensions to
-      source: help_parsed
-    on_error:
-      type: string
-      description: CLI flag --on-error
-      source: help_parsed
-    relax_path_checks:
-      type: string
-      description: requirements on path names to permit spaces and
-      source: help_parsed
-    overrides:
-      type: string
-      description: CLI flag --overrides
-      source: help_parsed
-    mpi_config_file:
-      type: string
-      description: CLI flag --mpi-config-file
-      source: help_parsed
-    strict:
-      type: string
-      description: validation (unrecognized or out of place fields
-      source: help_parsed
-    non_strict:
-      type: string
-      description: validation (ignore unrecognized fields)
-      source: help_parsed
-    no_doc_cache:
-      type: string
-      description: disk cache for documents loaded over HTTP
-      source: help_parsed
-    doc_cache:
-      type: string
-      description: disk cache for documents loaded over HTTP
-      source: help_parsed
-    enable_color:
-      type: string
-      description: logging color (default enabled)
-      source: help_parsed
-    disable_color:
-      type: string
-      description: colored logging (default false)
-      source: help_parsed
-    compute_checksum:
-      type: string
-      description: checksum of contents while collecting outputs
-      source: help_parsed
-    print_rdf:
-      type: string
-      description: corresponding RDF graph for workflow and exit
-      source: help_parsed
-    print_dot:
-      type: string
-      description: workflow visualization in graphviz format and
-      source: help_parsed
-  _discovery_metadata:
-    github: https://github.com/common-workflow-language/cwltool
-    stars: 376
-    language: Python
-    tags:
-    - pipeline
-    - cwltool
-    quality_score: 55
-    paper_doi: 10.3389/fbinf.2023.1275593
-    paper_title: Software pipelines for RNA-Seq, ChIP-Seq and germline variant calling
-      analyses in common workflow la
-    install_method: pip_pkg
-    install_url: pip install https://github.com/common-workflow-language/cwltool
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: cwltool/__main__.py, cwltool/main.py;
-      deps: pyproject.toml, requirements.txt); command not installed'
-    verified_license: true
-    verified_license_path: LICENSE.txt
-    verified_entry_scripts:
-    - cwltool/__main__.py
-    - cwltool/main.py
-    verified_checked_at: '2026-08-10T10:55:55.353798'
-    dependencies:
-      system_commands: []
-      readme_hint: conda
-      container_files: []
-      install_method: pip_pkg
-    exec_status: passed
-    exec_reason: '`/tmp/execute_zybb_ohu/venv/bin/cwltool --help` -> exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "ME/.cache/cwltool\n XDG_DATA_HOME         │ directory path\
-      \ to search for a .local/commonwl CWL\n                       │ tool folder;\
-      \ if unset, then $HOME/.local/commonwl is\n                       │ searched\n\
-      \ XDG_DATA_DIRS         │ directory path to search for a commonwl CWL tool\n\
-      \                       │ folder; if unset, then /usr/local/share/ and\n   \
-      \                    │ /usr/share/ are searched\n"
-    exec_params_schema:
-    - name: --basedir
-      type: string
-      description: CLI flag --basedir
-    - name: --outdir
-      type: string
-      description: Output directory. The default is the current
-    - name: --parallel
-      type: string
-      description: jobs in parallel.
-    - name: --parallel-max
-      type: string
-      description: CLI flag --parallel-max
-    - name: --skip-schemas
-      type: string
-      description: loading of schemas
-    - name: --enable-dev
-      type: string
-      description: loading and running unofficial development
-    - name: --enable-ext
-      type: string
-      description: loading and running `cwltool:` extensions to
-    - name: --on-error
-      type: string
-      description: CLI flag --on-error
-    - name: --relax-path-checks
-      type: string
-      description: requirements on path names to permit spaces and
-    - name: --overrides
-      type: string
-      description: CLI flag --overrides
-    - name: --mpi-config-file
-      type: string
-      description: CLI flag --mpi-config-file
-    - name: --strict
-      type: string
-      description: validation (unrecognized or out of place fields
-    - name: --non-strict
-      type: string
-      description: validation (ignore unrecognized fields)
-    - name: --no-doc-cache
-      type: string
-      description: disk cache for documents loaded over HTTP
-    - name: --doc-cache
-      type: string
-      description: disk cache for documents loaded over HTTP
-    - name: --enable-color
-      type: string
-      description: logging color (default enabled)
-    - name: --disable-color
-      type: string
-      description: colored logging (default false)
-    - name: --compute-checksum
-      type: string
-      description: checksum of contents while collecting outputs
-    - name: --print-rdf
-      type: string
-      description: corresponding RDF graph for workflow and exit
-    - name: --print-dot
-      type: string
-      description: workflow visualization in graphviz format and
-    exec_installed_versions:
-    - argcomplete==3.7.2
-    - CacheControl==0.14.4
-    - certifi==2026.7.22
-    - charset-normalizer==3.4.9
-    - coloredlogs==15.0.1
-    - cwl-upgrader==1.2.15
-    - cwl-utils==0.42
-    - cwltool @ file:///tmp/execute_zybb_ohu/cwltool
-    - filelock==3.32.2
-    - humanfriendly==10.0
-    - idna==3.18
-    - lxml==6.1.1
-    - markdown-it-py==4.2.0
-    - mdurl==0.1.2
-    - mistune==3.2.1
-    - msgpack==1.2.1
-    - mypy_extensions==1.1.0
-    - networkx==3.6.1
-    - packaging==26.3
-    - prov==1.5.1
-    - psutil==7.2.2
-    - pydot==4.0.1
-    - Pygments==2.20.0
-    - pyparsing==3.3.2
-    - python-dateutil==2.9.0.post0
-    - rdflib==7.6.0
-    - requests==2.34.2
-    - rich==15.0.0
-    - rich-argparse==1.8.0
-    - ruamel.yaml==0.19.1
-    - schema-salad==8.9.20260417192335
-    - six==1.17.0
-    - spython==0.3.14
-    - typing_extensions==4.16.0
-    - urllib3==2.7.0
-    exec_executable: cwltool
-    inputs_source: help_parsed
-- name: cia
-  type: cli
-  command: cia {{input_file}}
-  description: '[Auto-discovered] CIA (Cluster Independent Annotation) is a new computational
-    tool that enables a highly accurate automatic classification of cells in scRNA-seq
-    datasets exploiting gene signatures. (⭐5, Python) (license: LICENSE.txt)'
+  command: vairo {{input_file}}
+  description: '[Auto-discovered] Guiding AlphaFold predictions with experimental
+    knowledge to inform dynamics and interactions with V (⭐2, Python) (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
@@ -633,89 +328,41 @@ tools:
       description: Input file path inside /data.
       source: placeholder
   _discovery_metadata:
-    github: https://github.com/ingmbioinfo/cia
-    stars: 5
+    github: https://github.com/arcimboldo-team/vairo
+    stars: 2
     language: Python
     tags:
     - software
-    - cia
-    - rna
-    quality_score: 28.0
-    paper_doi: 10.1186/s12859-025-06320-z
-    paper_title: 'CIA: unveiling cellular identities with cluster-independent annotation
-      in single-cell RNA sequencing'
+    - vairo
+    quality_score: 16.2
+    paper_doi: 10.1002/pro.70481
+    paper_title: Guiding AlphaFold predictions with experimental knowledge to inform
+      dynamics and interactions with V
     install_method: pip_pkg
-    install_url: pip install https://github.com/ingmbioinfo/cia
+    install_url: pip install https://github.com/arcimboldo-team/vairo
     verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml, setup.py);
-      command not installed'
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
+      license); command not installed'
     verified_license: true
-    verified_license_path: LICENSE.txt
+    verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-10T10:56:07.028858'
+    verified_checked_at: '2026-08-10T12:11:10.329815'
     dependencies:
       system_commands: []
-      readme_hint: ''
+      readme_hint: conda
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`python -c ''import cia''` -> exit 0'
+    exec_reason: '`python -c ''import vairo''` -> exit 0'
     exec_install_evidence: ''
-    exec_run_evidence: 'IMPORT_OK cia
+    exec_run_evidence: 'IMPORT_OK vairo
 
       '
     exec_params_schema: []
     exec_installed_versions:
-    - anndata==0.12.19
-    - array-api-compat==1.15.0
-    - certifi==2026.7.22
-    - charset-normalizer==3.4.9
-    - cia_python @ file:///tmp/execute_zd32yc_c/cia
-    - contourpy==1.3.3
-    - cycler==0.12.1
-    - donfig==0.8.1.post1
-    - fonttools==4.63.0
-    - google-crc32c==1.8.0
-    - h5py==3.16.0
-    - idna==3.18
-    - igraph==1.0.0
-    - joblib==1.5.3
-    - kiwisolver==1.5.0
-    - legacy-api-wrap==1.5
-    - leidenalg==0.12.0
-    - llvmlite==0.48.0
-    - matplotlib==3.11.1
-    - narwhals==2.24.0
-    - natsort==8.4.0
-    - networkx==3.6.1
-    - numba==0.66.0
-    - numcodecs==0.16.5
-    - numpy==2.4.6
     - packaging==26.3
-    - pandas==2.3.3
-    - patsy==1.0.2
-    - pillow==12.3.0
-    - pynndescent==0.6.0
-    - pyparsing==3.3.2
-    - python-dateutil==2.9.0.post0
-    - pytz==2026.3.post1
-    - PyYAML==6.0.3
-    - requests==2.34.2
-    - scanpy==1.11.5
-    - scikit-learn==1.9.0
-    - scipy==1.17.1
-    - scverse-misc==0.0.3
-    - seaborn==0.13.2
-    - session-info2==0.4.1
-    - six==1.17.0
-    - statsmodels==0.14.6
-    - texttable==1.7.0
-    - threadpoolctl==3.6.0
-    - tqdm==4.70.0
-    - typing_extensions==4.16.0
-    - tzdata==2026.3
-    - umap-learn==0.5.12
-    - urllib3==2.7.0
-    - zarr==3.1.6
-    exec_executable: cia
+    - vairo @ file:///tmp/execute_ck0go5xf/vairo
+    exec_executable: vairo
+    exec_retries: 0
+    exec_heal_evidence: ''
     inputs_source: placeholder

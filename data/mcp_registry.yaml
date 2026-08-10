@@ -485,3 +485,58 @@ tools:
       type: string
       description: Input file path inside /data.
       source: placeholder
+- name: silent_tools
+  type: cli
+  command: silent_tools {{input_file}}
+  description: '[Auto-discovered] A bunch of shell utilities for dealing the silent
+    files (⭐80, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+- name: haddock3
+  type: cli
+  command: haddock3 {{input_file}}
+  description: '[Auto-discovered] Official repo of the modular BioExcel version of
+    HADDOCK (⭐261, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    restart:
+      type: string
+      description: Restart the run from a given step. Previous folders
+      source: help_parsed
+    extend_run:
+      type: string
+      description: CLI flag --extend-run
+      source: help_parsed
+    setup:
+      type: string
+      description: setup the run, do not execute
+      source: help_parsed
+    log_level:
+      type: string
+      description: CLI flag --log-level
+      source: help_parsed
+    version:
+      type: string
+      description: version
+      source: help_parsed
+- name: vairo
+  type: cli
+  command: vairo {{input_file}}
+  description: '[Auto-discovered] Guiding AlphaFold predictions with experimental
+    knowledge to inform dynamics and interactions with V (⭐2, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
