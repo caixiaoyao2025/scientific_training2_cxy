@@ -341,6 +341,11 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
             res.language = "Go"
         elif "package.json" in bases:
             res.language = "Node"
+        elif "DESCRIPTION" in bases or any(f.startswith("R/") for f in files):
+            # R package (DESCRIPTION + R/ + man/ layout)
+            res.language = "R"
+        elif any(base in bases for base in ("Makefile", "CMakeLists.txt", "configure")):
+            res.language = "C"
 
         # ---- README install hint (conda/docker text, no dep file needed) ----
         # Many paper repos document `conda create ... && python script.py` or
@@ -383,6 +388,14 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
             res.install_method, res.install_cmd = "cargo", f"cargo install --git {repo_url}"
         elif res.language == "Go":
             res.install_method, res.install_cmd = "go", f"go install {repo_url}@latest"
+        elif res.language == "R":
+            # R package: install via remotes/devtools from the local clone
+            res.install_method, res.install_cmd = "r_pkg", \
+                f"R -e 'install.packages(\"remotes\"); remotes::install_local(\"{repo_url}\")'"
+        elif res.language == "C":
+            # C/C++ repo: make / cmake build
+            res.install_method, res.install_cmd = "make", \
+                f"make -C {repo_url} && ./{res.repo_name}"
         elif res.entry_scripts:
             # source-run style repo: has entry scripts but no dependency file.
             # Install method 'python_script' -> execute_test runs them directly.

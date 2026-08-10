@@ -563,6 +563,60 @@ def execute_test(repo_url: str, install_method: str = "",
                 _run([venv_py, "-m", "pip", "install", "-q", "-r", req],
                      INSTALL_TIMEOUT)
             args = [venv_py, "-c", "import sys; sys.exit(0)"]  # no-op install
+        elif install_method == "r_pkg":
+            # R package: needs R installed; install via remotes from the clone
+            r_bin = shutil.which("R") or shutil.which("Rscript")
+            if not r_bin:
+                report["status"], report["reason"] = "not_tested", \
+                    "R not installed in this environment"
+                return report
+            rc_r, out_r, err_r = _run(
+                [r_bin, "-e",
+                 "install.packages('remotes', repos='https://cloud.r-project.org'); "
+                 f"remotes::install_local('{repo_dir}', repos='https://cloud.r-project.org')"],
+                1800)
+            report["install_evidence"] = (out_r + err_r)[-400:]
+            if rc_r != 0:
+                report["status"] = "failed"
+                report["reason"] = f"R install_local failed (exit {rc_r}): {(out_r + err_r)[-200:]}"
+                return report
+            report["install_ok"] = True
+            import_name = re.sub(r"[^a-zA-Z0-9_]", "", name).lstrip("_")
+            rc_s, out_s, err_s = _run(
+                [r_bin, "-e", f"library({import_name}); cat('R_IMPORT_OK')"],
+                RUN_TIMEOUT)
+            if rc_s == 0 and "R_IMPORT_OK" in (out_s + err_s):
+                report["status"] = "passed"
+                report["reason"] = f"`{r_bin} -e 'library({import_name})'` -> exit 0"
+                report["run_ok"] = True
+                report["run_evidence"] = (out_s + err_s)[-400:]
+                report["executable"] = import_name
+                return report
+            report["status"] = "failed"
+            report["reason"] = "R install ok but library() smoke failed"
+            return report
+        elif install_method == "make":
+            # C/C++ repo: make build + run the produced binary
+            rc_m, out_m, err_m = _run(["make", "-C", repo_dir], 1800)
+            report["install_evidence"] = (out_m + err_m)[-400:]
+            if rc_m != 0:
+                report["status"] = "failed"
+                report["reason"] = f"make failed (exit {rc_m}): {(out_m + err_m)[-200:]}"
+                return report
+            report["install_ok"] = True
+            built = os.path.join(repo_dir, name)
+            if os.path.exists(built):
+                rc_s, out_s, err_s = _run([built, "--help"], RUN_TIMEOUT)
+                if rc_s == 0 and (out_s.strip() or err_s.strip()):
+                    report["status"] = "passed"
+                    report["reason"] = f"`{built} --help` -> exit 0"
+                    report["run_ok"] = True
+                    report["run_evidence"] = (out_s + err_s)[-400:]
+                    report["executable"] = name
+                    return report
+            report["status"] = "failed"
+            report["reason"] = "make build ok but no runnable binary smoke passed"
+            return report
         elif install_method == "docker":
             # build + smoke the container in this environment (docker present
             # on GH runners). If docker is unavailable, we fall back to
