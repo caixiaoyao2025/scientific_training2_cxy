@@ -322,10 +322,36 @@ def execute_test(repo_url: str, install_method: str = "",
         if install_method in ("pip_pkg", "pip_url"):
             args = [venv_py, "-m", "pip", "install", "-q", repo_dir]
         elif install_method == "pip_requirements":
-            req = os.path.join(repo_dir, install_cmd.rsplit("/", 1)[-1].split()[-1])
-            if not os.path.exists(req):
-                req = os.path.join(repo_dir, "requirements.txt")
+            # resolve the requirements file against the ACTUAL cloned tree
+            # instead of parsing the install command string (unreliable).
+            req = ""
+            for root, _dirs, files in os.walk(repo_dir):
+                for f in files:
+                    if f in ("requirements.txt", "requirements_full.txt",
+                             "requirements-dev.txt", "requirements_prod.txt"):
+                        p = os.path.join(root, f)
+                        # prefer the shallowest (root-level) one
+                        if not req or p.count(os.sep) < req.count(os.sep):
+                            req = p
+            if not req:
+                report["status"], report["reason"] = "failed", \
+                    "pip_requirements but no requirements.txt found in repo"
+                return report
             args = [venv_py, "-m", "pip", "install", "-q", "-r", req]
+        elif install_method == "python_script":
+            # source-run style: no install step, but try to install a
+            # requirements.txt if present so imports resolve in the venv.
+            req = ""
+            for root, _dirs, files in os.walk(repo_dir):
+                for f in files:
+                    if f == "requirements.txt":
+                        p = os.path.join(root, f)
+                        if not req or p.count(os.sep) < req.count(os.sep):
+                            req = p
+            if req:
+                _run([venv_py, "-m", "pip", "install", "-q", "-r", req],
+                     INSTALL_TIMEOUT)
+            args = [venv_py, "-c", "import sys; sys.exit(0)"]  # no-op install
         elif install_method == "conda_env":
             report["status"], report["reason"] = "skipped", \
                 "conda env install too heavy for smoke test"

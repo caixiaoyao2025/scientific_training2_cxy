@@ -136,10 +136,13 @@ def _find_requirements(files: list[str]) -> list[str]:
         if f.startswith(".") or "/" in f and f.split("/")[0].startswith("."):
             continue
         base = f.split("/")[-1]
-        if base in REQUIREMENTS_FILES and f.count("/") <= 1:
+        # requirements/env files up to 2 levels deep (many repos keep them in
+        # a subfolder, e.g. atacseq/requirements.txt); setup.py/pyproject are
+        # only meaningful at the root so require depth <= 1.
+        if base in REQUIREMENTS_FILES and f.count("/") <= 2:
             found.append(f)
-    # setup.py/pyproject at any depth <= 1 as the primary signal
-    return found
+    # keep setup.py/pyproject at root as the strongest install signal
+    return sorted(found, key=lambda f: (f.count("/"), f))
 
 
 def _find_license(files: list[str]) -> tuple[bool, str]:
@@ -259,6 +262,11 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
             res.install_method, res.install_cmd = "cargo", f"cargo install --git {repo_url}"
         elif res.language == "Go":
             res.install_method, res.install_cmd = "go", f"go install {repo_url}@latest"
+        elif res.entry_scripts:
+            # source-run style repo: has entry scripts but no dependency file.
+            # Install method 'python_script' -> execute_test runs them directly.
+            res.install_method, res.install_cmd = (
+                "python_script", " ".join(res.entry_scripts[:3]))
 
         # ---- command probe ----
         cands = _command_candidates(name, files, res.entry_scripts)
