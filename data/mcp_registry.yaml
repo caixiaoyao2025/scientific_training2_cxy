@@ -96,3 +96,118 @@ tools:
     input_file:
       type: string
       description: Input file path inside /data.
+- name: pygenomeviz
+  type: cli
+  command: pygenomeviz {{input_file}}
+  description: '[Auto-discovered] A genome visualization python package for comparative
+    genomics (⭐416, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    formats:
+      type: string
+      description: image format ('png'[*],'jpg','svg','pdf',`html`[*])
+      source: help_parsed
+    reuse:
+      type: string
+      description: previous alignment result if available
+      source: help_parsed
+    quiet:
+      type: string
+      description: 'print log on screen (default: OFF)'
+      source: help_parsed
+    version:
+      type: string
+      description: version information
+      source: help_parsed
+    seqtype:
+      type: string
+      description: sequence type ('nucleotide'[*]|'protein')
+      source: help_parsed
+    threads:
+      type: string
+      description: 'number (Default: MaxThread - 1)'
+      source: help_parsed
+    length_thr:
+      type: string
+      description: 'threshold to be plotted (Default: 0)'
+      source: help_parsed
+    identity_thr:
+      type: string
+      description: 'threshold to be plotted (Default: 0)'
+      source: help_parsed
+    evalue_thr:
+      type: string
+      description: '-value threshold to be plotted (Default: 1e-03)'
+      source: help_parsed
+    fig_width:
+      type: string
+      description: 'width (Default: 15)'
+      source: help_parsed
+    fig_track_height:
+      type: string
+      description: 'track height (Default: 1.0)'
+      source: help_parsed
+    track_align_type:
+      type: string
+      description: tracks align type ('left'|'center'[*]|'right')
+      source: help_parsed
+    feature_track_ratio:
+      type: string
+      description: 'track ratio (Default: 0.25)'
+      source: help_parsed
+    show_scale_bar:
+      type: string
+      description: 'scale bar (Default: OFF)'
+      source: help_parsed
+    show_scale_xticks:
+      type: string
+      description: 'scale xticks (Default: OFF)'
+      source: help_parsed
+    curve:
+      type: string
+      description: 'curved style link (Default: OFF)'
+      source: help_parsed
+    dpi:
+      type: string
+      description: 'DPI (Default: 300)'
+      source: help_parsed
+    track_labelsize:
+      type: string
+      description: 'label size (Default: 20)'
+      source: help_parsed
+    scale_labelsize:
+      type: string
+      description: 'label size (Default: 15)'
+      source: help_parsed
+    normal_link_color:
+      type: string
+      description: 'link color (Default: ''grey'')'
+      source: help_parsed
+- name: strainmake
+  type: cli
+  command: strainmake {{input_file}}
+  description: '[Auto-discovered] Reproducible hybrid metagenomics with MAG recovery
+    and strain-level resolution (⭐11, Python) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+- name: nanosimformer
+  type: cli
+  command: nanosimformer {{input_file}}
+  description: '[Auto-discovered] NanoSimFormer: an end-to-end transformer-based nanopore
+    signal simulator with basecaller guidance. (⭐3, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder

@@ -1,0 +1,409 @@
+tools:
+- name: pygenomeviz
+  type: cli
+  command: pygenomeviz {{input_file}}
+  description: '[Auto-discovered] A genome visualization python package for comparative
+    genomics (⭐416, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    formats:
+      type: string
+      description: image format ('png'[*],'jpg','svg','pdf',`html`[*])
+      source: help_parsed
+    reuse:
+      type: string
+      description: previous alignment result if available
+      source: help_parsed
+    quiet:
+      type: string
+      description: 'print log on screen (default: OFF)'
+      source: help_parsed
+    version:
+      type: string
+      description: version information
+      source: help_parsed
+    seqtype:
+      type: string
+      description: sequence type ('nucleotide'[*]|'protein')
+      source: help_parsed
+    threads:
+      type: string
+      description: 'number (Default: MaxThread - 1)'
+      source: help_parsed
+    length_thr:
+      type: string
+      description: 'threshold to be plotted (Default: 0)'
+      source: help_parsed
+    identity_thr:
+      type: string
+      description: 'threshold to be plotted (Default: 0)'
+      source: help_parsed
+    evalue_thr:
+      type: string
+      description: '-value threshold to be plotted (Default: 1e-03)'
+      source: help_parsed
+    fig_width:
+      type: string
+      description: 'width (Default: 15)'
+      source: help_parsed
+    fig_track_height:
+      type: string
+      description: 'track height (Default: 1.0)'
+      source: help_parsed
+    track_align_type:
+      type: string
+      description: tracks align type ('left'|'center'[*]|'right')
+      source: help_parsed
+    feature_track_ratio:
+      type: string
+      description: 'track ratio (Default: 0.25)'
+      source: help_parsed
+    show_scale_bar:
+      type: string
+      description: 'scale bar (Default: OFF)'
+      source: help_parsed
+    show_scale_xticks:
+      type: string
+      description: 'scale xticks (Default: OFF)'
+      source: help_parsed
+    curve:
+      type: string
+      description: 'curved style link (Default: OFF)'
+      source: help_parsed
+    dpi:
+      type: string
+      description: 'DPI (Default: 300)'
+      source: help_parsed
+    track_labelsize:
+      type: string
+      description: 'label size (Default: 20)'
+      source: help_parsed
+    scale_labelsize:
+      type: string
+      description: 'label size (Default: 15)'
+      source: help_parsed
+    normal_link_color:
+      type: string
+      description: 'link color (Default: ''grey'')'
+      source: help_parsed
+  _discovery_metadata:
+    github: https://github.com/moshi4/pyGenomeViz
+    stars: 416
+    language: Python
+    tags:
+    - pygenomeviz
+    - software
+    - genome
+    quality_score: 55
+    paper_doi: 10.1093/bib/bbaf638
+    paper_title: 'ViromeXplore: integrative workflows for complete and reproducible
+      virome characterization.'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/moshi4/pyGenomeViz
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml docker);
+      command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-10T08:21:12.140313'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files:
+      - Dockerfile
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_lq70fetl/venv/bin/pgv-blast --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: "Feature line width (Default: 0.0)\n  --feature_labeltrack\
+      \    Feature label target track ('top'[*]|'all')\n  --feature_labeltype    \
+      \ Feature label type ('product'|'gene'|'protein_id'|'None'[*])\n  --feature_labelsize\
+      \     Feature label size (Default: 8)\n  --cbar_width            Colorbar width\
+      \ (Default: 0.01)\n  --cbar_height           Colorbar height (Default: 0.2)\n\
+      \n[*] marker means the default value.\n"
+    exec_params_schema:
+    - name: --formats
+      type: string
+      description: image format ('png'[*],'jpg','svg','pdf',`html`[*])
+    - name: --reuse
+      type: string
+      description: previous alignment result if available
+    - name: --quiet
+      type: string
+      description: 'print log on screen (default: OFF)'
+    - name: --version
+      type: string
+      description: version information
+    - name: --seqtype
+      type: string
+      description: sequence type ('nucleotide'[*]|'protein')
+    - name: --threads
+      type: string
+      description: 'number (Default: MaxThread - 1)'
+    - name: --length_thr
+      type: string
+      description: 'threshold to be plotted (Default: 0)'
+    - name: --identity_thr
+      type: string
+      description: 'threshold to be plotted (Default: 0)'
+    - name: --evalue_thr
+      type: string
+      description: '-value threshold to be plotted (Default: 1e-03)'
+    - name: --fig_width
+      type: string
+      description: 'width (Default: 15)'
+    - name: --fig_track_height
+      type: string
+      description: 'track height (Default: 1.0)'
+    - name: --track_align_type
+      type: string
+      description: tracks align type ('left'|'center'[*]|'right')
+    - name: --feature_track_ratio
+      type: string
+      description: 'track ratio (Default: 0.25)'
+    - name: --show_scale_bar
+      type: string
+      description: 'scale bar (Default: OFF)'
+    - name: --show_scale_xticks
+      type: string
+      description: 'scale xticks (Default: OFF)'
+    - name: --curve
+      type: string
+      description: 'curved style link (Default: OFF)'
+    - name: --dpi
+      type: string
+      description: 'DPI (Default: 300)'
+    - name: --track_labelsize
+      type: string
+      description: 'label size (Default: 20)'
+    - name: --scale_labelsize
+      type: string
+      description: 'label size (Default: 15)'
+    - name: --normal_link_color
+      type: string
+      description: 'link color (Default: ''grey'')'
+    exec_installed_versions:
+    - biopython==1.88
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - fonttools==4.63.0
+    - kiwisolver==1.5.0
+    - matplotlib==3.11.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pillow==12.3.0
+    - pygenomeviz @ file:///tmp/execute_lq70fetl/pyGenomeViz
+    - pyparsing==3.3.2
+    - python-dateutil==2.9.0.post0
+    - six==1.17.0
+    inputs_source: help_parsed
+- name: strainmake
+  type: cli
+  command: strainmake {{input_file}}
+  description: '[Auto-discovered] Reproducible hybrid metagenomics with MAG recovery
+    and strain-level resolution (⭐11, Python) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  _discovery_metadata:
+    github: https://github.com/UMMISCO/strainmake
+    stars: 11
+    language: Python
+    tags:
+    - software
+    - strainmake
+    quality_score: 31.6
+    paper_doi: 10.1093/bioinformatics/btag212
+    paper_title: 'StrainMake: reproducible hybrid metagenomics with MAG recovery and
+      strain-level resolution.'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/UMMISCO/strainmake
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: dev/run.sh, strainmake/cli/main.py;
+      deps: pyproject.toml docker); command not installed'
+    verified_license: false
+    verified_license_path: ''
+    verified_entry_scripts:
+    - dev/run.sh
+    - strainmake/cli/main.py
+    verified_checked_at: '2026-08-10T08:21:20.862895'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files:
+      - .docker/Dockerfile
+      - dev/Dockerfile
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_2b7r39e6/venv/bin/strainmake --help` -> exit 0'
+    exec_install_evidence: 'WARNING: typer 0.27.1 does not provide the extra ''all''
+
+      '
+    exec_run_evidence: "\e[0m pipeline using Snakemake.                        \e\
+      [2m│\e[0m\n\e[2m│\e[0m \e[1;36mreport \e[0m\e[1;36m \e[0m Generate \e[1mMultiQC\
+      \ report(s)\e[0m from StrainMake pipeline results.        \e[2m│\e[0m\n\e[2m│\e\
+      [0m \e[1;36mprepare\e[0m\e[1;36m \e[0m Prepare input data and results for the\
+      \ pipeline.                    \e[2m│\e[0m\n\e[2m╰──────────────────────────────────────────────────────────────────────────────╯\e\
+      [0m\n\n"
+    exec_params_schema: []
+    exec_installed_versions:
+    - annotated-doc==0.0.5
+    - Jinja2==3.1.6
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - mdurl==0.1.2
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - Pygments==2.20.0
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - rich==15.0.0
+    - shellingham==1.5.4
+    - six==1.17.0
+    - strainmake @ file:///tmp/execute_2b7r39e6/strainmake
+    - typer==0.27.1
+    inputs_source: placeholder
+- name: nanosimformer
+  type: cli
+  command: nanosimformer {{input_file}}
+  description: '[Auto-discovered] NanoSimFormer: an end-to-end transformer-based nanopore
+    signal simulator with basecaller guidance. (⭐3, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  _discovery_metadata:
+    github: https://github.com/BioinfoSZU/NanoSimFormer
+    stars: 3
+    language: Python
+    tags:
+    - nanosimformer
+    - software
+    quality_score: 16.8
+    paper_doi: 10.1093/bioinformatics/btag402
+    paper_title: 'NanoSimFormer: an end-to-end transformer-based nanopore signal simulator
+      with basecaller guidance.'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/BioinfoSZU/NanoSimFormer
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: nano_signal_simulator/__main__.py,
+      nano_signal_simulator/main.py; deps: setup.py); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts:
+    - nano_signal_simulator/__main__.py
+    - nano_signal_simulator/main.py
+    verified_checked_at: '2026-08-10T08:21:50.805152'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_vvw7ci4x/venv/bin/nanosimformer --help` -> exit 0'
+    exec_install_evidence: 'WARNING: huggingface-hub 1.27.0 does not provide the extra
+      ''hf-transfer''
+
+      '
+    exec_run_evidence: "equence/dwells .npy\n                        files) from an\
+      \ aligned BAM and POD5 file.\n    visualize           Launch an interactive\
+      \ web viewer to inspect dataset\n                        chunks (supports SSH\
+      \ port forwarding).\n    train               Train a NanoSimFormer model with\
+      \ basecaller-guided CTC\n                        loss.\n\noptions:\n  -h, --help\
+      \            show this help message and exit\n"
+    exec_params_schema: []
+    exec_installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - attrs==26.1.0
+    - biopython==1.88
+    - blinker==1.9.0
+    - blobfile==3.2.0
+    - certifi==2026.7.22
+    - cffi==2.1.1
+    - charset-normalizer==3.4.9
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - datasets==5.0.1
+    - Deprecated==1.3.1
+    - dill==0.4.1
+    - edlib==1.3.9.post1
+    - fast_ctc_decode==0.3.7
+    - filelock==3.32.2
+    - Flask==3.1.3
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.6.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.16.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - idna==3.18
+    - importlib_resources==7.1.0
+    - iso8601==2.1.0
+    - itsdangerous==2.2.0
+    - Jinja2==3.1.6
+    - joblib==1.5.3
+    - kagglehub==1.0.2
+    - kagglesdk==0.1.37
+    - kiwisolver==1.5.0
+    - lib_pod5==0.3.44
+    - lxml==6.1.1
+    - mappy==2.31
+    - Markdown==3.10.3
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mizani==0.9.3
+    - more-itertools==11.1.0
+    - mpmath==1.3.0
+    - multidict==6.7.1
+    - multiprocess==0.70.19
+    - nanosimformer @ file:///tmp/execute_vvw7ci4x/NanoSimFormer
+    - narwhals==2.24.0
+    - networkx==3.6.1
+    - numpy==1.26.4
+    - nvidia-cublas-cu12==12.8.4.1
+    - nvidia-cuda-cupti-cu12==12.8.90
+    - nvidia-cuda-nvrtc-cu12==12.8.93
+    - nvidia-cuda-runtime-cu12==12.8.90
+    - nvidia-cudnn-cu12==9.10.2.21
+    - nvidia-cufft-cu12==11.3.3.83
+    - nvidia-cufile-cu12==1.13.1.3
+    - nvidia-curand-cu12==10.3.9.90
+    - nvidia-cusolver-cu12==11.7.3.90
+    - nvidia-cusparse-cu12==12.5.8.93
+    - nvidia-cusparselt-cu12==0.7.1
+    - nvidia-nccl-cu12==2.27.5
+    - nvidia-nvjitlink-cu12==12.8.93
+    - nvidia-nvshmem-cu12==3.3.20
+    - nvidia-nvtx-cu12==12.8.90
+    - omegaconf==2.3.1
+    - ont-bonito==1.1.0
+    - ont-koi==0.6.5
+    - ont-remora==3.3.0
+    - packaging==26.3
+    - pandas==3.0.5
+    - parasail==1.3.4
+    - patsy==1.0.2
+    inputs_source: placeholder
