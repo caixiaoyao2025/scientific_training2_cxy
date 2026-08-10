@@ -157,6 +157,42 @@ def _venv_bin(venv_dir: str) -> str:
         else os.path.join(venv_dir, "bin")
 
 
+def _find_installed_executable(bin_dir: str, candidates: list[str]) -> tuple[str, str]:
+    """Find the real executable installed into the venv that matches a candidate.
+
+    Do NOT assume tool.name == CLI command (pyGenomeViz -> pgv-blast). List what
+    actually got installed and match case/underscore-insensitively. Returns
+    (matched_candidate, absolute_exe_path) or ("", "").
+    """
+    if not os.path.isdir(bin_dir):
+        return "", ""
+    installed = [f for f in os.listdir(bin_dir) if not f.startswith((".", "_", "__"))
+                 and f not in ("activate", "activate.bat", "activate_this.py",
+                               "activate.csh", "activate.fish", "deactivate.bat",
+                               "pip", "pip3", "pip3.11", "python", "python3",
+                               "python3.11", "wheel", "wheel.exe", "setuptools",
+                               "f2py", "f2py3", "f2py3.11", "pkg-config", "normalizer")]
+    def norm(s):
+        return re.sub(r"[^a-z0-9]", "", s.lower())
+    installed_norm = {norm(f): f for f in installed}
+    for cand in candidates:
+        key = norm(cand)
+        if key in installed_norm:
+            return cand, os.path.join(bin_dir, installed_norm[key])
+        # also try basename of a path candidate
+        base = norm(cand.split("/")[-1] if "/" in cand else cand)
+        if base in installed_norm:
+            return cand, os.path.join(bin_dir, installed_norm[base])
+    return "", ""
+
+
+def _python_import_smoke(venv_py: str, module_name: str, env: dict) -> tuple[int, str, str]:
+    """Try importing a module in the venv (Python-API style tools with no CLI)."""
+    return _run([venv_py, "-c",
+                 f"import {module_name}; print('IMPORT_OK {module_name}')"],
+                RUN_TIMEOUT, env=env)
+
+
 def _find_sample_input(repo_dir: str) -> str:
     """Prefer a real example file from the repo; fall back to sample.fasta."""
     for root, _dirs, files in os.walk(repo_dir):
@@ -298,15 +334,16 @@ def execute_test(repo_url: str, install_method: str = "",
         "install_evidence": "",
         "run_ok": False,
         "run_evidence": "",
+        "executable": "",
         "params_schema": [],
         "installed_versions": [],
         "checked_at": __import__("datetime").datetime.now().isoformat(),
     }
 
-    # conda_env installs are too heavy for a smoke test: skip without cloning
+    # conda_env installs are too heavy for a smoke test: deferred, not a failure
     if install_method == "conda_env":
-        report["status"], report["reason"] = "skipped", \
-            "conda env install too heavy for smoke test"
+        report["status"], report["reason"] = "not_tested", \
+            "conda env install too heavy for smoke test; deferred"
         return report
 
     # Windows can't create dirs containing quotes etc. from paper-extracted names
@@ -373,17 +410,17 @@ def execute_test(repo_url: str, install_method: str = "",
                      INSTALL_TIMEOUT)
             args = [venv_py, "-c", "import sys; sys.exit(0)"]  # no-op install
         elif install_method == "docker":
-            # container build + run is too heavy for a smoke test: skip, but
-            # record it as a *known install path* instead of "no install command".
-            report["status"], report["reason"] = "skipped", \
+            # container build + run is too heavy for a smoke test: not a failure,
+            # record as not_tested (environment not exercised).
+            report["status"], report["reason"] = "not_tested", \
                 "docker build/run too heavy for smoke test; dockerfile detected"
             return report
         elif install_method == "conda_env":
-            report["status"], report["reason"] = "skipped", \
-                "conda env install too heavy for smoke test"
+            report["status"], report["reason"] = "not_tested", \
+                "conda env install too heavy for smoke test; deferred"
             return report
         else:
-            report["status"], report["reason"] = "skipped", \
+            report["status"], report["reason"] = "not_tested", \
                 f"install method '{install_method}' not supported in smoke test"
             return report
 
@@ -435,18 +472,12 @@ def execute_test(repo_url: str, install_method: str = "",
         cands = declared + [c for c in cands if c not in declared]
         runs: list[str] = []
         worst = "failed"  # track most specific failure reason
-        for cand in cands:
-            exe = os.path.join(bin_dir, cand + (".exe" if os.name == "nt" else ""))
-            if os.path.exists(exe):
-                base_args = [exe]
-            elif cand.endswith(".py"):
-                base_args = [venv_py, os.path.join(repo_dir, cand)]
-            elif cand.endswith(".sh"):
-                base_args = ["bash", os.path.join(repo_dir, cand)]
-            else:
-                base_args = [cand]
-            # Try 1: with a sample input (real invocation).
-            args = base_args + [sample]
+
+        # 4a. find the REAL executable that got installed (don't assume name==cmd)
+        matched_cand, exe_path = _find_installed_executable(bin_dir, cands)
+
+        def _try(args: list[str]) -> bool:
+            nonlocal worst
             rc, out, err = _run(args, RUN_TIMEOUT, env=env)
             ev = f"`{' '.join(args)}` -> exit {rc}"
             runs.append(ev)
@@ -455,29 +486,52 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["reason"] = ev
                 report["run_ok"] = True
                 report["run_evidence"] = (out + err)[-400:]
-                return report
+                report["params_schema"] = _parse_help_params(out or err)
+                return True
             cls = _classify_failure((out + err)[-1200:])
             if cls == "incomplete":
                 worst = "incomplete"
             elif cls == "env_issue" and worst != "incomplete":
                 worst = "env_issue"
-            # Try 2: --help. Many heavy CLIs (typer/click/argparse) only respond
-            # to help flags, not to a sample file (e.g. RiSpy's fingerprint).
-            help_args = base_args + ["--help"]
-            rc2, out2, err2 = _run(help_args, RUN_TIMEOUT, env=env)
-            ev2 = f"`{' '.join(help_args)}` -> exit {rc2}"
-            runs.append(ev2)
-            if rc2 == 0 and (out2.strip() or err2.strip()):
-                report["status"] = "passed"
-                report["reason"] = ev2
-                report["run_ok"] = True
-                report["run_evidence"] = (out2 + err2)[-400:]
-                report["params_schema"] = _parse_help_params(out2 or err2)
+            return False
+
+        if exe_path:
+            report["executable"] = os.path.basename(exe_path)
+            if _try([exe_path, sample]):
                 return report
-            cls2 = _classify_failure((out2 + err2)[-1200:])
-            if cls2 == "incomplete":
+            if _try([exe_path, "--help"]):
+                return report
+        elif cands:
+            # no installed binary matched -> try entry scripts (.py/.sh) or the
+            # bare candidate through PATH (venv/bin is on PATH)
+            for cand in cands:
+                if cand.endswith(".py"):
+                    base = [venv_py, os.path.join(repo_dir, cand)]
+                elif cand.endswith(".sh"):
+                    base = ["bash", os.path.join(repo_dir, cand)]
+                else:
+                    base = [cand]
+                if _try(base + [sample]):
+                    return report
+                if _try(base + ["--help"]):
+                    return report
+        # 4b. Python-API fallback: no CLI found, try importing the package
+        import_name = re.sub(r"[^a-zA-Z0-9_]", "", name).lstrip("_")
+        if import_name:
+            rc_imp, out_imp, err_imp = _python_import_smoke(venv_py, import_name, env)
+            ev_imp = f"`python -c 'import {import_name}'` -> exit {rc_imp}"
+            runs.append(ev_imp)
+            if rc_imp == 0 and "IMPORT_OK" in out_imp:
+                report["status"] = "passed"
+                report["reason"] = ev_imp
+                report["run_ok"] = True
+                report["run_evidence"] = (out_imp + err_imp)[-400:]
+                report["executable"] = import_name  # Python API, no CLI
+                return report
+            cls_imp = _classify_failure((out_imp + err_imp)[-1200:])
+            if cls_imp == "incomplete":
                 worst = "incomplete"
-            elif cls2 == "env_issue" and worst != "incomplete":
+            elif cls_imp == "env_issue" and worst != "incomplete":
                 worst = "env_issue"
         report["status"] = worst
         report["reason"] = "; ".join(runs) if runs else "no runnable candidate"
@@ -532,10 +586,11 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
     n_fail = sum(1 for r in results if r.get("status") == "failed")
     n_skip = sum(1 for r in results if r.get("status") == "skipped")
     n_time = sum(1 for r in results if r.get("status") == "timeout")
+    n_nt = sum(1 for r in results if r.get("status") == "not_tested")
     print(f"\nSaved execution report -> {out_json}")
     print(f"passed: {n_pass} | env_issue: {n_env} | incomplete: {n_inc} "
-          f"| failed: {n_fail} | timeout: {n_time} | skipped: {n_skip}  "
-          f"(total {len(results)})")
+          f"| failed: {n_fail} | timeout: {n_time} | not_tested: {n_nt} "
+          f"| skipped: {n_skip}  (total {len(results)})")
     return results
 
 

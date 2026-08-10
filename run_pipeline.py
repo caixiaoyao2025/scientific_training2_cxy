@@ -151,8 +151,10 @@ def step3_6_execute():
     n_fail = sum(1 for r in results if r.get("status") == "failed")
     n_skip = sum(1 for r in results if r.get("status") == "skipped")
     n_time = sum(1 for r in results if r.get("status") == "timeout")
+    n_nt = sum(1 for r in results if r.get("status") == "not_tested")
     print(f"  -> {n_pass} passed, {n_env} env_issue, {n_inc} incomplete, "
-          f"{n_fail} failed, {n_time} timeout, {n_skip} skipped")
+          f"{n_fail} failed, {n_time} timeout, {n_nt} not_tested, "
+          f"{n_skip} skipped")
 
 def step4_to_registry():
     print("\n" + "=" * 60)
