@@ -1,223 +1,151 @@
 [
   {
-    "title": "Quantifying stability via count splitting to guide model selection in RNA velocity analyses.",
-    "doi": "10.1101/2024.11.23.625009",
+    "title": "Harmonizing single-cell 3D genome data with STARK and scNucleome.",
+    "doi": "10.1186/s13059-026-03938-x",
     "github_links": [
-      "https://github.com/linnykos/veloUncertainty",
-      "https://github.com/GreenleafLab/brainchromatin"
+      "https://github.com/open2c/cooltools"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41959044/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41566400/"
   },
   {
-    "title": "GRNFormer: accurate gene regulatory network inference using graph transformer.",
-    "doi": "10.1093/bioinformatics/btag144",
+    "title": "CellMap: precision mapping of cellular landscape in spatial transcriptomics.",
+    "doi": "10.1093/nar/gkaf1484",
     "github_links": [
-      "https://github.com/BioinfoMachineLearning/GRNformer"
+      "https://github.com/romain-lopez/DestVI-reproducibility",
+      "https://github.com/CaiGroup/seqFISH-PLUS"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41883144/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41505103/"
   },
   {
-    "title": "Illuminating cell states by a comprehensive and interpretable single cell foundation model.",
-    "doi": "10.1038/s41467-026-70071-5",
+    "title": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing",
+    "doi": "10.1186/s12859-025-06320-z",
     "github_links": [
-      "https://github.com/A4Bio/CellVQ",
-      "https://github.com/CompBioT/SCAD"
+      "https://github.com/ingmbioinfo/CIA_R",
+      "https://github.com/ingmbioinfo/CIA_benchmark",
+      "https://github.com/ingmbioinfo/cia"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41839876/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41408153/"
   },
   {
-    "title": "Centriflaken: An automated data analysis pipeline for assembly and in silico analyses of foodborne p",
-    "doi": "10.1371/journal.pone.0329425",
+    "title": "The trRosettaRNA server for RNA structure prediction.",
+    "doi": "10.1038/s41596-026-01356-8",
     "github_links": [
-      "https://github.com/CFSAN-Biostatistics/centriflaken",
-      "https://github.com/CFSAN-Biostatstics/centriflaken"
+      "https://github.com/YangLab-SDU/trRosettaRNA2"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41433308/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41951853/"
   },
   {
-    "title": "GRUMB: a genome-resolved metagenomic framework for monitoring urban microbiomes and diagnosing patho",
-    "doi": "10.1093/bioinformatics/btaf548",
+    "title": "The Open Molecular Software Foundation (OMSF) and the Growing Role of Open Source Software in Molecu",
+    "doi": "10.1021/acs.jcim.5c03137",
     "github_links": [
-      "https://github.com/SuleimanAminu/genome-resolved-urban-microbiome-biosurveillance"
+      "https://github.com/aqlaboratory/openfold-3"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41002268/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41805121/"
   },
   {
-    "title": "EMERALD-UI: an interactive web application to unveil novel protein biology hidden in the alternative",
-    "doi": "10.1093/bioinformatics/btag305",
+    "title": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci",
+    "doi": "10.1002/jcc.70225",
     "github_links": [
-      "https://github.com/algbio/emerald-ui"
+      "https://github.com/LABIOQUIM/PlasmoDocking-Client",
+      "https://github.com/LABIOQUIM/PlasmoDocking‐Client"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/42133828/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40905563/"
   },
   {
-    "title": "COMMBAT: a web platform for exploring expression control of biosynthetic gene clusters.",
-    "doi": "10.1093/nar/gkag416",
+    "title": "PyVADesign: a python-based cloning tool for one-step generation of large mutant libraries.",
+    "doi": "10.1093/bioinformatics/btaf433",
     "github_links": [
-      "https://github.com/rstudio/shiny-server"
+      "https://github.com/CDDLeiden/PyVADesign"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/42109174/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40888753/"
   },
   {
-    "title": "The role of graph topology in the performance of biomedical Knowledge Graph Completion models.",
-    "doi": "10.1093/bioinformatics/btaf547",
+    "title": "Cross-species prediction of histone modifications in plants via deep learning.",
+    "doi": "10.1186/s13059-025-03929-4",
     "github_links": [
-      "https://github.com/graphcore-research/kg-topology-toolbox"
+      "https://github.com/compbioNJU/SeiPlant"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41056421/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41514301/"
   },
   {
-    "title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny.",
-    "doi": "10.1038/s41592-025-02947-1",
+    "title": "Linking the epidemiology of coccidioidomycosis and environmental exposure through targeted genomic e",
+    "doi": "10.1128/mbio.03396-25",
     "github_links": [
-      "https://github.com/nebiolabs/VarSkip",
-      "https://github.com/ncbi/sra-tools",
-      "https://github.com/enasequence/enaBrowserTools",
-      "https://github.com/pysam-developers/pysam"
+      "https://github.com/kblin/ncbi-genome-download"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41663577/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41467789/"
   },
   {
-    "title": "mosGraphGen: a novel tool to generate multi-omics signaling graphs to facilitate integrative and int",
-    "doi": "10.1093/bioadv/vbae151",
+    "title": "Function inference of million-scale microbiomes using multi-GPU acceleration.",
+    "doi": "10.1128/spectrum.02072-25",
     "github_links": [
-      "https://github.com/FuhaiLiAiLab/mosGraphGen"
+      "https://github.com/qdu-bioinfo/MGFunc"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39506989/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41201258/"
   },
   {
-    "title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, ",
-    "doi": "10.1093/gigascience/giae013",
+    "title": "Software pipelines for RNA-Seq, ChIP-Seq and germline variant calling analyses in common workflow la",
+    "doi": "10.3389/fbinf.2023.1275593",
     "github_links": [
-      "https://github.com/bioinfodlsu/rice-pilaf",
-      "https://github.com/bioinfodlsu/rice-pilaf&amp;amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-      "https://github.com/bioinfodlsu/rice-pilaf&amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b"
+      "https://github.com/common-workflow-language/cwltool",
+      "https://github.com/BiodataAnalysisGroup/CWL_HTS_pipelines"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38832465/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38025398/"
   },
   {
-    "title": "mosGraphGen: a novel tool to generate multi-omics signaling graphs to facilitate integrative and int",
-    "doi": "10.1101/2024.05.15.594360",
+    "title": "Fragmentomic analysis of circulating tumor DNA-targeted cancer panels.",
+    "doi": "10.1016/j.annonc.2023.06.001",
     "github_links": [
-      "https://github.com/FuhaiLiAiLab/mosGraphGen"
+      "https://github.com/umich-brcf-bioinf/Connor"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38798349/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37330052/"
   },
   {
-    "title": "In silico design of immunogenic antigen cocktail via affinity maturation-guided optimization.",
-    "doi": "10.1093/bioadv/vbaf182",
+    "title": "PAPreC: A Pipeline for Antigenicity Prediction Comparison Methods across Bacteria.",
+    "doi": "10.1021/acsomega.4c07147",
     "github_links": [
-      "https://github.com/nafizabeer/Antigen_Cocktail_Design"
+      "https://github.com/YasCoMa/paprec_nx_workflow"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40831759/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/39989760/"
   },
   {
-    "title": "deepNGS navigator: exploring antibody NGS datasets using deep contrastive learning.",
-    "doi": "10.1093/bioinformatics/btaf414",
+    "title": "Data analysis workflow for the detection of canine vector-borne pathogens using 16 S rRNA Next-Gener",
+    "doi": "10.1186/s12917-021-02969-9",
     "github_links": [
-      "https://github.com/prescient-design/deepngs-navigator",
-      "https://github.com/prescient-design/deepngs-navigator-panel-app"
+      "https://github.com/eltonjrv/microbiome.westernu"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40796135/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34332568/"
   },
   {
-    "title": "AlphaBind, a domain-specific model to predict and optimize antibody-antigen binding affinity.",
-    "doi": "10.1080/19420862.2025.2534626",
+    "title": "NFnetFu: A novel workflow for microbiome data fusion.",
+    "doi": "10.1016/j.compbiomed.2021.104556",
     "github_links": [
-      "https://github.com/A-Alpha-Bio/alphabind"
+      "https://github.com/xia-lab/MicrobiomeAnalystR"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40693434/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34216888/"
   },
   {
-    "title": "From high-throughput evaluation to wet-lab studies: advancing mutation effect prediction with a retr",
-    "doi": "10.1093/bioinformatics/btaf189",
+    "title": "rANOMALY: AmplicoN wOrkflow for Microbial community AnaLYsis.",
+    "doi": "10.12688/f1000research.27268.1",
     "github_links": [
-      "https://github.com/ai4protein/VenusREM",
-      "https://github.com/OATML-Markslab/ProteinGym"
+      "https://github.com/pmartinezarbizu/pairwiseAdonis"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40662802/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33537122/"
   },
   {
-    "title": "BonoboFlow: viral genome assembly and haplotype reconstruction from nanopore reads.",
-    "doi": "10.1093/bioadv/vbaf115",
+    "title": "Frag'n'Flow: automated workflow for large-scale quantitative proteomics in high performance computin",
+    "doi": "10.1186/s12859-025-06305-y",
     "github_links": [
-      "https://github.com/rainyrubyzhou/AccuVIR"
+      "https://github.com/bigbio/proteomics-sample-metadata"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40487929/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41486154/"
   },
   {
-    "title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence ",
-    "doi": "10.1093/bib/bbaf238",
+    "title": "PLAID: ultrafast single-sample gene set enrichment scoring.",
+    "doi": "10.1093/bioinformatics/btaf621",
     "github_links": [
-      "https://github.com/zhouyu9931/RLEAAI",
-      "https://github.com/stau-7001/S3AI",
-      "https://github.com/enai4bio/DeepAAI"
+      "https://github.com/bigomics/plaid"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40462512/"
-  },
-  {
-    "title": "ADCNet: a unified framework for predicting the activity of antibody-drug conjugates.",
-    "doi": "10.1093/bib/bbaf228",
-    "github_links": [
-      "https://github.com/facebookresearch/esm"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40421657/"
-  },
-  {
-    "title": "Finding antibodies in cryo-EM maps with CrAI.",
-    "doi": "10.1093/bioinformatics/btaf157",
-    "github_links": [
-      "https://github.com/Sanofi-Public/crai"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40203077/"
-  },
-  {
-    "title": "$\\mathcal{S}$ able: bridging the gap in protein structure understanding with an empowering and versa",
-    "doi": "10.1093/bib/bbaf120",
-    "github_links": [
-      "https://github.com/baaihealth/Sable"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40163822/"
-  },
-  {
-    "title": "Cellsnake: a user-friendly tool for single-cell RNA sequencing analysis.",
-    "doi": "10.1093/gigascience/giad091",
-    "github_links": [
-      "https://github.com/sinanugur/scrna-workflow"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/37889009/"
-  },
-  {
-    "title": "Inferring microbial co-occurrence networks from amplicon data: a systematic evaluation.",
-    "doi": "10.1128/msystems.00961-22",
-    "github_links": [
-      "https://github.com/segrelab/MiCoNE-pipeline-paper"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/37338270/"
-  },
-  {
-    "title": "MIntO: A Modular and Scalable Pipeline For Microbiome Metagenomic and Metatranscriptomic Data Integr",
-    "doi": "10.3389/fbinf.2022.846922",
-    "github_links": [
-      "https://github.com/arumugamlab/msamtools",
-      "https://github.com/arumugamlab/mseqtools"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/36304282/"
-  },
-  {
-    "title": "SPAC: a scalable and integrated enterprise platform for single-cell spatial analysis.",
-    "doi": "10.1186/s12859-025-06339-2",
-    "github_links": [
-      "https://github.com/FNLCR-DMAP/SCSAWorkflow"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41612174/"
-  },
-  {
-    "title": "iModMix: integrative module analysis for multi-omics data.",
-    "doi": "10.1093/bioinformatics/btag030",
-    "github_links": [
-      "https://github.com/biodatalab/iModMix"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41555479/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41223139/"
   }
 ]

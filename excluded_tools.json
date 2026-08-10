@@ -1,344 +1,164 @@
 [
   {
-    "name": "shiny-server",
-    "github": "https://github.com/rstudio/shiny-server",
-    "status": "exec-not_tested",
-    "reason": "docker build/run too heavy for smoke test; dockerfile detected",
-    "install_cmd": "docker build (per README) && docker run",
-    "has_license": true,
-    "paper_title": "COMMBAT: a web platform for exploring expression control of biosynthetic gene clusters."
+    "name": "MicrobiomeAnalystR",
+    "github": "https://github.com/xia-lab/MicrobiomeAnalystR",
+    "status": "unverified",
+    "reason": "no entry point / license / dependency files found",
+    "install_cmd": "",
+    "has_license": false,
+    "paper_title": "NFnetFu: A novel workflow for microbiome data fusion."
   },
   {
-    "name": "sra-tools",
-    "github": "https://github.com/ncbi/sra-tools",
-    "status": "exec-not_tested",
-    "reason": "docker build/run too heavy for smoke test; dockerfile detected",
-    "install_cmd": "docker build (per README) && docker run",
+    "name": "pairwiseAdonis",
+    "github": "https://github.com/pmartinezarbizu/pairwiseAdonis",
+    "status": "exec-skipped",
+    "reason": "no install command",
+    "install_cmd": "",
     "has_license": true,
-    "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
+    "paper_title": "rANOMALY: AmplicoN wOrkflow for Microbial community AnaLYsis."
   },
   {
-    "name": "enaBrowserTools",
-    "github": "https://github.com/enasequence/enaBrowserTools",
-    "status": "exec-env_issue",
-    "reason": "`enabrowsertools /tmp/execute_mxnmfrbf/sample.fasta` -> exit 127; `enabrowsertools --help` -> exit 127; `python -c 'import enaBrowserTools'` -> exit 1",
+    "name": "proteomics-sample-metadata",
+    "github": "https://github.com/bigbio/proteomics-sample-metadata",
+    "status": "exec-skipped",
+    "reason": "no install command",
+    "install_cmd": "",
+    "has_license": true,
+    "paper_title": "Frag'n'Flow: automated workflow for large-scale quantitative proteomics in high performance computin"
+  },
+  {
+    "name": "trRosettaRNA2",
+    "github": "https://github.com/YangLab-SDU/trRosettaRNA2",
+    "status": "exec-failed",
+    "reason": "conda env create failed (exit 1): baUnsatisfiableError: Encountered problems while solving:\n  - package cudatoolkit-11.8.0-h6a678d5_0 is excluded by strict repo priority\n  - package perl-5.22.0-9 is excluded by strict repo priority\n\n\n",
+    "install_cmd": "conda env create -f environment.yml",
+    "has_license": true,
+    "paper_title": "The trRosettaRNA server for RNA structure prediction."
+  },
+  {
+    "name": "seqFISH-PLUS",
+    "github": "https://github.com/CaiGroup/seqFISH-PLUS",
+    "status": "unverified",
+    "reason": "no entry point / license / dependency files found",
+    "install_cmd": "",
+    "has_license": false,
+    "paper_title": "CellMap: precision mapping of cellular landscape in spatial transcriptomics."
+  },
+  {
+    "name": "DestVI-reproducibility",
+    "github": "https://github.com/romain-lopez/DestVI-reproducibility",
+    "status": "exec-failed",
+    "reason": "install failed (exit 1): within version specifier), semicolon (after version specifier) or end\n    pyodbc==4.0.0-unsupported\n          ~~~~~~~^ (from line 247 of /tmp/execute_vgbtfhhq/DestVI-reproducibility/requirements.txt)\n",
     "install_cmd": "pip install -r requirements.txt",
     "has_license": true,
-    "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
+    "paper_title": "CellMap: precision mapping of cellular landscape in spatial transcriptomics."
   },
   {
-    "name": "pysam",
-    "github": "https://github.com/pysam-developers/pysam",
-    "status": "exec-failed",
-    "reason": "install failed (exit 1):  output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_6vjm4abk/pysam' when getting requirements to build wheel\n",
-    "install_cmd": "pip install https://github.com/pysam-developers/pysam",
-    "has_license": true,
-    "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
-  },
-  {
-    "name": "alphabind",
-    "github": "https://github.com/A-Alpha-Bio/alphabind",
-    "status": "exec-failed",
-    "reason": "install failed (exit 1): put]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_5n2muz2o/alphabind' when getting requirements to build wheel\n",
-    "install_cmd": "pip install https://github.com/A-Alpha-Bio/alphabind",
-    "has_license": true,
-    "paper_title": "AlphaBind, a domain-specific model to predict and optimize antibody-antigen binding affinity."
-  },
-  {
-    "name": "VenusREM",
-    "github": "https://github.com/ai4protein/VenusREM",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create -f environment.yml",
-    "has_license": true,
-    "paper_title": "From high-throughput evaluation to wet-lab studies: advancing mutation effect prediction with a retr"
-  },
-  {
-    "name": "ProteinGym",
-    "github": "https://github.com/OATML-Markslab/ProteinGym",
-    "status": "exec-env_issue",
-    "reason": "`proteingym /tmp/execute_1bfv8g4v/sample.fasta` -> exit 127; `proteingym --help` -> exit 127; `python -c 'import ProteinGym'` -> exit 1",
-    "install_cmd": "pip install https://github.com/OATML-Markslab/ProteinGym",
-    "has_license": true,
-    "paper_title": "From high-throughput evaluation to wet-lab studies: advancing mutation effect prediction with a retr"
-  },
-  {
-    "name": "esm",
-    "github": "https://github.com/facebookresearch/esm",
-    "status": "exec-env_issue",
-    "reason": "`esm /tmp/execute_9lxilqo9/esm/examples/lm-design/additional_requirements.txt` -> exit 127; `esm --help` -> exit 127; `python -c 'import esm'` -> exit 1",
-    "install_cmd": "pip install https://github.com/facebookresearch/esm",
-    "has_license": true,
-    "paper_title": "ADCNet: a unified framework for predicting the activity of antibody-drug conjugates."
-  },
-  {
-    "name": "brainchromatin",
-    "github": "https://github.com/GreenleafLab/brainchromatin",
-    "status": "unverified",
-    "reason": "no entry point / license / dependency files found",
-    "install_cmd": "",
-    "has_license": false,
-    "paper_title": "Quantifying stability via count splitting to guide model selection in RNA velocity analyses."
-  },
-  {
-    "name": "DeepAAI",
-    "github": "https://github.com/enai4bio/DeepAAI",
-    "status": "exec-incomplete",
-    "reason": "install failed (exit 1): or details.\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'scipy' when installing build dependencies for scipy\n",
-    "install_cmd": "pip install -r requirements.txt",
-    "has_license": true,
-    "paper_title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence "
-  },
-  {
-    "name": "msamtools",
-    "github": "https://github.com/arumugamlab/msamtools",
-    "status": "exec-not_tested",
-    "reason": "docker build/run too heavy for smoke test; dockerfile detected",
-    "install_cmd": "docker build -t msamtools . && docker run msamtools",
-    "has_license": true,
-    "paper_title": "MIntO: A Modular and Scalable Pipeline For Microbiome Metagenomic and Metatranscriptomic Data Integr"
-  },
-  {
-    "name": "GRNformer",
-    "github": "https://github.com/BioinfoMachineLearning/GRNformer",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create -f environment.yml",
-    "has_license": true,
-    "paper_title": "GRNFormer: accurate gene regulatory network inference using graph transformer."
-  },
-  {
-    "name": "mosGraphGen",
-    "github": "https://github.com/FuhaiLiAiLab/mosGraphGen",
-    "status": "unverified",
-    "reason": "no entry point / license / dependency files found",
-    "install_cmd": "",
-    "has_license": false,
-    "paper_title": "mosGraphGen: a novel tool to generate multi-omics signaling graphs to facilitate integrative and int"
-  },
-  {
-    "name": "kg-topology-toolbox",
-    "github": "https://github.com/graphcore-research/kg-topology-toolbox",
-    "status": "exec-env_issue",
-    "reason": "`kg_topology_toolbox /tmp/execute_ex0qw00h/sample.fasta` -> exit 127; `kg_topology_toolbox --help` -> exit 127; `python -c 'import kgtopologytoolbox'` -> exit 1",
-    "install_cmd": "pip install https://github.com/graphcore-research/kg-topology-toolbox",
-    "has_license": true,
-    "paper_title": "The role of graph topology in the performance of biomedical Knowledge Graph Completion models."
-  },
-  {
-    "name": "scrna-workflow",
-    "github": "https://github.com/sinanugur/scrna-workflow",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create -f environment.yml",
-    "has_license": true,
-    "paper_title": "Cellsnake: a user-friendly tool for single-cell RNA sequencing analysis."
-  },
-  {
-    "name": "genome-resolved-urban-microbiome-biosurveillance",
-    "github": "https://github.com/SuleimanAminu/genome-resolved-urban-microbiome-biosurveillance",
-    "status": "exec-skipped",
-    "reason": "no install command",
-    "install_cmd": "",
-    "has_license": true,
-    "paper_title": "GRUMB: a genome-resolved metagenomic framework for monitoring urban microbiomes and diagnosing patho"
-  },
-  {
-    "name": "emerald-ui",
-    "github": "https://github.com/algbio/emerald-ui",
-    "status": "exec-skipped",
-    "reason": "no install command",
-    "install_cmd": "",
-    "has_license": true,
-    "paper_title": "EMERALD-UI: an interactive web application to unveil novel protein biology hidden in the alternative"
-  },
-  {
-    "name": "rice-pilaf",
-    "github": "https://github.com/bioinfodlsu/rice-pilaf",
-    "status": "exec-skipped",
-    "reason": "no install command",
-    "install_cmd": "",
-    "has_license": true,
-    "paper_title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, "
-  },
-  {
-    "name": "iModMix",
-    "github": "https://github.com/biodatalab/iModMix",
-    "status": "unverified",
-    "reason": "no entry point / license / dependency files found",
-    "install_cmd": "",
-    "has_license": false,
-    "paper_title": "iModMix: integrative module analysis for multi-omics data."
-  },
-  {
-    "name": "Sable",
-    "github": "https://github.com/ocx-lab/Sable",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create -f environment.yml",
-    "has_license": true,
-    "paper_title": "$\\mathcal{S}$ able: bridging the gap in protein structure understanding with an empowering and versa"
-  },
-  {
-    "name": "centriflaken",
-    "github": "https://github.com/CFSAN-Biostatistics/centriflaken",
-    "status": "exec-skipped",
-    "reason": "no install command",
-    "install_cmd": "",
-    "has_license": true,
-    "paper_title": "Centriflaken: An automated data analysis pipeline for assembly and in silico analyses of foodborne p"
-  },
-  {
-    "name": "MiCoNE-pipeline-paper",
-    "github": "https://github.com/segrelab/MiCoNE-pipeline-paper",
+    "name": "plaid",
+    "github": "https://github.com/bigomics/plaid",
     "status": "exec-failed",
     "reason": "pip_requirements but no requirements.txt found in repo",
-    "install_cmd": "pip install -r scripts/pyproject.toml",
-    "has_license": false,
-    "paper_title": "Inferring microbial co-occurrence networks from amplicon data: a systematic evaluation."
-  },
-  {
-    "name": "Antigen_Cocktail_Design",
-    "github": "https://github.com/nafizabeer/Antigen_Cocktail_Design",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create (per README), then python entry script",
+    "install_cmd": "pip install -r dev/environment.yml",
     "has_license": true,
-    "paper_title": "In silico design of immunogenic antigen cocktail via affinity maturation-guided optimization."
+    "paper_title": "PLAID: ultrafast single-sample gene set enrichment scoring."
   },
   {
-    "name": "mseqtools",
-    "github": "https://github.com/arumugamlab/mseqtools",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create (per README), then python entry script",
+    "name": "Connor",
+    "github": "https://github.com/umich-brcf-bioinf/Connor",
+    "status": "exec-env_issue",
+    "reason": "`/tmp/execute_2et8qx9s/venv/bin/connor /tmp/execute_2et8qx9s/sample.fasta` -> exit 1; `/tmp/execute_2et8qx9s/venv/bin/connor --help` -> exit 1; `python -c 'import Connor'` -> exit 1",
+    "install_cmd": "pip install https://github.com/umich-brcf-bioinf/Connor",
     "has_license": true,
-    "paper_title": "MIntO: A Modular and Scalable Pipeline For Microbiome Metagenomic and Metatranscriptomic Data Integr"
+    "paper_title": "Fragmentomic analysis of circulating tumor DNA-targeted cancer panels."
   },
   {
-    "name": "VarSkip",
-    "github": "https://github.com/nebiolabs/VarSkip",
+    "name": "CWL_HTS_pipelines",
+    "github": "https://github.com/BiodataAnalysisGroup/CWL_HTS_pipelines",
     "status": "exec-skipped",
     "reason": "no install command",
     "install_cmd": "",
     "has_license": true,
-    "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
+    "paper_title": "Software pipelines for RNA-Seq, ChIP-Seq and germline variant calling analyses in common workflow la"
   },
   {
-    "name": "S3AI",
-    "github": "https://github.com/stau-7001/S3AI",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
+    "name": "SeiPlant",
+    "github": "https://github.com/compbioNJU/SeiPlant",
+    "status": "exec-failed",
+    "reason": "conda env created but no import/command smoke exited 0 (import exit 1, cmd exit 127)",
     "install_cmd": "conda env create (per README), then python entry script",
     "has_license": true,
-    "paper_title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence "
+    "paper_title": "Cross-species prediction of histone modifications in plants via deep learning."
   },
   {
-    "name": "CellVQ",
-    "github": "https://github.com/A4Bio/CellVQ",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
+    "name": "paprec_nx_workflow",
+    "github": "https://github.com/YasCoMa/paprec_nx_workflow",
+    "status": "exec-failed",
+    "reason": "conda env created but no import/command smoke exited 0 (import exit 1, cmd exit 127)",
     "install_cmd": "conda env create (per README), then python entry script",
-    "has_license": false,
-    "paper_title": "Illuminating cell states by a comprehensive and interpretable single cell foundation model."
+    "has_license": true,
+    "paper_title": "PAPreC: A Pipeline for Antigenicity Prediction Comparison Methods across Bacteria."
   },
   {
-    "name": "SCAD",
-    "github": "https://github.com/CompBioT/SCAD",
+    "name": "MGFunc",
+    "github": "https://github.com/qdu-bioinfo/MGFunc",
+    "status": "exec-skipped",
+    "reason": "no install command",
+    "install_cmd": "",
+    "has_license": true,
+    "paper_title": "Function inference of million-scale microbiomes using multi-GPU acceleration."
+  },
+  {
+    "name": "microbiome.westernu",
+    "github": "https://github.com/eltonjrv/microbiome.westernu",
     "status": "unverified",
     "reason": "no entry point / license / dependency files found",
     "install_cmd": "",
     "has_license": false,
-    "paper_title": "Illuminating cell states by a comprehensive and interpretable single cell foundation model."
+    "paper_title": "Data analysis workflow for the detection of canine vector-borne pathogens using 16 S rRNA Next-Gener"
   },
   {
-    "name": "SCSAWorkflow",
-    "github": "https://github.com/FNLCR-DMAP/SCSAWorkflow",
-    "status": "exec-env_issue",
-    "reason": "`scsaworkflow /tmp/execute_04iebyd0/sample.fasta` -> exit 127; `scsaworkflow --help` -> exit 127; `python -c 'import SCSAWorkflow'` -> exit 1",
-    "install_cmd": "pip install https://github.com/FNLCR-DMAP/SCSAWorkflow",
-    "has_license": true,
-    "paper_title": "SPAC: a scalable and integrated enterprise platform for single-cell spatial analysis."
-  },
-  {
-    "name": "AccuVIR",
-    "github": "https://github.com/rainyrubyzhou/AccuVIR",
-    "status": "unverified",
-    "reason": "no entry point / license / dependency files found",
-    "install_cmd": "",
-    "has_license": false,
-    "paper_title": "BonoboFlow: viral genome assembly and haplotype reconstruction from nanopore reads."
-  },
-  {
-    "name": "deepngs-navigator",
-    "github": "https://github.com/prescient-design/deepngs-navigator",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create -f environment.yml",
-    "has_license": true,
-    "paper_title": "deepNGS navigator: exploring antibody NGS datasets using deep contrastive learning."
-  },
-  {
-    "name": "crai",
-    "github": "https://github.com/Sanofi-Public/crai",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
+    "name": "PyVADesign",
+    "github": "https://github.com/CDDLeiden/PyVADesign",
+    "status": "exec-failed",
+    "reason": "conda env created but no import/command smoke exited 0 (import exit 1, cmd exit 127)",
     "install_cmd": "conda env create (per README), then python entry script",
     "has_license": true,
-    "paper_title": "Finding antibodies in cryo-EM maps with CrAI."
+    "paper_title": "PyVADesign: a python-based cloning tool for one-step generation of large mutant libraries."
   },
   {
-    "name": "RLEAAI",
-    "github": "https://github.com/zhouyu9931/RLEAAI",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
+    "name": "CIA_R",
+    "github": "https://github.com/ingmbioinfo/CIA_R",
+    "status": "exec-failed",
+    "reason": "conda env created but no import/command smoke exited 0 (import exit 1, cmd exit 127)",
     "install_cmd": "conda env create (per README), then python entry script",
-    "has_license": false,
-    "paper_title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence "
+    "has_license": true,
+    "paper_title": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing"
   },
   {
-    "name": "veloUncertainty",
-    "github": "https://github.com/linnykos/veloUncertainty",
+    "name": "PlasmoDocking-Client",
+    "github": "https://github.com/LABIOQUIM/PlasmoDocking-Client",
+    "status": "exec-failed",
+    "reason": "docker build failed (exit 1): ] load build definition from Dockerfile\n#1 transferring dockerfile: 2B done\n#1 DONE 0.0s\nERROR: failed to build: failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory\n",
+    "install_cmd": "docker build -t PlasmoDocking-Client . && docker run PlasmoDocking-Client",
+    "has_license": false,
+    "paper_title": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci"
+  },
+  {
+    "name": "CIA_benchmark",
+    "github": "https://github.com/ingmbioinfo/CIA_benchmark",
     "status": "unverified",
     "reason": "no entry point / license / dependency files found",
-    "install_cmd": "",
+    "install_cmd": "conda env create (per README), then python entry script",
     "has_license": false,
-    "paper_title": "Quantifying stability via count splitting to guide model selection in RNA velocity analyses."
+    "paper_title": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing"
   },
   {
-    "name": "deepngs-navigator-panel-app",
-    "github": "https://github.com/prescient-design/deepngs-navigator-panel-app",
-    "status": "exec-not_tested",
-    "reason": "conda env install too heavy for smoke test; deferred",
-    "install_cmd": "conda env create -f environment.yml",
-    "has_license": true,
-    "paper_title": "deepNGS navigator: exploring antibody NGS datasets using deep contrastive learning."
-  },
-  {
-    "name": "centriflaken",
-    "github": "https://github.com/CFSAN-Biostatstics/centriflaken",
+    "name": "PlasmoDocking‐Client",
+    "github": "https://github.com/LABIOQUIM/PlasmoDocking‐Client",
     "status": "unverified",
     "reason": "clone failed",
     "install_cmd": "",
     "has_license": false,
-    "paper_title": "Centriflaken: An automated data analysis pipeline for assembly and in silico analyses of foodborne p"
-  },
-  {
-    "name": "rice-pilaf&amp;amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-    "github": "https://github.com/bioinfodlsu/rice-pilaf&amp;amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-    "status": "unverified",
-    "reason": "clone failed",
-    "install_cmd": "",
-    "has_license": false,
-    "paper_title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, "
-  },
-  {
-    "name": "rice-pilaf&amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-    "github": "https://github.com/bioinfodlsu/rice-pilaf&amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-    "status": "unverified",
-    "reason": "clone failed",
-    "install_cmd": "",
-    "has_license": false,
-    "paper_title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, "
+    "paper_title": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci"
   }
 ]

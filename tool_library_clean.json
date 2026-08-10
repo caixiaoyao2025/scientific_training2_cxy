@@ -1,11 +1,66 @@
 [
   {
-    "name": "shiny-server",
-    "description": "Host Shiny applications over the web.",
+    "name": "cooltools",
+    "description": "The tools for your .cool's",
     "source": {
-      "github": "https://github.com/rstudio/shiny-server",
-      "paper_doi": "10.1093/nar/gkag416",
-      "paper_title": "COMMBAT: a web platform for exploring expression control of biosynthetic gene clusters."
+      "github": "https://github.com/open2c/cooltools",
+      "paper_doi": "10.1186/s13059-026-03938-x",
+      "paper_title": "Harmonizing single-cell 3D genome data with STARK and scNucleome."
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "software",
+      "genome",
+      "cooltools"
+    ],
+    "quality_score": 55,
+    "github_metadata": {
+      "stars": 168,
+      "language": "Jupyter Notebook",
+      "forks": 56
+    },
+    "discovered_at": "2026-08-10T10:55:52.877915"
+  },
+  {
+    "name": "openfold-3",
+    "description": "A fully open source biomolecular structure prediction model based on AlphaFold3",
+    "source": {
+      "github": "https://github.com/aqlaboratory/openfold-3",
+      "paper_doi": "10.1021/acs.jcim.5c03137",
+      "paper_title": "The Open Molecular Software Foundation (OMSF) and the Growing Role of Open Source Software in Molecu"
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "molecular",
+      "openfold",
+      "software",
+      "structure"
+    ],
+    "quality_score": 55,
+    "github_metadata": {
+      "stars": 816,
+      "language": "Python",
+      "forks": 150
+    },
+    "discovered_at": "2026-08-10T10:55:52.878420"
+  },
+  {
+    "name": "ncbi-genome-download",
+    "description": "Scripts to download genomes from the NCBI FTP servers",
+    "source": {
+      "github": "https://github.com/kblin/ncbi-genome-download",
+      "paper_doi": "10.1128/mbio.03396-25",
+      "paper_title": "Linking the epidemiology of coccidioidomycosis and environmental exposure through targeted genomic e"
     },
     "type": "web_server",
     "interface": {
@@ -14,52 +69,78 @@
       "web": true
     },
     "tags": [
-      "server",
-      "shiny",
+      "download",
+      "web_server",
+      "genome",
+      "ncbi"
+    ],
+    "quality_score": 55,
+    "github_metadata": {
+      "stars": 1082,
+      "language": "Python",
+      "forks": 176
+    },
+    "discovered_at": "2026-08-10T10:55:52.878703"
+  },
+  {
+    "name": "cwltool",
+    "description": "Common Workflow Language reference implementation",
+    "source": {
+      "github": "https://github.com/common-workflow-language/cwltool",
+      "paper_doi": "10.3389/fbinf.2023.1275593",
+      "paper_title": "Software pipelines for RNA-Seq, ChIP-Seq and germline variant calling analyses in common workflow la"
+    },
+    "type": "pipeline",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "pipeline",
+      "cwltool"
+    ],
+    "quality_score": 55,
+    "github_metadata": {
+      "stars": 376,
+      "language": "Python",
+      "forks": 252
+    },
+    "discovered_at": "2026-08-10T10:55:52.878821"
+  },
+  {
+    "name": "MicrobiomeAnalystR",
+    "description": "A companion R package for the MicrobiomeAnalyst web server",
+    "source": {
+      "github": "https://github.com/xia-lab/MicrobiomeAnalystR",
+      "paper_doi": "10.1016/j.compbiomed.2021.104556",
+      "paper_title": "NFnetFu: A novel workflow for microbiome data fusion."
+    },
+    "type": "web_server",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": true
+    },
+    "tags": [
+      "microbiomeanalystr",
       "web_server"
     ],
     "quality_score": 55,
     "github_metadata": {
-      "stars": 759,
-      "language": "JavaScript",
-      "forks": 289
+      "stars": 133,
+      "language": "R",
+      "forks": 40
     },
-    "discovered_at": "2026-08-10T09:20:11.871053"
+    "discovered_at": "2026-08-10T10:55:52.879121"
   },
   {
-    "name": "sra-tools",
-    "description": "SRA Tools",
+    "name": "pairwiseAdonis",
+    "description": "Pairwise multilevel comparison using adonis",
     "source": {
-      "github": "https://github.com/ncbi/sra-tools",
-      "paper_doi": "10.1038/s41592-025-02947-1",
-      "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "sra",
-      "software",
-      "tools"
-    ],
-    "quality_score": 55,
-    "github_metadata": {
-      "stars": 1361,
-      "language": "C",
-      "forks": 278
-    },
-    "discovered_at": "2026-08-10T09:20:11.871235"
-  },
-  {
-    "name": "enaBrowserTools",
-    "description": "A collection of scripts to assist in the retrieval of data from the ENA Browser",
-    "source": {
-      "github": "https://github.com/enasequence/enaBrowserTools",
-      "paper_doi": "10.1038/s41592-025-02947-1",
-      "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
+      "github": "https://github.com/pmartinezarbizu/pairwiseAdonis",
+      "paper_doi": "10.12688/f1000research.27268.1",
+      "paper_title": "rANOMALY: AmplicoN wOrkflow for Microbial community AnaLYsis."
     },
     "type": "software",
     "interface": {
@@ -69,49 +150,23 @@
     },
     "tags": [
       "software",
-      "enabrowsertools"
+      "pairwiseadonis"
     ],
     "quality_score": 55,
     "github_metadata": {
-      "stars": 101,
-      "language": "Python",
-      "forks": 18
+      "stars": 82,
+      "language": "R",
+      "forks": 26
     },
-    "discovered_at": "2026-08-10T09:20:11.871312"
+    "discovered_at": "2026-08-10T10:55:52.879176"
   },
   {
-    "name": "pysam",
-    "description": "Pysam is a Python package for reading, manipulating, and writing genomics data such as SAM/BAM/CRAM and VCF/BCF files. It's a lightweight wrapper of the HTSlib API, the same one that powers samtools, bcftools, and tabix.",
+    "name": "proteomics-sample-metadata",
+    "description": "SDRF: The Proteomics sample metadata: Standard for experimental design annotation in proteomics datasets",
     "source": {
-      "github": "https://github.com/pysam-developers/pysam",
-      "paper_doi": "10.1038/s41592-025-02947-1",
-      "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
-    },
-    "type": "web_server",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": true
-    },
-    "tags": [
-      "web_server",
-      "pysam"
-    ],
-    "quality_score": 55,
-    "github_metadata": {
-      "stars": 904,
-      "language": "Cython",
-      "forks": 299
-    },
-    "discovered_at": "2026-08-10T09:20:11.871372"
-  },
-  {
-    "name": "alphabind",
-    "description": "AlphaBind code + model accompanying pre-print",
-    "source": {
-      "github": "https://github.com/A-Alpha-Bio/alphabind",
-      "paper_doi": "10.1080/19420862.2025.2534626",
-      "paper_title": "AlphaBind, a domain-specific model to predict and optimize antibody-antigen binding affinity."
+      "github": "https://github.com/bigbio/proteomics-sample-metadata",
+      "paper_doi": "10.1186/s12859-025-06305-y",
+      "paper_title": "Frag'n'Flow: automated workflow for large-scale quantitative proteomics in high performance computin"
     },
     "type": "software",
     "interface": {
@@ -121,76 +176,26 @@
     },
     "tags": [
       "software",
-      "alphabind"
+      "metadata",
+      "sample",
+      "proteomics",
+      "design"
     ],
     "quality_score": 55,
     "github_metadata": {
-      "stars": 93,
-      "language": "Jupyter Notebook",
-      "forks": 11
-    },
-    "discovered_at": "2026-08-10T09:20:11.871774"
-  },
-  {
-    "name": "VenusREM",
-    "description": "🧬 Augmenting zero-shot mutant prediction by retrieval-based logits fusion. (ISMB/ECCB 2025)",
-    "source": {
-      "github": "https://github.com/ai4protein/VenusREM",
-      "paper_doi": "10.1093/bioinformatics/btaf189",
-      "paper_title": "From high-throughput evaluation to wet-lab studies: advancing mutation effect prediction with a retr"
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "software",
-      "venusrem"
-    ],
-    "quality_score": 55,
-    "github_metadata": {
-      "stars": 139,
-      "language": "Python",
-      "forks": 14
-    },
-    "discovered_at": "2026-08-10T09:20:11.871842"
-  },
-  {
-    "name": "ProteinGym",
-    "description": "Official repository for the ProteinGym benchmarks",
-    "source": {
-      "github": "https://github.com/OATML-Markslab/ProteinGym",
-      "paper_doi": "10.1093/bioinformatics/btaf189",
-      "paper_title": "From high-throughput evaluation to wet-lab studies: advancing mutation effect prediction with a retr"
-    },
-    "type": "pipeline",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "software",
-      "proteingym",
-      "protein"
-    ],
-    "quality_score": 55,
-    "github_metadata": {
-      "stars": 458,
+      "stars": 115,
       "language": "HTML",
-      "forks": 59
+      "forks": 115
     },
-    "discovered_at": "2026-08-10T09:20:11.871900"
+    "discovered_at": "2026-08-10T10:55:52.879234"
   },
   {
-    "name": "esm",
-    "description": "Evolutionary Scale Modeling (esm): Pretrained language models for proteins",
+    "name": "trRosettaRNA2",
+    "description": "Predicting RNA 3D structure and conformers using a pre-trained secondary structure model and structure-aware attention",
     "source": {
-      "github": "https://github.com/facebookresearch/esm",
-      "paper_doi": "10.1093/bib/bbaf228",
-      "paper_title": "ADCNet: a unified framework for predicting the activity of antibody-drug conjugates."
+      "github": "https://github.com/YangLab-SDU/trRosettaRNA2",
+      "paper_doi": "10.1038/s41596-026-01356-8",
+      "paper_title": "The trRosettaRNA server for RNA structure prediction."
     },
     "type": "software",
     "interface": {
@@ -199,53 +204,26 @@
       "web": false
     },
     "tags": [
-      "software",
-      "esm",
-      "protein",
-      "evolution"
-    ],
-    "quality_score": 55,
-    "github_metadata": {
-      "stars": 4171,
-      "language": "Python",
-      "forks": 802
-    },
-    "discovered_at": "2026-08-10T09:20:11.872194"
-  },
-  {
-    "name": "brainchromatin",
-    "description": "Code used to analyze single cell RNA and ATAC sequencing in developing human brain",
-    "source": {
-      "github": "https://github.com/GreenleafLab/brainchromatin",
-      "paper_doi": "10.1101/2024.11.23.625009",
-      "paper_title": "Quantifying stability via count splitting to guide model selection in RNA velocity analyses."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "brainchromatin",
+      "trrosettarna",
+      "structure",
       "software",
       "rna"
     ],
-    "quality_score": 46.599999999999994,
+    "quality_score": 47.8,
     "github_metadata": {
-      "stars": 36,
-      "language": "R",
-      "forks": 7
+      "stars": 38,
+      "language": "Python",
+      "forks": 1
     },
-    "discovered_at": "2026-08-10T09:20:11.870560"
+    "discovered_at": "2026-08-10T10:55:52.878354"
   },
   {
-    "name": "DeepAAI",
-    "description": "DeepAAI",
+    "name": "seqFISH-PLUS",
+    "description": "CellMap: precision mapping of cellular landscape in spatial transcriptomics.",
     "source": {
-      "github": "https://github.com/enai4bio/DeepAAI",
-      "paper_doi": "10.1093/bib/bbaf238",
-      "paper_title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence "
+      "github": "https://github.com/CaiGroup/seqFISH-PLUS",
+      "paper_doi": "10.1093/nar/gkaf1484",
+      "paper_title": "CellMap: precision mapping of cellular landscape in spatial transcriptomics."
     },
     "type": "software",
     "interface": {
@@ -254,26 +232,52 @@
       "web": false
     },
     "tags": [
-      "sequence",
-      "protein",
       "software",
-      "deepaai"
+      "plus",
+      "seqfish"
     ],
-    "quality_score": 46.599999999999994,
+    "quality_score": 45,
     "github_metadata": {
-      "stars": 36,
-      "language": "Python",
+      "stars": 53,
+      "language": "MATLAB",
+      "forks": 11
+    },
+    "discovered_at": "2026-08-10T10:55:52.878093"
+  },
+  {
+    "name": "DestVI-reproducibility",
+    "description": "Reproducing the experiments of the DestVI paper",
+    "source": {
+      "github": "https://github.com/romain-lopez/DestVI-reproducibility",
+      "paper_doi": "10.1093/nar/gkaf1484",
+      "paper_title": "CellMap: precision mapping of cellular landscape in spatial transcriptomics."
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "software",
+      "reproducibility",
+      "destvi"
+    ],
+    "quality_score": 39.4,
+    "github_metadata": {
+      "stars": 24,
+      "language": "Jupyter Notebook",
       "forks": 4
     },
-    "discovered_at": "2026-08-10T09:20:11.872136"
+    "discovered_at": "2026-08-10T10:55:52.878022"
   },
   {
-    "name": "msamtools",
-    "description": "Metagenomics-related extended functionalities to samtools",
+    "name": "plaid",
+    "description": "Ultrafast method to compute single-sample gene set enrichment scores for gene expression or proteomics data",
     "source": {
-      "github": "https://github.com/arumugamlab/msamtools",
-      "paper_doi": "10.3389/fbinf.2022.846922",
-      "paper_title": "MIntO: A Modular and Scalable Pipeline For Microbiome Metagenomic and Metatranscriptomic Data Integr"
+      "github": "https://github.com/bigomics/plaid",
+      "paper_doi": "10.1093/bioinformatics/btaf621",
+      "paper_title": "PLAID: ultrafast single-sample gene set enrichment scoring."
     },
     "type": "software",
     "interface": {
@@ -283,23 +287,23 @@
     },
     "tags": [
       "software",
-      "msamtools"
+      "plaid"
     ],
-    "quality_score": 38.2,
+    "quality_score": 39.4,
     "github_metadata": {
-      "stars": 22,
-      "language": "C",
+      "stars": 24,
+      "language": "R",
       "forks": 3
     },
-    "discovered_at": "2026-08-10T09:20:11.872515"
+    "discovered_at": "2026-08-10T10:55:52.879288"
   },
   {
-    "name": "GRNformer",
-    "description": "Transformer models for predicting gene regulatory networks from omics data",
+    "name": "Connor",
+    "description": "Deduplication based on custom inline DNA barcodes.",
     "source": {
-      "github": "https://github.com/BioinfoMachineLearning/GRNformer",
-      "paper_doi": "10.1093/bioinformatics/btag144",
-      "paper_title": "GRNFormer: accurate gene regulatory network inference using graph transformer."
+      "github": "https://github.com/umich-brcf-bioinf/Connor",
+      "paper_doi": "10.1016/j.annonc.2023.06.001",
+      "paper_title": "Fragmentomic analysis of circulating tumor DNA-targeted cancer panels."
     },
     "type": "software",
     "interface": {
@@ -308,77 +312,25 @@
       "web": false
     },
     "tags": [
-      "grnformer",
-      "software"
+      "software",
+      "connor",
+      "dna"
     ],
-    "quality_score": 37.6,
+    "quality_score": 37.0,
     "github_metadata": {
-      "stars": 21,
+      "stars": 20,
       "language": "Python",
-      "forks": 2
+      "forks": 7
     },
-    "discovered_at": "2026-08-10T09:20:11.870631"
+    "discovered_at": "2026-08-10T10:55:52.878935"
   },
   {
-    "name": "mosGraphGen",
-    "description": "Build the graph model from UCSC and ROSMAP dataset",
+    "name": "CWL_HTS_pipelines",
+    "description": "CWL workflows and wrappers for processing HTS data from RNA-Seq, ChIP-Seq and Germline Variant calling experiments",
     "source": {
-      "github": "https://github.com/FuhaiLiAiLab/mosGraphGen",
-      "paper_doi": "10.1093/bioadv/vbae151",
-      "paper_title": "mosGraphGen: a novel tool to generate multi-omics signaling graphs to facilitate integrative and int"
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "mosgraphgen",
-      "software"
-    ],
-    "quality_score": 34.8,
-    "github_metadata": {
-      "stars": 8,
-      "language": "Jupyter Notebook",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.871429"
-  },
-  {
-    "name": "kg-topology-toolbox",
-    "description": "A Python toolbox to compute topological metrics and statistics for Knowledge Graphs",
-    "source": {
-      "github": "https://github.com/graphcore-research/kg-topology-toolbox",
-      "paper_doi": "10.1093/bioinformatics/btaf547",
-      "paper_title": "The role of graph topology in the performance of biomedical Knowledge Graph Completion models."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "topology",
-      "toolbox",
-      "software"
-    ],
-    "quality_score": 31.0,
-    "github_metadata": {
-      "stars": 10,
-      "language": "Jupyter Notebook",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.871114"
-  },
-  {
-    "name": "scrna-workflow",
-    "description": "scRNA workflow of Cellsnake",
-    "source": {
-      "github": "https://github.com/sinanugur/scrna-workflow",
-      "paper_doi": "10.1093/gigascience/giad091",
-      "paper_title": "Cellsnake: a user-friendly tool for single-cell RNA sequencing analysis."
+      "github": "https://github.com/BiodataAnalysisGroup/CWL_HTS_pipelines",
+      "paper_doi": "10.3389/fbinf.2023.1275593",
+      "paper_title": "Software pipelines for RNA-Seq, ChIP-Seq and germline variant calling analyses in common workflow la"
     },
     "type": "pipeline",
     "interface": {
@@ -387,40 +339,38 @@
       "web": false
     },
     "tags": [
-      "workflow",
+      "pipelines",
+      "cwl",
+      "hts",
       "pipeline",
-      "scrna",
       "rna"
     ],
     "quality_score": 28.6,
     "github_metadata": {
       "stars": 6,
-      "language": "R",
+      "language": "Common Workflow Language",
       "forks": 3
     },
-    "discovered_at": "2026-08-10T09:20:11.872387"
+    "discovered_at": "2026-08-10T10:55:52.878879"
   },
   {
-    "name": "genome-resolved-urban-microbiome-biosurveillance",
-    "description": "Genome-resolved metagenomics and machine learning pipeline for urban microbiome surveillance, risk modeling, and pathogen classification. Built for environmental Antimicrobial Resistance (AMR) biosurveillance.",
+    "name": "cia",
+    "description": "CIA (Cluster Independent Annotation) is a new computational tool that enables a highly accurate automatic classification of cells in scRNA-seq datasets exploiting gene signatures.",
     "source": {
-      "github": "https://github.com/SuleimanAminu/genome-resolved-urban-microbiome-biosurveillance",
-      "paper_doi": "10.1093/bioinformatics/btaf548",
-      "paper_title": "GRUMB: a genome-resolved metagenomic framework for monitoring urban microbiomes and diagnosing patho"
+      "github": "https://github.com/ingmbioinfo/cia",
+      "paper_doi": "10.1186/s12859-025-06320-z",
+      "paper_title": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing"
     },
-    "type": "pipeline",
+    "type": "software",
     "interface": {
       "cli": true,
       "api": false,
       "web": false
     },
     "tags": [
-      "resolved",
-      "biosurveillance",
-      "microbiome",
-      "pipeline",
-      "genome",
-      "urban"
+      "software",
+      "cia",
+      "rna"
     ],
     "quality_score": 28.0,
     "github_metadata": {
@@ -428,15 +378,15 @@
       "language": "Python",
       "forks": 2
     },
-    "discovered_at": "2026-08-10T09:20:11.870927"
+    "discovered_at": "2026-08-10T10:55:52.878289"
   },
   {
-    "name": "emerald-ui",
-    "description": "Interactive Protein Sequence Alignment Visualization",
+    "name": "SeiPlant",
+    "description": "Cross-species prediction of histone modifications in plants using the Sei deep learning architecture.",
     "source": {
-      "github": "https://github.com/algbio/emerald-ui",
-      "paper_doi": "10.1093/bioinformatics/btag305",
-      "paper_title": "EMERALD-UI: an interactive web application to unveil novel protein biology hidden in the alternative"
+      "github": "https://github.com/compbioNJU/SeiPlant",
+      "paper_doi": "10.1186/s13059-025-03929-4",
+      "paper_title": "Cross-species prediction of histone modifications in plants via deep learning."
     },
     "type": "software",
     "interface": {
@@ -445,269 +395,185 @@
       "web": false
     },
     "tags": [
-      "protein",
-      "software",
-      "emerald",
-      "sequence"
+      "seiplant",
+      "software"
     ],
-    "quality_score": 28.0,
+    "quality_score": 25.6,
     "github_metadata": {
-      "stars": 5,
-      "language": "TypeScript",
-      "forks": 1
+      "stars": 1,
+      "language": "Python",
+      "forks": 0
     },
-    "discovered_at": "2026-08-10T09:20:11.870992"
+    "discovered_at": "2026-08-10T10:55:52.878640"
   },
   {
-    "name": "rice-pilaf",
-    "description": "Published in GigaScience. Web app for post-GWAS/QTL analysis that performs a slew of novel bioinformatics analyses to cross-reference GWAS/QTL mapping results with a host of publicly available rice databases",
+    "name": "paprec_nx_workflow",
+    "description": "Scientific workflow to perform ML model screening for antigenicity prediction",
     "source": {
-      "github": "https://github.com/bioinfodlsu/rice-pilaf",
-      "paper_doi": "10.1093/gigascience/giae013",
-      "paper_title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, "
+      "github": "https://github.com/YasCoMa/paprec_nx_workflow",
+      "paper_doi": "10.1021/acsomega.4c07147",
+      "paper_title": "PAPreC: A Pipeline for Antigenicity Prediction Comparison Methods across Bacteria."
     },
-    "type": "database",
+    "type": "pipeline",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "pipeline",
+      "workflow",
+      "paprec"
+    ],
+    "quality_score": 25.6,
+    "github_metadata": {
+      "stars": 1,
+      "language": "Python",
+      "forks": 0
+    },
+    "discovered_at": "2026-08-10T10:55:52.879005"
+  },
+  {
+    "name": "MGFunc",
+    "description": "Microbiome GPU-based Function inference",
+    "source": {
+      "github": "https://github.com/qdu-bioinfo/MGFunc",
+      "paper_doi": "10.1128/spectrum.02072-25",
+      "paper_title": "Function inference of million-scale microbiomes using multi-GPU acceleration."
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "software",
+      "mgfunc"
+    ],
+    "quality_score": 25.0,
+    "github_metadata": {
+      "stars": 0,
+      "language": "C++",
+      "forks": 0
+    },
+    "discovered_at": "2026-08-10T10:55:52.878763"
+  },
+  {
+    "name": "microbiome.westernu",
+    "description": "Microbiome Analysis applied to Vet Med",
+    "source": {
+      "github": "https://github.com/eltonjrv/microbiome.westernu",
+      "paper_doi": "10.1186/s12917-021-02969-9",
+      "paper_title": "Data analysis workflow for the detection of canine vector-borne pathogens using 16 S rRNA Next-Gener"
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "software",
+      "westernu",
+      "microbiome"
+    ],
+    "quality_score": 25.0,
+    "github_metadata": {
+      "stars": 0,
+      "language": "Shell",
+      "forks": 0
+    },
+    "discovered_at": "2026-08-10T10:55:52.879067"
+  },
+  {
+    "name": "PyVADesign",
+    "description": "PyVADesign: a python-based cloning tool for one-step generation of large mutant libraries.",
+    "source": {
+      "github": "https://github.com/CDDLeiden/PyVADesign",
+      "paper_doi": "10.1093/bioinformatics/btaf433",
+      "paper_title": "PyVADesign: a python-based cloning tool for one-step generation of large mutant libraries."
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "library",
+      "pyvadesign",
+      "design"
+    ],
+    "quality_score": 19.2,
+    "github_metadata": {
+      "stars": 7,
+      "language": "Jupyter Notebook",
+      "forks": 1
+    },
+    "discovered_at": "2026-08-10T10:55:52.878566"
+  },
+  {
+    "name": "CIA_R",
+    "description": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing",
+    "source": {
+      "github": "https://github.com/ingmbioinfo/CIA_R",
+      "paper_doi": "10.1186/s12859-025-06320-z",
+      "paper_title": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing"
+    },
+    "type": "software",
+    "interface": {
+      "cli": true,
+      "api": false,
+      "web": false
+    },
+    "tags": [
+      "software",
+      "cia",
+      "rna"
+    ],
+    "quality_score": 16.2,
+    "github_metadata": {
+      "stars": 2,
+      "language": "HTML",
+      "forks": 0
+    },
+    "discovered_at": "2026-08-10T10:55:52.878162"
+  },
+  {
+    "name": "PlasmoDocking-Client",
+    "description": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci",
+    "source": {
+      "github": "https://github.com/LABIOQUIM/PlasmoDocking-Client",
+      "paper_doi": "10.1002/jcc.70225",
+      "paper_title": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci"
+    },
+    "type": "web_server",
     "interface": {
       "cli": true,
       "api": false,
       "web": true
     },
     "tags": [
-      "web_server",
-      "pilaf",
-      "rice"
+      "plasmodocking",
+      "client",
+      "web_server"
     ],
-    "quality_score": 28.0,
-    "github_metadata": {
-      "stars": 5,
-      "language": "Python",
-      "forks": 4
-    },
-    "discovered_at": "2026-08-10T09:20:11.871487"
-  },
-  {
-    "name": "iModMix",
-    "description": "Integrative Modules for Multi-omics Data",
-    "source": {
-      "github": "https://github.com/biodatalab/iModMix",
-      "paper_doi": "10.1093/bioinformatics/btag030",
-      "paper_title": "iModMix: integrative module analysis for multi-omics data."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "imodmix",
-      "software"
-    ],
-    "quality_score": 27.4,
-    "github_metadata": {
-      "stars": 4,
-      "language": "HTML",
-      "forks": 1
-    },
-    "discovered_at": "2026-08-10T09:20:11.872682"
-  },
-  {
-    "name": "Sable",
-    "description": "Sable is an open-source representation learning framework for protein.",
-    "source": {
-      "github": "https://github.com/ocx-lab/Sable",
-      "paper_doi": "10.1093/bib/bbaf120",
-      "paper_title": "$\\mathcal{S}$ able: bridging the gap in protein structure understanding with an empowering and versa"
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "sable",
-      "structure",
-      "protein",
-      "software"
-    ],
-    "quality_score": 26.8,
-    "github_metadata": {
-      "stars": 3,
-      "language": "Python",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.872327"
-  },
-  {
-    "name": "centriflaken",
-    "description": "centriflaken ",
-    "source": {
-      "github": "https://github.com/CFSAN-Biostatistics/centriflaken",
-      "paper_doi": "10.1371/journal.pone.0329425",
-      "paper_title": "Centriflaken: An automated data analysis pipeline for assembly and in silico analyses of foodborne p"
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "centriflaken",
-      "software"
-    ],
-    "quality_score": 25.6,
+    "quality_score": 15.6,
     "github_metadata": {
       "stars": 1,
-      "language": "Nextflow",
+      "language": "TypeScript",
       "forks": 0
     },
-    "discovered_at": "2026-08-10T09:20:11.870827"
+    "discovered_at": "2026-08-10T10:55:52.878483"
   },
   {
-    "name": "MiCoNE-pipeline-paper",
-    "description": "The source code for the MIND pipeline paper",
+    "name": "CIA_benchmark",
+    "description": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing",
     "source": {
-      "github": "https://github.com/segrelab/MiCoNE-pipeline-paper",
-      "paper_doi": "10.1128/msystems.00961-22",
-      "paper_title": "Inferring microbial co-occurrence networks from amplicon data: a systematic evaluation."
-    },
-    "type": "pipeline",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "micone",
-      "pipeline",
-      "paper"
-    ],
-    "quality_score": 25.6,
-    "github_metadata": {
-      "stars": 1,
-      "language": "HTML",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.872457"
-  },
-  {
-    "name": "Antigen_Cocktail_Design",
-    "description": "Companion repository for manuscript titled \"In Silico Design of Immunogenic Antigen Cocktail via Affinity Maturation Guided Optimization\"",
-    "source": {
-      "github": "https://github.com/nafizabeer/Antigen_Cocktail_Design",
-      "paper_doi": "10.1093/bioadv/vbaf182",
-      "paper_title": "In silico design of immunogenic antigen cocktail via affinity maturation-guided optimization."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "antigen",
-      "design",
-      "software",
-      "cocktail"
-    ],
-    "quality_score": 25.0,
-    "github_metadata": {
-      "stars": 0,
-      "language": "Python",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.871596"
-  },
-  {
-    "name": "mseqtools",
-    "description": "fastq/fasta file manipulation toolkit",
-    "source": {
-      "github": "https://github.com/arumugamlab/mseqtools",
-      "paper_doi": "10.3389/fbinf.2022.846922",
-      "paper_title": "MIntO: A Modular and Scalable Pipeline For Microbiome Metagenomic and Metatranscriptomic Data Integr"
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "mseqtools",
-      "software"
-    ],
-    "quality_score": 25.0,
-    "github_metadata": {
-      "stars": 0,
-      "language": "C",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.872571"
-  },
-  {
-    "name": "VarSkip",
-    "description": "VarSkip multiplex PCR designs for SARS-CoV-2 sequencing",
-    "source": {
-      "github": "https://github.com/nebiolabs/VarSkip",
-      "paper_doi": "10.1038/s41592-025-02947-1",
-      "paper_title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "varskip",
-      "software",
-      "design"
-    ],
-    "quality_score": 24.0,
-    "github_metadata": {
-      "stars": 15,
-      "language": null,
-      "forks": 9
-    },
-    "discovered_at": "2026-08-10T09:20:11.871175"
-  },
-  {
-    "name": "S3AI",
-    "description": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence ",
-    "source": {
-      "github": "https://github.com/stau-7001/S3AI",
-      "paper_doi": "10.1093/bib/bbaf238",
-      "paper_title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence "
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "sequence",
-      "software",
-      "protein",
-      "antibody"
-    ],
-    "quality_score": 24.0,
-    "github_metadata": {
-      "stars": 15,
-      "language": "Python",
-      "forks": 1
-    },
-    "discovered_at": "2026-08-10T09:20:11.872072"
-  },
-  {
-    "name": "CellVQ",
-    "description": "Illuminating cell states by a comprehensive and interpretable single cell foundation model.",
-    "source": {
-      "github": "https://github.com/A4Bio/CellVQ",
-      "paper_doi": "10.1038/s41467-026-70071-5",
-      "paper_title": "Illuminating cell states by a comprehensive and interpretable single cell foundation model."
+      "github": "https://github.com/ingmbioinfo/CIA_benchmark",
+      "paper_doi": "10.1186/s12859-025-06320-z",
+      "paper_title": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing"
     },
     "type": "software",
     "interface": {
@@ -717,252 +583,36 @@
     },
     "tags": [
       "software",
-      "cellvq"
-    ],
-    "quality_score": 22.8,
-    "github_metadata": {
-      "stars": 13,
-      "language": "Python",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.870700"
-  },
-  {
-    "name": "SCAD",
-    "description": "Illuminating cell states by a comprehensive and interpretable single cell foundation model.",
-    "source": {
-      "github": "https://github.com/CompBioT/SCAD",
-      "paper_doi": "10.1038/s41467-026-70071-5",
-      "paper_title": "Illuminating cell states by a comprehensive and interpretable single cell foundation model."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "software",
-      "scad"
-    ],
-    "quality_score": 22.2,
-    "github_metadata": {
-      "stars": 12,
-      "language": "Python",
-      "forks": 3
-    },
-    "discovered_at": "2026-08-10T09:20:11.870765"
-  },
-  {
-    "name": "SCSAWorkflow",
-    "description": "SPAC: a scalable and integrated enterprise platform for single-cell spatial analysis.",
-    "source": {
-      "github": "https://github.com/FNLCR-DMAP/SCSAWorkflow",
-      "paper_doi": "10.1186/s12859-025-06339-2",
-      "paper_title": "SPAC: a scalable and integrated enterprise platform for single-cell spatial analysis."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "scsaworkflow",
-      "pipeline"
-    ],
-    "quality_score": 21.6,
-    "github_metadata": {
-      "stars": 11,
-      "language": "Jupyter Notebook",
-      "forks": 13
-    },
-    "discovered_at": "2026-08-10T09:20:11.872627"
-  },
-  {
-    "name": "AccuVIR",
-    "description": "BonoboFlow: viral genome assembly and haplotype reconstruction from nanopore reads.",
-    "source": {
-      "github": "https://github.com/rainyrubyzhou/AccuVIR",
-      "paper_doi": "10.1093/bioadv/vbaf115",
-      "paper_title": "BonoboFlow: viral genome assembly and haplotype reconstruction from nanopore reads."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "genome",
-      "accuvir",
-      "software"
-    ],
-    "quality_score": 19.8,
-    "github_metadata": {
-      "stars": 8,
-      "language": "Python",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.871958"
-  },
-  {
-    "name": "deepngs-navigator",
-    "description": "deepNGS navigator: exploring antibody NGS datasets using deep contrastive learning.",
-    "source": {
-      "github": "https://github.com/prescient-design/deepngs-navigator",
-      "paper_doi": "10.1093/bioinformatics/btaf414",
-      "paper_title": "deepNGS navigator: exploring antibody NGS datasets using deep contrastive learning."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "navigator",
-      "software",
-      "deepngs",
-      "antibody"
-    ],
-    "quality_score": 19.2,
-    "github_metadata": {
-      "stars": 7,
-      "language": "Python",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.871657"
-  },
-  {
-    "name": "crai",
-    "description": "Finding antibodies in cryo-EM maps with CrAI.",
-    "source": {
-      "github": "https://github.com/Sanofi-Public/crai",
-      "paper_doi": "10.1093/bioinformatics/btaf157",
-      "paper_title": "Finding antibodies in cryo-EM maps with CrAI."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "software",
-      "crai"
-    ],
-    "quality_score": 18.0,
-    "github_metadata": {
-      "stars": 5,
-      "language": "Python",
-      "forks": 1
-    },
-    "discovered_at": "2026-08-10T09:20:11.872251"
-  },
-  {
-    "name": "RLEAAI",
-    "description": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence ",
-    "source": {
-      "github": "https://github.com/zhouyu9931/RLEAAI",
-      "paper_doi": "10.1093/bib/bbaf238",
-      "paper_title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence "
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "sequence",
-      "software",
-      "protein",
-      "rleaai",
-      "antibody"
-    ],
-    "quality_score": 17.4,
-    "github_metadata": {
-      "stars": 4,
-      "language": "Python",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.872015"
-  },
-  {
-    "name": "veloUncertainty",
-    "description": "Quantifying stability via count splitting to guide model selection in RNA velocity analyses.",
-    "source": {
-      "github": "https://github.com/linnykos/veloUncertainty",
-      "paper_doi": "10.1101/2024.11.23.625009",
-      "paper_title": "Quantifying stability via count splitting to guide model selection in RNA velocity analyses."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "velouncertainty",
-      "software",
+      "benchmark",
+      "cia",
       "rna"
     ],
     "quality_score": 15.0,
     "github_metadata": {
       "stars": 0,
-      "language": "Jupyter Notebook",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.870466"
-  },
-  {
-    "name": "deepngs-navigator-panel-app",
-    "description": "deepNGS navigator: exploring antibody NGS datasets using deep contrastive learning.",
-    "source": {
-      "github": "https://github.com/prescient-design/deepngs-navigator-panel-app",
-      "paper_doi": "10.1093/bioinformatics/btaf414",
-      "paper_title": "deepNGS navigator: exploring antibody NGS datasets using deep contrastive learning."
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "panel",
-      "deepngs",
-      "navigator",
-      "software",
-      "app",
-      "antibody"
-    ],
-    "quality_score": 15.0,
-    "github_metadata": {
-      "stars": 0,
       "language": "Python",
-      "forks": 1
+      "forks": 0
     },
-    "discovered_at": "2026-08-10T09:20:11.871716"
+    "discovered_at": "2026-08-10T10:55:52.878226"
   },
   {
-    "name": "centriflaken",
-    "description": "Centriflaken: An automated data analysis pipeline for assembly and in silico analyses of foodborne p",
+    "name": "PlasmoDocking‐Client",
+    "description": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci",
     "source": {
-      "github": "https://github.com/CFSAN-Biostatstics/centriflaken",
-      "paper_doi": "10.1371/journal.pone.0329425",
-      "paper_title": "Centriflaken: An automated data analysis pipeline for assembly and in silico analyses of foodborne p"
+      "github": "https://github.com/LABIOQUIM/PlasmoDocking‐Client",
+      "paper_doi": "10.1002/jcc.70225",
+      "paper_title": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci"
     },
-    "type": "pipeline",
+    "type": "web_server",
     "interface": {
       "cli": true,
       "api": false,
-      "web": false
+      "web": true
     },
     "tags": [
-      "centriflaken",
-      "database"
+      "plasmodocking",
+      "client",
+      "web_server"
     ],
     "quality_score": 5.0,
     "github_metadata": {
@@ -970,70 +620,6 @@
       "language": "",
       "forks": 0
     },
-    "discovered_at": "2026-08-10T09:20:11.870840"
-  },
-  {
-    "name": "rice-pilaf&amp;amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-    "description": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, ",
-    "source": {
-      "github": "https://github.com/bioinfodlsu/rice-pilaf&amp;amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-      "paper_doi": "10.1093/gigascience/giae013",
-      "paper_title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, "
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "pilaf",
-      "snapshot",
-      "database",
-      "amp",
-      "fcd",
-      "dbf",
-      "revision",
-      "rice"
-    ],
-    "quality_score": 5.0,
-    "github_metadata": {
-      "stars": 0,
-      "language": "",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.871511"
-  },
-  {
-    "name": "rice-pilaf&amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-    "description": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, ",
-    "source": {
-      "github": "https://github.com/bioinfodlsu/rice-pilaf&amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-      "paper_doi": "10.1093/gigascience/giae013",
-      "paper_title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, "
-    },
-    "type": "software",
-    "interface": {
-      "cli": true,
-      "api": false,
-      "web": false
-    },
-    "tags": [
-      "pilaf",
-      "snapshot",
-      "database",
-      "amp",
-      "fcd",
-      "dbf",
-      "revision",
-      "rice"
-    ],
-    "quality_score": 5.0,
-    "github_metadata": {
-      "stars": 0,
-      "language": "",
-      "forks": 0
-    },
-    "discovered_at": "2026-08-10T09:20:11.871533"
+    "discovered_at": "2026-08-10T10:55:52.878502"
   }
 ]
