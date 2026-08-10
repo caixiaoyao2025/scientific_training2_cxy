@@ -26,6 +26,12 @@ jobs:
           pip install --quiet playwright
           python -m playwright install --with-deps chromium >/dev/null 2>&1 || true
 
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: '3.11'
+          auto-update-conda: true
+          activate-environment: test
+
       - name: Discover tools (multi-keyword search)
         run: python multi_search.py
         env:

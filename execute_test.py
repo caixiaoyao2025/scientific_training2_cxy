@@ -193,6 +193,112 @@ def _python_import_smoke(venv_py: str, module_name: str, env: dict) -> tuple[int
                 RUN_TIMEOUT, env=env)
 
 
+def _test_docker(repo_dir: str, name: str, timeout: int = 600) -> dict[str, Any]:
+    """Build + smoke-run a Docker-based tool. Returns a status report dict.
+
+    Uses the already-cloned repo_dir as build context. We try `docker build`
+    then `docker run --rm <image> --help` (and `<image> <sample>` if the repo
+    ships one). Falls back to not_tested if docker isn't available in this
+    environment.
+    """
+    report: dict[str, Any] = {"status": "not_tested", "reason": ""}
+    docker = shutil.which("docker")
+    if not docker:
+        report["reason"] = "docker not installed in this environment"
+        return report
+    tag = f"disc_{re.sub(r'[^a-zA-Z0-9_.-]', '_', name).lower()[:40]}"
+    rc, out, err = _run(["docker", "build", "-t", tag, repo_dir], timeout)
+    if rc != 0:
+        report["status"] = "failed"
+        report["reason"] = f"docker build failed (exit {rc}): {(out + err)[-200:]}"
+        return report
+    # smoke: --help (broad), then a run with the sample if present
+    sample = _find_sample_input(repo_dir)
+    for args in ([tag, "--help"], [tag, sample] if sample else None):
+        if args is None:
+            continue
+        rc2, out2, err2 = _run(["docker", "run", "--rm", *args], timeout)
+        if rc2 == 0 and (out2.strip() or err2.strip()):
+            report["status"] = "passed"
+            report["reason"] = f"`docker run {' '.join(args)}` -> exit 0"
+            report["run_evidence"] = (out2 + err2)[-400:]
+            report["executable"] = tag
+            return report
+    report["status"] = "failed"
+    report["reason"] = "docker build ok but no smoke run exited 0 with output"
+    return report
+
+
+def _test_conda(repo_dir: str, name: str, install_cmd: str,
+                timeout: int = 1800) -> dict[str, Any]:
+    """Create a conda env from environment.yml (if present) and smoke-run.
+
+    Requires conda on PATH. If no environment.yml exists but the README says
+    conda, try `conda create -n <name> python=3.11` then install the repo's
+    requirements. Returns a status report dict.
+    """
+    report: dict[str, Any] = {"status": "not_tested", "reason": ""}
+    conda = shutil.which("conda")
+    if not conda:
+        report["reason"] = "conda not installed in this environment"
+        return report
+    env_name = f"disc_{re.sub(r'[^a-zA-Z0-9_.-]', '_', name).lower()[:30]}"
+    # 1. create the env (from environment.yml if present)
+    env_yml = os.path.join(repo_dir, "environment.yml")
+    if os.path.exists(env_yml):
+        rc, out, err = _run(
+            ["conda", "env", "create", "-n", env_name, "-f", env_yml],
+            timeout)
+        if rc != 0:
+            report["status"] = "failed"
+            report["reason"] = f"conda env create failed (exit {rc}): {(out + err)[-200:]}"
+            return report
+    else:
+        rc, out, err = _run(
+            ["conda", "create", "-n", env_name, "-y", "python=3.11"], timeout)
+        if rc != 0:
+            report["status"] = "failed"
+            report["reason"] = f"conda create failed (exit {rc}): {(out + err)[-200:]}"
+            return report
+    # 2. install repo deps if a requirements.txt exists
+    req = ""
+    for root, _dirs, files in os.walk(repo_dir):
+        for f in files:
+            if f == "requirements.txt":
+                p = os.path.join(root, f)
+                if not req or p.count(os.sep) < req.count(os.sep):
+                    req = p
+    if req:
+        _run(["conda", "run", "-n", env_name, "pip", "install", "-q", "-r", req],
+             timeout)
+    # 3. smoke: try python -c 'import <name>' inside the env
+    import_name = re.sub(r"[^a-zA-Z0-9_]", "", name).lstrip("_")
+    rc3, out3, err3 = _run(
+        ["conda", "run", "-n", env_name, "python", "-c",
+         f"import {import_name}; print('IMPORT_OK {import_name}')"],
+        timeout)
+    if rc3 == 0 and "IMPORT_OK" in out3:
+        report["status"] = "passed"
+        report["reason"] = f"`conda run -n {env_name} python -c 'import {import_name}'` -> exit 0"
+        report["run_evidence"] = (out3 + err3)[-400:]
+        report["executable"] = import_name
+        return report
+    # 4. if import fails, try `<name> --help` inside the env
+    rc4, out4, err4 = _run(["conda", "run", "-n", env_name, name, "--help"],
+                           timeout)
+    if rc4 == 0 and (out4.strip() or err4.strip()):
+        report["status"] = "passed"
+        report["reason"] = f"`conda run -n {env_name} {name} --help` -> exit 0"
+        report["run_evidence"] = (out4 + err4)[-400:]
+        report["executable"] = name
+        return report
+    report["status"] = "failed"
+    report["reason"] = ("conda env created but no import/command smoke exited 0 "
+                        f"(import exit {rc3}, cmd exit {rc4})")
+    report["run_evidence"] = (out3 + err3)[-200:] + (out4 + err4)[-200:]
+    return report
+
+
 def _find_sample_input(repo_dir: str) -> str:
     """Prefer a real example file from the repo; fall back to sample.fasta."""
     for root, _dirs, files in os.walk(repo_dir):
@@ -340,12 +446,6 @@ def execute_test(repo_url: str, install_method: str = "",
         "checked_at": __import__("datetime").datetime.now().isoformat(),
     }
 
-    # conda_env installs are too heavy for a smoke test: deferred, not a failure
-    if install_method == "conda_env":
-        report["status"], report["reason"] = "not_tested", \
-            "conda env install too heavy for smoke test; deferred"
-        return report
-
     # Windows can't create dirs containing quotes etc. from paper-extracted names
     safe_name = re.sub(r'[^a-zA-Z0-9_.-]', "_", name).strip("._-") or "tool"
     if not install_cmd:
@@ -410,14 +510,15 @@ def execute_test(repo_url: str, install_method: str = "",
                      INSTALL_TIMEOUT)
             args = [venv_py, "-c", "import sys; sys.exit(0)"]  # no-op install
         elif install_method == "docker":
-            # container build + run is too heavy for a smoke test: not a failure,
-            # record as not_tested (environment not exercised).
-            report["status"], report["reason"] = "not_tested", \
-                "docker build/run too heavy for smoke test; dockerfile detected"
+            # build + smoke the container in this environment (docker present
+            # on GH runners). If docker is unavailable, we fall back to
+            # not_tested rather than failing.
+            docker_report = _test_docker(repo_dir, name)
+            report.update(docker_report)
             return report
         elif install_method == "conda_env":
-            report["status"], report["reason"] = "not_tested", \
-                "conda env install too heavy for smoke test; deferred"
+            conda_report = _test_conda(repo_dir, name, install_cmd)
+            report.update(conda_report)
             return report
         else:
             report["status"], report["reason"] = "not_tested", \
