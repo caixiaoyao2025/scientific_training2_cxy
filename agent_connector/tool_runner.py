@@ -298,6 +298,10 @@ def _ensure_installed(spec: dict[str, Any]) -> list[str]:
     exe_name = cmd_name.split("/")[-1] if cmd_name else ""
     if method in ("pip_pkg", "pip_url") and exe_name and _sh.which(exe_name) is None:
         target = install.get("command", "")
+        # command may be "pip install <url>" (full shell) or just "<url>"
+        if target.startswith("pip "):
+            parts = target.split()
+            target = parts[2] if len(parts) >= 3 else ""
         if target and not target.startswith("pip "):
             if _try_install([sys.executable, "-m", "pip", "install", "-q", target]):
                 actions.append(f"pip install {target}")
