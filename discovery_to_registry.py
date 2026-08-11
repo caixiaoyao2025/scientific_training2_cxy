@@ -115,6 +115,7 @@ def tool_to_registry_entry(tool, verification=None):
             "command": install_url or install_cmd,
             "system_commands": v.get("external_commands", []),
             "python_packages": e.get("installed_versions", [])[:20],
+            "declared_packages": v.get("declared_packages", []),
         },
         "_discovery_metadata": {
             "github": github_url,

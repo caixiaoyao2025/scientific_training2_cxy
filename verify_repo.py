@@ -58,6 +58,7 @@ class VerifyResult:
     container_files: list = field(default_factory=list)
     readme_hint: str = ""       # conda | docker | "" (from README text)
     external_commands: list = field(default_factory=list)  # system deps
+    declared_packages: list = field(default_factory=list)  # top-level pip deps
     has_license: bool = False
     license_path: str = ""
     license_text_snippet: str = ""
@@ -81,6 +82,8 @@ class VerifyResult:
             "has_container": self.has_container,
             "container_files": self.container_files,
             "readme_hint": self.readme_hint,
+            "external_commands": self.external_commands,
+            "declared_packages": self.declared_packages,
             "has_license": self.has_license,
             "license_path": self.license_path,
             "license_text_snippet": self.license_text_snippet,
@@ -236,8 +239,47 @@ def _scan_external_commands(repo: "BloblessRepo", files: list[str],
     return out[:30]
 
 
+def _parse_declared_packages(repo: "BloblessRepo", files: list[str]) -> list[str]:
+    """Parse top-level pip dependencies from requirements.txt / pyproject.toml.
+
+    Returns declared package names (without version pins / extras / markers)
+    so the tool's install contract can list what to install.
+    """
+    pkgs: set[str] = set()
+    req_files = [f for f in files
+                 if f.split("/")[-1] in ("requirements.txt", "requirements_full.txt",
+                                          "requirements-dev.txt", "requirements_prod.txt")]
+    for f in req_files[:5]:
+        text = repo.show(f)
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith(("#", "-", "--")):
+                continue
+            if line.startswith("-r") or line.startswith("--requirement"):
+                continue
+            # strip version specifiers:  numpy>=1.20  ->  numpy
+            name = line.split("[")[0].split(";")[0].split("=")[0].split("~")[0] \
+                       .split("<")[0].split(">")[0].split("!")[0].strip()
+            if name and not name.startswith((".", "/", "{")):
+                pkgs.add(name.lower().replace("_", "-"))
+    # pyproject.toml [project] dependencies
+    for f in files:
+        if f.split("/")[-1] == "pyproject.toml" and f.count("/") <= 1:
+            text = repo.show(f)
+            m = re.search(r"\[project\]\s*dependencies\s*=\s*\[(.*?)\]", text, re.S)
+            if m:
+                for line in m.group(1).splitlines():
+                    line = line.strip().rstrip(",").strip('"\'')
+                    if not line:
+                        continue
+                    name = line.split("[")[0].split(";")[0].split("=")[0] \
+                               .split("~")[0].split("<")[0].split(">")[0].split("!")[0].strip()
+                    if name and name not in pkgs:
+                        pkgs.add(name.lower().replace("_", "-"))
+    return sorted(pkgs)[:40]
+
+
 def _first_cmd_literal(arg) -> str:
-    """Extract the executable name from subprocess's first arg (string or list)."""
     import ast as _ast
     if arg is None:
         return ""
@@ -330,6 +372,7 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         if res.has_license:
             res.license_text_snippet = repo.show(res.license_path).strip().replace("\n", " ")[:120]
         res.entry_scripts = _find_entry_scripts(files)
+        res.declared_packages = _parse_declared_packages(repo, files)
 
         # language hint
         bases = set(f.split("/")[-1] for f in files)
