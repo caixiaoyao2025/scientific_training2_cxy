@@ -218,18 +218,21 @@ def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
             "description": meta.get("description", "") or "",
         }
         required.append(name)
-    return {
-        "type": "function",
-        "function": {
-            "name": tool["name"],
-            "description": tool.get("description", "") or "",
-            "parameters": {
-                "type": "object",
-                "properties": properties,
-                "required": required,
-            },
+    # surface the install / environment contract so the caller knows what to
+    # set up before invoking the tool (see discovery_to_registry.py 'install')
+    install = tool.get("install") or {}
+    fn = {
+        "name": tool["name"],
+        "description": tool.get("description", "") or "",
+        "parameters": {
+            "type": "object",
+            "properties": properties,
+            "required": required,
         },
     }
+    if install:
+        fn["install"] = install
+    return {"type": "function", "function": fn}
 
 
 def generate_tools_manifest(tools: list[dict[str, Any]], out_path: str = "tools_manifest.json") -> str:

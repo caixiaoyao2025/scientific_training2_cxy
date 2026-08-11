@@ -107,6 +107,15 @@ def tool_to_registry_entry(tool, verification=None):
             "max_preview_lines": 50,
         },
         "inputs": inputs,
+        # --- environment / install contract (surfaces to downstream agents) ---
+        # Tells the caller what to install before invoking, and which system
+        # commands the tool expects on PATH (environment grounding).
+        "install": {
+            "method": install_method,
+            "command": install_url or install_cmd,
+            "system_commands": v.get("external_commands", []),
+            "python_packages": e.get("installed_versions", [])[:20],
+        },
         "_discovery_metadata": {
             "github": github_url,
             "stars": stars,
