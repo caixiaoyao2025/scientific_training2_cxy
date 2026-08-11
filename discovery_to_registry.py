@@ -58,9 +58,9 @@ def tool_to_registry_entry(tool, verification=None):
     if v.get("install_method") and v.get("install_cmd"):
         install_method = v["install_method"]
         install_url = v["install_cmd"] if not v["install_cmd"].startswith("http") else github_url
+
     # Command: prefer the REAL executable validated by execute_test (step 3.6),
-    # then verify's probed command, then the guessed repo name. Never assume
-    # tool name == CLI command (pyGenomeViz -> pgv-blast).
+    # then verify's probed command, then the guessed repo name.
     exec_exe = e.get("executable") or ""
     verified_cmd = v.get("command") or ""
     if exec_exe:

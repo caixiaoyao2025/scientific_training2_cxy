@@ -239,6 +239,17 @@ def _scan_external_commands(repo: "BloblessRepo", files: list[str],
     return out[:30]
 
 
+def _pypi_name(repo: "BloblessRepo", files: list[str]) -> str:
+    """Best-effort PyPI package name from pyproject.toml [project] name."""
+    for f in files:
+        if f.split("/")[-1] == "pyproject.toml" and f.count("/") <= 1:
+            m = re.search(r"^name\s*=\s*[\"']([^\"']+)[\"']",
+                          repo.show(f), re.M)
+            if m:
+                return m.group(1)
+    return ""
+
+
 def _parse_declared_packages(repo: "BloblessRepo", files: list[str]) -> list[str]:
     """Parse top-level pip dependencies from requirements.txt / pyproject.toml.
 
@@ -410,7 +421,13 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         # ---- install command (evidence-based) ----
         if any(p.split("/")[-1] in ("setup.py", "pyproject.toml", "setup.cfg")
                for p in res.requirements_paths):
-            res.install_method, res.install_cmd = "pip_pkg", f"pip install {repo_url}"
+            pkg = _pypi_name(repo, files)
+            # prefer the PyPI package name (fast, reliable) over the git URL
+            if pkg:
+                res.install_method, res.install_cmd = (
+                    "pip_pkg", f"pip install {pkg}  # source: {repo_url}")
+            else:
+                res.install_method, res.install_cmd = "pip_pkg", f"pip install {repo_url}"
         elif any(p.endswith("environment.yml") for p in res.requirements_paths):
             # conda env file is NOT pip-installable (can live in a subfolder)
             env_yml = next((p for p in res.requirements_paths
