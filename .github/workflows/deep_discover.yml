@@ -49,12 +49,12 @@ jobs:
           which R || echo "R not on PATH"
           R --version 2>/dev/null | head -1 || true
 
-      - name: Discover tools (unlimited per-keyword scan)
+      - name: Discover tools (30 papers per keyword)
         run: python multi_search.py
         env:
           PYTHONIOENCODING: utf-8
-          NEW_PER_QUERY: "0"          # no per-keyword cap: scan whole window
-          MAX_TOTAL_PER_QUERY: "500"   # scan up to 500 papers per keyword
+          NEW_PER_QUERY: "30"          # collect up to 30 new papers per keyword
+          MAX_TOTAL_PER_QUERY: "200"   # scan up to 200 papers per keyword
         timeout-minutes: 120
 
       - name: Convert + clean
