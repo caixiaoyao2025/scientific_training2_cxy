@@ -144,7 +144,8 @@ def step3_6_execute():
         return
     from execute_test import execute_tool_library
     print("Installing each verified/repo_ok tool into a venv and smoke-running it...")
-    results = execute_tool_library("tool_verification.json", "tool_execution.json")
+    results = execute_tool_library("tool_verification.json", "tool_execution.json",
+                                   global_timeout=3300)  # 55min watchdog < step 90min
     n_pass = sum(1 for r in results if r.get("status") == "passed")
     n_env = sum(1 for r in results if r.get("status") == "env_issue")
     n_inc = sum(1 for r in results if r.get("status") == "incomplete")

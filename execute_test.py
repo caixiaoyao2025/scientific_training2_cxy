@@ -868,36 +868,65 @@ def url_to_pip(cmd: str, repo_url: str) -> str:
     return parts or repo_url
 
 
+def _watchdog_handler(signum, frame):
+    raise TimeoutError("execute_tool_library global watchdog: overall time limit hit")
+
+
 def execute_tool_library(verification_file: str = "tool_verification.json",
                          out_json: str = "tool_execution.json",
-                         max_repos: Optional[int] = None) -> list[dict[str, Any]]:
-    """Run execution tests for every verified/repo_ok tool; persist results."""
+                         max_repos: Optional[int] = None,
+                         global_timeout: int = 3600) -> list[dict[str, Any]]:
+    """Run execution tests for every verified/repo_ok tool; persist results.
+
+    A global watchdog (signal-based, POSIX only) aborts the whole run after
+    `global_timeout` seconds so a stuck conda/docker build can't hang CI for
+    hours. On timeout the partial results are still written.
+    """
+    watchdog = None
+    try:
+        import signal
+        signal.signal(signal.SIGALRM, _watchdog_handler)
+        signal.alarm(global_timeout)
+        watchdog = signal
+    except (ImportError, ValueError):
+        pass  # no signal on Windows / main thread only -> watchdog disabled
+
     with open(verification_file, "r", encoding="utf-8") as f:
         verifications = json.load(f)
 
     results = []
-    for i, v in enumerate(verifications):
-        tool = v.get("tool", v.get("repo_name", "?"))
-        if v.get("status") not in ("verified", "repo_ok"):
-            results.append({
-                "tool": tool, "repo_url": v.get("repo_url", ""),
-                "status": "skipped",
-                "reason": f"repo verification = {v.get('status', '')}",
-            })
-            print(f"  [{i + 1}] {tool:<20} skipped ({v.get('status', '')})")
-            continue
-        print(f"  [{i + 1}] {tool:<20} installing + smoke-running ...")
-        res = execute_test(
-            v.get("repo_url", ""),
-            install_method=v.get("install_method", ""),
-            install_cmd=v.get("install_cmd", ""),
-            entry_scripts=v.get("entry_scripts", []),
-            repo_name=tool,
-        )
-        results.append(res)
-        print(f"        -> {res['status']}: {res['reason'][:80]}")
-        if max_repos is not None and i + 1 >= max_repos:
-            break
+    watchdog_hit = False
+    try:
+        try:
+            for i, v in enumerate(verifications):
+                tool = v.get("tool", v.get("repo_name", "?"))
+                if v.get("status") not in ("verified", "repo_ok"):
+                    results.append({
+                        "tool": tool, "repo_url": v.get("repo_url", ""),
+                        "status": "skipped",
+                        "reason": f"repo verification = {v.get('status', '')}",
+                    })
+                    print(f"  [{i + 1}] {tool:<20} skipped ({v.get('status', '')})")
+                    continue
+                print(f"  [{i + 1}] {tool:<20} installing + smoke-running ...")
+                res = execute_test(
+                    v.get("repo_url", ""),
+                    install_method=v.get("install_method", ""),
+                    install_cmd=v.get("install_cmd", ""),
+                    entry_scripts=v.get("entry_scripts", []),
+                    repo_name=tool,
+                )
+                results.append(res)
+                print(f"        -> {res['status']}: {res['reason'][:80]}")
+                if max_repos is not None and i + 1 >= max_repos:
+                    break
+        except TimeoutError:
+            watchdog_hit = True
+            print(f"\n!! global watchdog hit after {global_timeout}s; "
+                  f"aborting remaining tools, keeping partial results")
+    finally:
+        if watchdog:
+            watchdog.alarm(0)
 
     with open(out_json, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
@@ -908,7 +937,7 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
     n_skip = sum(1 for r in results if r.get("status") == "skipped")
     n_time = sum(1 for r in results if r.get("status") == "timeout")
     n_nt = sum(1 for r in results if r.get("status") == "not_tested")
-    print(f"\nSaved execution report -> {out_json}")
+    print(f"\nSaved execution report -> {out_json}" + (" (PARTIAL, watchdog)" if watchdog_hit else ""))
     print(f"passed: {n_pass} | env_issue: {n_env} | incomplete: {n_inc} "
           f"| failed: {n_fail} | timeout: {n_time} | not_tested: {n_nt} "
           f"| skipped: {n_skip}  (total {len(results)})")
