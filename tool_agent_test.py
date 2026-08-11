@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import tempfile
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 if REPO not in sys.path:
@@ -81,7 +82,7 @@ def main() -> int:
     spec_map = {t["name"]: t for t in tools}
 
     # sample input for tools that take a file path
-    sample = "/tmp/agent_test_sample.fasta"
+    sample = os.path.join(tempfile.gettempdir(), "agent_test_sample.fasta")
     with open(sample, "w", encoding="utf-8") as f:
         f.write(">seq1\nACGT\nACGT\n>seq2\nTTTTTT\n>seq3\nCCCGGG\n>seq4\nAAAAT\n>seq5\nGATAC\n")
 
