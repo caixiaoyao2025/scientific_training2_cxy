@@ -21,6 +21,7 @@ def normalize_github_url(link):
         return ""
     link = link.strip().strip('"\'.,;:()[]')
     link = link.replace('git+', '').replace('ssh://', '')
+    link = re.sub(r"[‐‑‒–—]", "-", link)
     if not link.lower().startswith(('http://', 'https://')):
         link = "https://" + link
     try:
