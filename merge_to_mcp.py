@@ -6,7 +6,30 @@ USER_REGISTRY = os.path.join(DATA_DIR, "mcp_registry.yaml")
 DISCOVERED = os.path.join(os.path.dirname(__file__), "discovered_registry.yaml")
 
 def clean_tool_entry(tool):
+    """Keep user-facing schema fields; promote the verification evidence from
+    _discovery_metadata to top-level `evidence.*` so downstream agents and
+    reviewers can see how the tool was verified. Pure debugging fields are
+    dropped.
+    """
     entry = {k: v for k, v in tool.items() if not k.startswith("_")}
+    md = tool.get("_discovery_metadata")
+    if isinstance(md, dict):
+        evidence = {
+            "exec_status": md.get("exec_status", ""),
+            "exec_reason": md.get("exec_reason", ""),
+            "exec_executable": md.get("exec_executable", ""),
+            "exec_retries": md.get("exec_retries", 0),
+            "exec_heal_evidence": md.get("exec_heal_evidence", ""),
+            "verified_license": md.get("verified_license", False),
+            "verified_license_path": md.get("verified_license_path", ""),
+            "verified_status": md.get("verified_status", ""),
+            "inputs_source": md.get("inputs_source", ""),
+            "params_schema": md.get("exec_params_schema", []),
+            "installed_versions": md.get("exec_installed_versions", []),
+        }
+        evidence = {k: v for k, v in evidence.items() if v not in ("", None, [], False) or k in ("verified_license",)}
+        if evidence:
+            entry["evidence"] = evidence
     return entry
 
 def merge_registries():
