@@ -296,31 +296,50 @@ def _test_conda(repo_dir: str, name: str, install_cmd: str,
             report["reason"] = (f"conda env deps install timed out after {timeout}s "
                                 "(heavy env init)")
             return report
-    # 3. smoke: try python -c 'import <name>' inside the env
-    import_name = re.sub(r"[^a-zA-Z0-9_]", "", name).lstrip("_")
-    rc3, out3, err3 = _run(
-        ["conda", "run", "-n", env_name, "python", "-c",
-         f"import {import_name}; print('IMPORT_OK {import_name}')"],
-        timeout)
-    if rc3 == 0 and "IMPORT_OK" in out3:
-        report["status"] = "passed"
-        report["reason"] = f"`conda run -n {env_name} python -c 'import {import_name}'` -> exit 0"
-        report["run_evidence"] = (out3 + err3)[-400:]
-        report["executable"] = import_name
-        return report
-    # 4. if import fails, try `<name> --help` inside the env
-    rc4, out4, err4 = _run(["conda", "run", "-n", env_name, name, "--help"],
-                           timeout)
-    if rc4 == 0 and (out4.strip() or err4.strip()):
-        report["status"] = "passed"
-        report["reason"] = f"`conda run -n {env_name} {name} --help` -> exit 0"
-        report["run_evidence"] = (out4 + err4)[-400:]
-        report["executable"] = name
-        return report
+    # 3. smoke: use real entry points from the repo (console scripts / entry
+    #    files), not the repo name guessed as module/command.
+    declared = _parse_console_scripts(repo_dir)
+    import_cands = []
+    if declared:
+        import_cands = declared
+    else:
+        import_cands = [re.sub(r"[^a-zA-Z0-9_]", "", name).lstrip("_")]
+
+    env_prefix = None
+    for cand in import_cands:
+        rc3, out3, err3 = _run(
+            ["conda", "run", "-n", env_name, "python", "-c",
+             f"import {cand}; print('IMPORT_OK {cand}')"],
+            timeout)
+        if rc3 == 0 and "IMPORT_OK" in out3:
+            report["status"] = "passed"
+            report["reason"] = f"`conda run -n {env_name} python -c 'import {cand}'` -> exit 0"
+            report["run_evidence"] = (out3 + err3)[-400:]
+            report["executable"] = cand
+            return report
+        # locate the env's bin dir once for command lookup
+        rc_b, out_b, _ = _run(["conda", "run", "-n", env_name,
+                               "python", "-c",
+                               "import sys, os; print(os.path.dirname(sys.executable))"],
+                              timeout)
+        if rc_b == 0:
+            env_prefix = out_b.strip()
+    # 4. try real console scripts installed in the env bin dir
+    if env_prefix and os.path.isdir(env_prefix):
+        bin_dir = env_prefix
+        cands = declared or [name]
+        matched, exe_path = _find_installed_executable(bin_dir, cands)
+        if exe_path:
+            rc4, out4, err4 = _run([exe_path, "--help"], timeout)
+            if rc4 == 0 and (out4.strip() or err4.strip()):
+                report["status"] = "passed"
+                report["reason"] = f"`{os.path.basename(exe_path)} --help` -> exit 0"
+                report["run_evidence"] = (out4 + err4)[-400:]
+                report["executable"] = os.path.basename(exe_path)
+                return report
     report["status"] = "failed"
     report["reason"] = ("conda env created but no import/command smoke exited 0 "
-                        f"(import exit {rc3}, cmd exit {rc4})")
-    report["run_evidence"] = (out3 + err3)[-200:] + (out4 + err4)[-200:]
+                        f"(import candidates: {import_cands})")
     return report
 
 
