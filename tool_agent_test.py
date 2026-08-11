@@ -62,10 +62,46 @@ def to_function_schema(tool: dict) -> dict:
     return {"type": "function", "function": fn}
 
 
+def ensure_repo() -> None:
+    """Make sure the repo + agent_connector are importable and the registry exists.
+
+    In Colab this script may be run standalone, so clone the repo if
+    agent_connector isn't importable, and download the registry if missing.
+    """
+    global REPO, REGISTRY
+    try:
+        import agent_connector  # noqa: F401
+        found = True
+    except ImportError:
+        found = False
+    if not found:
+        import subprocess
+        dest = "/content/scientific_training2_cxy"
+        print("[colab-prep] cloning repo ...")
+        subprocess.run(
+            ["git", "clone", "--depth", "1",
+             "https://github.com/caixiaoyao2025/scientific_training2_cxy.git", dest],
+            check=True, capture_output=True, text=True)
+        REPO = dest
+        if REPO not in sys.path:
+            sys.path.insert(0, REPO)
+        if REGISTRY == "data/mcp_registry.yaml":
+            REGISTRY = os.path.join(dest, REGISTRY)
+    if not os.path.exists(REGISTRY) and not os.path.isabs(REGISTRY):
+        # try relative to repo
+        cand = os.path.join(REPO, REGISTRY)
+        if os.path.exists(cand):
+            REGISTRY = cand
+        else:
+            print(f"registry not found at {REGISTRY} - skipping")
+            raise SystemExit(0)
+
+
 def main() -> int:
     if not API_KEY:
         print("no API key (WESTLAKE_API_KEY/OPENAI_API_KEY/DEEPSEEK_API_KEY) - skipping agent test")
         return 0
+    ensure_repo()
     if not os.path.exists(REGISTRY):
         print(f"no registry at {REGISTRY} - skipping")
         return 0
