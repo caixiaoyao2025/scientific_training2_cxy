@@ -24,7 +24,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq git build-essential gcc g++ make \
             libhts-dev libcurl4-openssl-dev libssl-dev zlib1g-dev libbz2-dev \
-            liblzma-dev r-base >/dev/null 2>&1 || true
+            liblzma-dev >/dev/null 2>&1 || true
           pip install --quiet playwright
           python -m playwright install --with-deps chromium >/dev/null 2>&1 || true
 
@@ -41,6 +41,13 @@ jobs:
           conda config --add channels bioconda
           conda config --set channel_priority strict
           conda config --set show_channel_urls true
+
+      - name: Install R (conda-forge) for R-package tools
+        run: |
+          conda install -y -c conda-forge r-base >/dev/null 2>&1 || \
+            conda install -y r-base >/dev/null 2>&1 || echo "R install skipped/failed"
+          which R || echo "R not on PATH"
+          R --version 2>/dev/null | head -1 || true
 
       - name: Discover tools (unlimited per-keyword scan)
         run: python multi_search.py
