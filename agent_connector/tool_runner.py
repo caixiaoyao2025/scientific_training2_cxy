@@ -273,19 +273,20 @@ def _run_docker(execution: dict[str, Any], arguments: dict[str, Any], timeout: i
     }
 
 
-def _ensure_installed(spec: dict[str, Any]) -> list[str]:
+def _ensure_installed(spec: dict[str, Any]) -> tuple[list[str], list[str]]:
     """Auto-install a tool's environment if its command/module is missing.
 
-    Reads the tool's `install` contract (from discovery_to_registry.py) and
-    installs what's needed so a downstream agent can invoke the tool without
-    manual setup. Returns a list of install actions performed ([] if none).
+    Returns (actions_performed, errors). Errors are surfaced so the caller
+    (and the LLM) can tell 'not installed' from 'install failed'.
     """
     import shutil as _sh
     actions: list[str] = []
+    errors: list[str] = []
     install = spec.get("install") or {}
     method = install.get("method", "")
     command = (spec.get("command") or "")
     cmd_name = command.split()[0] if command else ""
+    exe_name = cmd_name.split("/")[-1] if cmd_name else ""
 
     def _try_install(argv: list[str], timeout: int = 600) -> bool:
         try:
@@ -295,27 +296,41 @@ def _ensure_installed(spec: dict[str, Any]) -> list[str]:
         except Exception:
             return False
 
-    exe_name = cmd_name.split("/")[-1] if cmd_name else ""
     if method in ("pip_pkg", "pip_url") and exe_name and _sh.which(exe_name) is None:
         target = install.get("command", "")
-        # command may be "pip install <url>" (full shell) or just "<url>"
         if target.startswith("pip "):
             parts = target.split()
             target = parts[2] if len(parts) >= 3 else ""
+        candidates = []
         if target and not target.startswith("pip "):
-            if _try_install([sys.executable, "-m", "pip", "install", "-q", target]):
-                actions.append(f"pip install {target}")
+            candidates.append(target)
+        # fall back to PyPI package name = repo name if the URL form fails
+        if not candidates:
+            candidates.append(exe_name)
+        installed = False
+        for cand in candidates:
+            if _try_install([sys.executable, "-m", "pip", "install", "-q", cand]):
+                actions.append(f"pip install {cand}")
+                installed = True
+                break
+            errors.append(f"pip install {cand} failed")
+        if not installed and errors:
+            errors = [errors[0]]  # keep the first/most relevant error
     elif method == "cargo" and exe_name and _sh.which(exe_name) is None:
         url = install.get("command", "")
         if url:
             argv = url.replace("cargo install --git", "cargo install --git").split()
             if _try_install(argv, 1800):
                 actions.append(f"cargo install {url}")
+            else:
+                errors.append(f"cargo install {url} failed")
     elif method == "npm" and exe_name and _sh.which(exe_name) is None:
         pkg = install.get("command", "") or cmd_name
         if _try_install(["npm", "install", "-g", pkg], 1800):
             actions.append(f"npm install -g {pkg}")
-    return actions
+        else:
+            errors.append(f"npm install -g {pkg} failed")
+    return actions, errors
 
 
 def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
@@ -328,9 +343,11 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
     arguments = _coerce_arguments(spec, arguments)
 
     # auto-install the tool's environment on first use (agent self-provisioning)
-    installed = _ensure_installed(spec)
+    installed, install_errors = _ensure_installed(spec)
     if installed:
         print(f"[tool-runner] auto-installed: {installed}")
+    if install_errors:
+        print(f"[tool-runner] auto-install failed: {install_errors}")
 
     if exec_type == "python":
         return _run_python(execution["entry_point"], arguments, timeout=timeout)
@@ -338,7 +355,12 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
         return _run_api(execution, arguments, timeout=timeout)
     if exec_type == "docker":
         return _run_docker(execution, arguments, timeout=timeout)
-    return _run_cli(execution.get("command", ""), arguments, timeout=timeout)
+    result = _run_cli(execution.get("command", ""), arguments, timeout=timeout)
+    # if the command still can't be found after auto-install, tell the caller
+    if result.get("return_code") == 127 and install_errors:
+        result["stderr"] = (result.get("stderr", "") +
+                            f"\n[auto-install failed] {'; '.join(install_errors)}")
+    return result
 
 
 def format_result(result: dict[str, Any]) -> str:
