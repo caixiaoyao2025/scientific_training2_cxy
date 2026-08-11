@@ -38,8 +38,11 @@ QUERIES = [
 ]
 
 MAX_PER_QUERY = 10
-NEW_PER_QUERY = 10          # stop a keyword once this many new papers collected
-MAX_TOTAL_PER_QUERY = 100
+# stop a keyword once this many new papers collected; set NEW_PER_QUERY=0 (env)
+# to disable the cap and scan the whole window for every keyword
+_new = os.environ.get("NEW_PER_QUERY", "10")
+NEW_PER_QUERY = int(_new) if _new.strip().isdigit() else 10
+MAX_TOTAL_PER_QUERY = int(os.environ.get("MAX_TOTAL_PER_QUERY", "100"))
 PAPER_TIMEOUT = 30
 MAX_QUERIES = len(QUERIES)
 
@@ -67,13 +70,14 @@ def discover():
 
     results = []
     used_keys = set()
-    MAX_TOTAL_PER_QUERY = 100  # stop paging a keyword once this many papers scanned
+    MAX_TOTAL_PER_QUERY = int(os.environ.get("MAX_TOTAL_PER_QUERY", "100"))
+    new_cap = NEW_PER_QUERY if NEW_PER_QUERY > 0 else float("inf")
     for qi, query in enumerate(QUERIES[:MAX_QUERIES]):
         print(f"\n=== query {qi + 1}: {query[:70]}")
         start = 0
         scanned = 0
         new_count = 0
-        while start < 200 and scanned < MAX_TOTAL_PER_QUERY and new_count < NEW_PER_QUERY:
+        while start < 200 and scanned < MAX_TOTAL_PER_QUERY and new_count < new_cap:
             page = search_papers(query, max_results=MAX_PER_QUERY, retstart=start)
             if not page:
                 break
