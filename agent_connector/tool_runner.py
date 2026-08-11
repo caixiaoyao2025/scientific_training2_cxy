@@ -273,6 +273,47 @@ def _run_docker(execution: dict[str, Any], arguments: dict[str, Any], timeout: i
     }
 
 
+def _ensure_installed(spec: dict[str, Any]) -> list[str]:
+    """Auto-install a tool's environment if its command/module is missing.
+
+    Reads the tool's `install` contract (from discovery_to_registry.py) and
+    installs what's needed so a downstream agent can invoke the tool without
+    manual setup. Returns a list of install actions performed ([] if none).
+    """
+    import shutil as _sh
+    actions: list[str] = []
+    install = spec.get("install") or {}
+    method = install.get("method", "")
+    command = (spec.get("command") or "")
+    cmd_name = command.split()[0] if command else ""
+
+    def _try_install(argv: list[str], timeout: int = 600) -> bool:
+        try:
+            cp = subprocess.run(argv, capture_output=True, text=True, check=False,
+                                timeout=timeout, encoding="utf-8", errors="replace")
+            return cp.returncode == 0
+        except Exception:
+            return False
+
+    exe_name = cmd_name.split("/")[-1] if cmd_name else ""
+    if method in ("pip_pkg", "pip_url") and exe_name and _sh.which(exe_name) is None:
+        target = install.get("command", "")
+        if target and not target.startswith("pip "):
+            if _try_install([sys.executable, "-m", "pip", "install", "-q", target]):
+                actions.append(f"pip install {target}")
+    elif method == "cargo" and exe_name and _sh.which(exe_name) is None:
+        url = install.get("command", "")
+        if url:
+            argv = url.replace("cargo install --git", "cargo install --git").split()
+            if _try_install(argv, 1800):
+                actions.append(f"cargo install {url}")
+    elif method == "npm" and exe_name and _sh.which(exe_name) is None:
+        pkg = install.get("command", "") or cmd_name
+        if _try_install(["npm", "install", "-g", pkg], 1800):
+            actions.append(f"npm install -g {pkg}")
+    return actions
+
+
 def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
     """Execute a ToolSpec (registry.yaml entry) with the given arguments."""
     execution = spec.get("execution")
@@ -281,6 +322,11 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
     exec_type = execution.get("type", "cli")
     timeout = int(spec.get("timeout_seconds", 600))
     arguments = _coerce_arguments(spec, arguments)
+
+    # auto-install the tool's environment on first use (agent self-provisioning)
+    installed = _ensure_installed(spec)
+    if installed:
+        print(f"[tool-runner] auto-installed: {installed}")
 
     if exec_type == "python":
         return _run_python(execution["entry_point"], arguments, timeout=timeout)
