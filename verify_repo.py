@@ -59,6 +59,7 @@ class VerifyResult:
     readme_hint: str = ""       # conda | docker | "" (from README text)
     external_commands: list = field(default_factory=list)  # system deps
     declared_packages: list = field(default_factory=list)  # top-level pip deps
+    missing_deps: list = field(default_factory=list)       # imported but undeclared
     has_license: bool = False
     license_path: str = ""
     license_text_snippet: str = ""
@@ -84,6 +85,7 @@ class VerifyResult:
             "readme_hint": self.readme_hint,
             "external_commands": self.external_commands,
             "declared_packages": self.declared_packages,
+            "missing_deps": self.missing_deps,
             "has_license": self.has_license,
             "license_path": self.license_path,
             "license_text_snippet": self.license_text_snippet,
@@ -223,6 +225,8 @@ def _scan_external_commands(repo: "BloblessRepo", files: list[str],
                         cmds.add(cmd)
     # drop shell-ish / non-command tokens, keep only plausible executables
     out = []
+    import shutil as _sh
+    bundled = {f.split("/")[-1] for f in files}  # files in repo (may be self-bundled)
     for c in sorted(cmds):
         c = c.strip().strip("'\"")
         if not c or not re.match(r"^[a-zA-Z0-9_.+\-/]+$", c):
@@ -235,7 +239,15 @@ def _scan_external_commands(repo: "BloblessRepo", files: list[str],
             continue
         if c.startswith(("-", "~", "/usr", "/bin", "/etc", "{")) or " " in c:
             continue
-        out.append(c)
+        # classify: bundled in repo / already on PATH / needs system install
+        base = c.split("/")[-1]
+        if base in bundled:
+            kind = "repo_bundled"
+        elif _sh.which(base):
+            kind = "system_present"
+        else:
+            kind = "system_missing"
+        out.append({"command": c, "kind": kind})
     return out[:30]
 
 
@@ -268,6 +280,61 @@ def _pypi_name(repo: "BloblessRepo", files: list[str]) -> str:
     except Exception:
         pass
     return ""
+
+
+def _scan_python_imports(repo: "BloblessRepo", files: list[str],
+                         declared: list[str], max_files: int = 60) -> list[str]:
+    """Find Python modules the repo imports but does NOT declare in deps.
+
+    Compares AST `import x` / `from x import y` against the declared packages
+    (requirements.txt / pyproject.toml). Returns undeclared top-level modules
+    (e.g. cv2, pandas when missing from requirements) -- the "missing deps".
+    """
+    import ast
+    imported: set[str] = set()
+    declared_set = {d.lower().replace("_", "-") for d in declared}
+    py_files = [f for f in files if f.endswith(".py") and f.count("/") <= 3
+                and not f.startswith("test") and "/test" not in f
+                and "/example" not in f and "/benchmark" not in f]
+    py_files = py_files[:max_files]
+    for f in py_files:
+        src = repo.show(f)
+        if not src or len(src) > 400_000:
+            continue
+        try:
+            tree = ast.parse(src.lstrip("\ufeff"))
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    top = alias.name.split(".")[0]
+                    if top and top not in imported:
+                        imported.add(top)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                top = node.module.split(".")[0]
+                if top and top not in imported:
+                    imported.add(top)
+    # stdlib + project-local imports to ignore
+    stdlib = {"os", "sys", "re", "json", "math", "random", "time", "datetime",
+              "collections", "itertools", "functools", "pathlib", "subprocess",
+              "argparse", "typing", "io", "shutil", "glob", "hashlib", "base64",
+              "tempfile", "logging", "warnings", "traceback", "abc", "enum",
+              "string", "struct", "threading", "multiprocessing", "queue",
+              "signal", "socket", "ssl", "urllib", "http", "email", "csv",
+              "sqlite3", "configparser", "platform", "statistics", "decimal",
+              "fractions", "contextlib", "dataclasses", "copy", "pickle",
+              "shelve", "getpass", "textwrap", "unicodedata", "codecs",
+              "zipfile", "tarfile", "gzip", "bz2", "lzma", "fnmatch", "difflib"}
+    missing = []
+    for mod in sorted(imported):
+        norm = mod.lower().replace("_", "-")
+        if norm in declared_set or norm in stdlib:
+            continue
+        if mod.startswith("_"):
+            continue
+        missing.append(mod)
+    return missing[:30]
 
 
 def _parse_declared_packages(repo: "BloblessRepo", files: list[str]) -> list[str]:
@@ -404,6 +471,7 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
             res.license_text_snippet = repo.show(res.license_path).strip().replace("\n", " ")[:120]
         res.entry_scripts = _find_entry_scripts(files)
         res.declared_packages = _parse_declared_packages(repo, files)
+        res.missing_deps = _scan_python_imports(repo, files, res.declared_packages)
 
         # language hint
         bases = set(f.split("/")[-1] for f in files)

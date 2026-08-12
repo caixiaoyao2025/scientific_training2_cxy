@@ -3,6 +3,21 @@ import os
 import re
 import yaml
 
+def _missing_system_commands(external: list) -> list:
+    """Normalize scanned external commands (dicts with kind) to a stable form
+    that downstream agents can read. Strings are kept as-is; dicts keep
+    {command, kind}."""
+    out = []
+    for c in external:
+        if isinstance(c, dict):
+            if c.get("command"):
+                out.append({"command": c.get("command"),
+                            "kind": c.get("kind", "system_missing")})
+        elif isinstance(c, str):
+            out.append({"command": c, "kind": "system_missing"})
+    return out
+
+
 def load_tool_library(filename="tool_library_clean.json"):
     with open(filename, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -134,9 +149,10 @@ def tool_to_registry_entry(tool, verification=None):
         "install": {
             "method": install_method,
             "command": install_url or install_cmd,
-            "system_commands": v.get("external_commands", []),
+            "system_commands": _missing_system_commands(v.get("external_commands", [])),
             "python_packages": e.get("installed_versions", [])[:20],
             "declared_packages": v.get("declared_packages", []),
+            "missing_deps": v.get("missing_deps", []),
         },
         "_discovery_metadata": {
             "github": github_url,
