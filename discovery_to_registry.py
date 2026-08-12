@@ -72,6 +72,8 @@ def tool_to_registry_entry(tool, verification=None):
     # (execute_test.py step 3.6). Fall back to a placeholder, tagged with source
     # so reviewers can tell real evidence from guesses.
     parsed = e.get("params_schema") or []
+    positional = e.get("positional_args") or []
+    arg_style = e.get("arg_style") or ""
     if parsed:
         inputs = {
             p["name"].lstrip("-").replace("-", "_"): {
@@ -83,6 +85,18 @@ def tool_to_registry_entry(tool, verification=None):
         }
         inputs_src = "help_parsed"
     else:
+        inputs = {}
+        inputs_src = "placeholder"
+    # positional args (usage: cmd file1 file2 -o out) - mark them clearly
+    for pa in positional:
+        key = pa["name"].lstrip("<>[]").replace("-", "_")
+        inputs.setdefault(key, {
+            "type": "path",
+            "description": f"Positional argument {pa['name']}",
+            "source": "help_parsed",
+            "positional": True,
+        })
+    if not inputs:
         inputs = {
             "input_file": {
                 "type": "string",
@@ -105,8 +119,9 @@ def tool_to_registry_entry(tool, verification=None):
 
     entry = {
         "name": clean_name,
-        "type": "cli",
+        "type": "python" if arg_style == "python" else "cli",
         "command": command_template,
+        "arg_style": arg_style or "named",
         "description": f"[Auto-discovered] {description} (⭐{stars}, {language}){license_note}",
         "output_control": {
             "intercept_large_output": True,

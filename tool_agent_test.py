@@ -57,6 +57,8 @@ def to_function_schema(tool: dict) -> dict:
         "description": (tool.get("description") or "")[:300],
         "parameters": {"type": "object", "properties": props, "required": required},
     }
+    if tool.get("arg_style"):
+        fn["arg_style"] = tool["arg_style"]
     if tool.get("install"):
         fn["install"] = tool["install"]
     return {"type": "function", "function": fn}

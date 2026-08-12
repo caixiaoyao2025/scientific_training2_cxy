@@ -230,6 +230,8 @@ def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
             "required": required,
         },
     }
+    if tool.get("arg_style"):
+        fn["arg_style"] = tool["arg_style"]
     if install:
         fn["install"] = install
     return {"type": "function", "function": fn}

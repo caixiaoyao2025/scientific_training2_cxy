@@ -99,6 +99,72 @@ def _detect_heavy_deps(repo_dir: str) -> bool:
     return any(d in blob for d in HEAVY_DEPS)
 
 
+def _detect_arg_style(help_output: str) -> str:
+    """Classify how the tool expects arguments.
+
+    Returns one of:
+      - named       : option-style CLI (cmd --flag value ...)
+      - positional  : positional args (cmd file1 file2 -o outdir)
+      - subcommand  : cmd <subcommand> ...
+      - python      : import-style API (no CLI usage line)
+    """
+    if not help_output:
+        return "python"
+    low = help_output.lower()
+    # subcommand CLI: help lists "Commands:" AND usage has a COMMAND token
+    has_commands = re.search(r"\bcommands?\s*:", low) is not None
+    usage = re.search(r"usage:\s*(.+)", help_output, re.IGNORECASE)
+    usage_line = usage.group(1) if usage else ""
+    if has_commands and re.search(r"\bCOMMAND\b", usage_line, re.IGNORECASE):
+        return "subcommand"
+    # positional: usage tokens after the binary that are real args (not
+    # options, not [..], not pseudo tokens like options:/COMMAND)
+    if usage_line:
+        after = re.sub(r"\[[^\]]*\]", " ", usage_line)
+        after = re.sub(r"\s-\w", " ", after)  # cut option flags
+        tokens = [t for t in after.split() if t]
+        pseudo = {"options", "option", "options:", "commands", "command",
+                  "args", "arg", "usage:"}
+        positional = [t for t in tokens[1:]  # skip binary name
+                      if not t.startswith("-") and t.strip("<>[]:,").lower() not in pseudo
+                      and not (t.isupper() and len(t) > 2)]  # COMMAND/ARGS pseudo
+        if positional:
+            return "positional"
+    return "named"
+
+
+def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
+    """Extract positional arguments from a usage line.
+
+    usage: pgv-blast [options] seq1.gbk seq2.gbk seq3.gbk -o outdir
+    -> [{"name": "seq1.gbk", ...}, ...] but those are placeholders, not real
+    names. Better: use the metavar tokens as hints. Returns [] if none.
+    """
+    if not help_output:
+        return []
+    m = re.search(r"usage:\s*\S+\s*(?:\[[^\]]*\]\s*)*(.+)", help_output, re.IGNORECASE)
+    if not m:
+        return []
+    rest = m.group(1)
+    # cut at the first option flag (-o outdir etc.)
+    cut = re.search(r"\s-\w", rest)
+    if cut:
+        rest = rest[:cut.start()]
+    tokens = rest.split()
+    out = []
+    pseudo = {"options", "option", "options:", "commands", "command",
+              "args", "arg"}
+    for t in tokens:
+        t = t.strip("<>[]")
+        if not t or t.startswith("-"):
+            continue
+        if t.lower() in pseudo or (t.isupper() and len(t) > 2):
+            continue
+        out.append({"name": t, "type": "path",
+                    "description": f"Positional argument {t}", "positional": True})
+    return out[:10]
+
+
 def _parse_help_params(help_output: str) -> list[dict[str, str]]:
     """Extract CLI parameters from a --help / usage string.
 
@@ -518,6 +584,8 @@ def execute_test(repo_url: str, install_method: str = "",
         "run_evidence": "",
         "executable": "",
         "params_schema": [],
+        "arg_style": "",
+        "positional_args": [],
         "installed_versions": [],
         "exec_retries": 0,
         "heal_evidence": "",
@@ -820,6 +888,8 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["run_ok"] = True
                 report["run_evidence"] = (out + err)[-400:]
                 report["params_schema"] = _parse_help_params(out or err)
+                report["arg_style"] = _detect_arg_style(out or err)
+                report["positional_args"] = _parse_positional_args(out or err)
                 return True
             cls = _classify_failure((out + err)[-1200:])
             if cls == "incomplete":
