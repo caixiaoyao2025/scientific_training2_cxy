@@ -2,6 +2,15 @@ name: Deep Tool Discovery (full scan)
 
 on:
   workflow_dispatch:       # 手动触发
+    inputs:
+      verify_only:
+        description: 'Only run step3.5 verify on the existing tool library (skip discover/execute)'
+        type: boolean
+        default: false
+      verify_target:
+        description: 'Path to tool library to verify (default tool_library_clean.json)'
+        type: string
+        default: 'tool_library_clean.json'
 
 permissions:
   contents: write
@@ -50,6 +59,7 @@ jobs:
           R --version 2>/dev/null | head -1 || true
 
       - name: Discover tools (30 papers per keyword)
+        if: ${{ !inputs.verify_only }}
         run: python multi_search.py
         env:
           PYTHONIOENCODING: utf-8
@@ -58,12 +68,13 @@ jobs:
         timeout-minutes: 120
 
       - name: Convert + clean
+        if: ${{ !inputs.verify_only }}
         run: |
           python -c "from run_pipeline import step2_convert, step3_clean; step2_convert(); step3_clean()"
         env:
           PYTHONIOENCODING: utf-8
 
-      - name: Verify + execute test
+      - name: Verify + execute test (step 3.5 + 3.6)
         run: |
           python -c "from run_pipeline import step3_5_verify, step3_6_execute; step3_5_verify(); step3_6_execute()"
         env:
