@@ -11,6 +11,10 @@ on:
         description: 'Path to tool library to verify (default tool_library_clean.json)'
         type: string
         default: 'tool_library_clean.json'
+      max_tools:
+        description: 'Max tools to run through execute test (0 = all)'
+        type: number
+        default: 60
 
 permissions:
   contents: write
@@ -18,7 +22,7 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
 
@@ -79,7 +83,8 @@ jobs:
           python -c "from run_pipeline import step3_5_verify, step3_6_execute; step3_5_verify(); step3_6_execute()"
         env:
           PYTHONIOENCODING: utf-8
-        timeout-minutes: 90
+          MAX_TOOLS: ${{ inputs.max_tools }}
+        timeout-minutes: 180
 
       - name: Registry + MCP merge
         run: |
