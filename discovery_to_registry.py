@@ -11,8 +11,11 @@ def _missing_system_commands(external: list) -> list:
     for c in external:
         if isinstance(c, dict):
             if c.get("command"):
-                out.append({"command": c.get("command"),
-                            "kind": c.get("kind", "system_missing")})
+                entry = {"command": c.get("command"),
+                         "kind": c.get("kind", "system_missing")}
+                if c.get("install_hint"):
+                    entry["install_hint"] = c["install_hint"]
+                out.append(entry)
         elif isinstance(c, str):
             out.append({"command": c, "kind": "system_missing"})
     return out

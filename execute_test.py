@@ -568,11 +568,20 @@ def _self_heal_command(fail_output: str, known_candidates: list[str],
 
 def execute_test(repo_url: str, install_method: str = "",
                  install_cmd: str = "", entry_scripts: Optional[list[str]] = None,
-                 repo_name: str = "") -> dict[str, Any]:
+                 repo_name: str = "", external_commands: Optional[list] = None) -> dict[str, Any]:
     """Install + smoke-run one tool; returns an execution report dict."""
     entry_scripts = entry_scripts or []
+    external_commands = external_commands or []
     name = repo_name or (urllib.parse.urlparse(repo_url).path.rstrip("/").split("/")[-1]
                          or "unknown_tool")
+    # remember missing system commands (from verify) so failure reasons can
+    # tell the caller exactly what to install
+    report_missing = [
+        {"command": c.get("command") if isinstance(c, dict) else c,
+         "install_hint": c.get("install_hint", "") if isinstance(c, dict) else ""}
+        for c in external_commands
+        if (c.get("kind") == "system_missing" if isinstance(c, dict) else True)
+    ]
     report = {
         "tool": name,
         "repo_url": repo_url,
@@ -589,6 +598,8 @@ def execute_test(repo_url: str, install_method: str = "",
         "installed_versions": [],
         "exec_retries": 0,
         "heal_evidence": "",
+        "missing_system_commands": report_missing,
+        "system_install_log": [],
         "checked_at": __import__("datetime").datetime.now().isoformat(),
     }
 
@@ -856,6 +867,37 @@ def execute_test(repo_url: str, install_method: str = "",
                     if ln.strip() and not ln.startswith("-")]
             report["installed_versions"] = pins[:80]
 
+        # ---- 2.5 install missing system commands (from verify's scan) ----
+        # If the repo invokes blastn/samtools etc. that aren't on PATH, try to
+        # install them via the recorded install_hint (apt/conda) so the smoke
+        # can actually run. Failures are recorded, not fatal.
+        import shutil as _sh
+        system_install_log = []
+        for mcmd in report_missing:
+            cname = mcmd.get("command", "")
+            hint = mcmd.get("install_hint", "")
+            if not cname or _sh.which(cname.split("/")[-1]):
+                continue
+            if not hint:
+                continue
+            # parse the hint: prefer conda (works on GH runner with miniconda),
+            # fall back to apt (needs sudo)
+            installed = False
+            if "conda install" in hint:
+                pkg = hint.split("conda install")[-1].strip().split("|")[0].strip()
+                rc, out, err = _run(["conda", "install", "-y", *pkg.split()], 900)
+                installed = rc == 0
+                system_install_log.append(f"conda install {pkg} -> {'ok' if installed else 'failed'}")
+            if not installed and "apt-get install" in hint:
+                pkg = hint.split("apt-get install")[-1].strip().split("|")[0].strip()
+                rc, out, err = _run(
+                    ["sudo", "apt-get", "install", "-y", *pkg.split()], 900)
+                installed = rc == 0
+                system_install_log.append(f"apt-get install {pkg} -> {'ok' if installed else 'failed'}")
+        if system_install_log:
+            report["system_install_log"] = system_install_log
+            print(f"    [system-deps] {'; '.join(system_install_log)}")
+
         # ---- 3. prepare a sample input ----
         sample = _find_sample_input(repo_dir)
         if not sample:
@@ -1023,6 +1065,7 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
                     install_cmd=v.get("install_cmd", ""),
                     entry_scripts=v.get("entry_scripts", []),
                     repo_name=tool,
+                    external_commands=v.get("external_commands", []),
                 )
                 results.append(res)
                 print(f"        -> {res['status']}: {res['reason'][:80]}")
