@@ -305,7 +305,7 @@ def _pypi_name(repo: "BloblessRepo", files: list[str]) -> str:
     name = ""
     for f in files:
         if f.split("/")[-1] == "pyproject.toml" and f.count("/") <= 1:
-            m = re.search(r"^name\s*=\s*[\"']([^\"']+)[\"']",
+            m = re.search(r"^\s*name\s*=\s*[\"']([^\"']+)[\"']",
                           repo.show(f), re.M)
             if m:
                 name = m.group(1)
