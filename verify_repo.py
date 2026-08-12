@@ -40,6 +40,46 @@ LICENSE_NAMES = ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING", "COPYING.md"
 ENTRY_HINTS = ("predict.py", "main.py", "cli.py", "__main__.py", "run.sh",
                "run_*.py", "*.py")
 
+# command -> install hint (apt | conda) for common bioinformatics system deps.
+# Used to tell downstream agents how to install a missing system command.
+SYSTEM_INSTALL_HINTS = {
+    "blastn": "apt-get install -y ncbi-blast+ | conda install -c bioconda blast",
+    "blastp": "apt-get install -y ncbi-blast+ | conda install -c bioconda blast",
+    "makeblastdb": "apt-get install -y ncbi-blast+ | conda install -c bioconda blast",
+    "samtools": "apt-get install -y samtools | conda install -c bioconda samtools",
+    "bcftools": "apt-get install -y bcftools | conda install -c bioconda bcftools",
+    "bwa": "apt-get install -y bwa | conda install -c bioconda bwa",
+    "bwa-mem2": "conda install -c bioconda bwa-mem2",
+    "fastp": "apt-get install -y fastp | conda install -c bioconda fastp",
+    "bedtools": "apt-get install -y bedtools | conda install -c bioconda bedtools",
+    "gffread": "apt-get install -y gffread | conda install -c bioconda gffread",
+    "seqtk": "apt-get install -y seqtk | conda install -c bioconda seqtk",
+    "gzip": "apt-get install -y gzip",
+    "bgzip": "apt-get install -y tabix | conda install -c bioconda tabix",
+    "tabix": "apt-get install -y tabix | conda install -c bioconda tabix",
+    "htsfile": "apt-get install -y libhts-dev | conda install -c bioconda htslib",
+    "snpEff": "conda install -c bioconda snpeff",
+    "star": "apt-get install -y star | conda install -c bioconda star",
+    "hisat2": "apt-get install -y hisat2 | conda install -c bioconda hisat2",
+    "kallisto": "apt-get install -y kallisto | conda install -c bioconda kallisto",
+    "salmon": "apt-get install -y salmon | conda install -c bioconda salmon",
+    "trinity": "conda install -c bioconda trinity",
+    "cutadapt": "pip install cutadapt | conda install -c bioconda cutadapt",
+    "trimmomatic": "conda install -c bioconda trimmomatic",
+    "fastqc": "apt-get install -y fastqc | conda install -c bioconda fastqc",
+    "multiqc": "pip install multiqc | conda install -c bioconda multiqc",
+    "picard": "conda install -c bioconda picard",
+    "gatk": "conda install -c bioconda gatk4",
+    "bismark": "conda install -c bioconda bismark",
+    "bowtie2": "apt-get install -y bowtie2 | conda install -c bioconda bowtie2",
+    "hisat": "apt-get install -y hisat | conda install -c bioconda hisat",
+    "gmx": "apt-get install -y gromacs | conda install -c conda-forge gromacs",
+    "java": "apt-get install -y default-jre",
+    "R": "apt-get install -y r-base | conda install -c conda-forge r-base",
+    "Rscript": "apt-get install -y r-base | conda install -c conda-forge r-base",
+}
+
+
 
 @dataclass
 class VerifyResult:
@@ -247,7 +287,11 @@ def _scan_external_commands(repo: "BloblessRepo", files: list[str],
             kind = "system_present"
         else:
             kind = "system_missing"
-        out.append({"command": c, "kind": kind})
+        entry = {"command": c, "kind": kind}
+        hint = SYSTEM_INSTALL_HINTS.get(base)
+        if hint:
+            entry["install_hint"] = hint
+        out.append(entry)
     return out[:30]
 
 
