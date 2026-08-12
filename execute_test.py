@@ -588,14 +588,32 @@ def execute_test(repo_url: str, install_method: str = "",
                      INSTALL_TIMEOUT)
             args = [venv_py, "-c", "import sys; sys.exit(0)"]  # no-op install
         elif install_method == "r_pkg":
-            # R package: needs R installed; install via remotes from the clone
+            # R package: needs R installed; install via remotes from the clone.
+            # Prefer system R, else fall back to R inside the active conda env
+            # (setup-miniconda installs r-base into an env, not system PATH).
             r_bin = shutil.which("R") or shutil.which("Rscript")
-            if not r_bin:
+            conda_r = None
+            if not r_bin and shutil.which("conda"):
+                for env in ("base", os.environ.get("CONDA_DEFAULT_ENV", "")):
+                    if not env:
+                        continue
+                    rc_r, out_r, _ = _run(
+                        ["conda", "run", "-n", env, "which", "R"], 60)
+                    if rc_r == 0 and out_r.strip():
+                        conda_r = ["conda", "run", "-n", env, "R"]
+                        break
+                if conda_r is None:
+                    # default env fallback
+                    rc_r, out_r, _ = _run(["conda", "run", "which", "R"], 60)
+                    if rc_r == 0 and out_r.strip():
+                        conda_r = ["conda", "run", "R"]
+            r_cmd = [r_bin] if r_bin else (conda_r or None)
+            if not r_cmd:
                 report["status"], report["reason"] = "not_tested", \
-                    "R not installed in this environment"
+                    "R not installed in this environment (checked PATH and conda envs)"
                 return report
             rc_r, out_r, err_r = _run(
-                [r_bin, "-e",
+                r_cmd + ["-e",
                  "install.packages('remotes', repos='https://cloud.r-project.org'); "
                  f"remotes::install_local('{repo_dir}', repos='https://cloud.r-project.org')"],
                 1800)
@@ -606,12 +624,13 @@ def execute_test(repo_url: str, install_method: str = "",
                 return report
             report["install_ok"] = True
             import_name = re.sub(r"[^a-zA-Z0-9_]", "", name).lstrip("_")
+            r_label = " ".join(r_cmd)
             rc_s, out_s, err_s = _run(
-                [r_bin, "-e", f"library({import_name}); cat('R_IMPORT_OK')"],
+                r_cmd + ["-e", f"library({import_name}); cat('R_IMPORT_OK')"],
                 RUN_TIMEOUT)
             if rc_s == 0 and "R_IMPORT_OK" in (out_s + err_s):
                 report["status"] = "passed"
-                report["reason"] = f"`{r_bin} -e 'library({import_name})'` -> exit 0"
+                report["reason"] = f"`{r_label} -e 'library({import_name})'` -> exit 0"
                 report["run_ok"] = True
                 report["run_evidence"] = (out_s + err_s)[-400:]
                 report["executable"] = import_name
