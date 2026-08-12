@@ -25,7 +25,9 @@ from typing import Any
 
 def _render_command(command_template: str, arguments: dict[str, Any]) -> list[str]:
     quoted = {key: shlex.quote(str(value)) for key, value in arguments.items()}
-    rendered = command_template.format(**quoted)
+    # templates may use either Jinja-style {{x}} or Python-style {x} placeholders
+    template = re.sub(r"\{\{(\w+)\}\}", r"{\1}", command_template)
+    rendered = template.format(**quoted)
     argv = shlex.split(rendered, posix=True)
     if not argv:
         raise ValueError("Rendered command is empty.")
