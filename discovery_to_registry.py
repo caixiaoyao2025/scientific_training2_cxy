@@ -81,10 +81,17 @@ def tool_to_registry_entry(tool, verification=None):
     # then verify's probed command, then the guessed repo name.
     exec_exe = e.get("executable") or ""
     verified_cmd = v.get("command") or ""
-    if exec_exe:
-        command_template = f"{exec_exe} {{{{input_file}}}}"
-    elif verified_cmd:
-        command_template = f"{verified_cmd} {{{{input_file}}}}"
+    positional = e.get("positional_args") or []
+    arg_style = e.get("arg_style") or ""
+    base_cmd = exec_exe or verified_cmd or ""
+    if base_cmd:
+        if positional and arg_style == "positional":
+            # positional CLI: pgv-blast <seq1> <seq2> ... -o <outdir>
+            # template fills each positional arg by its name
+            ph = " ".join(f"{{{{{p['name']}}}}}" for p in positional)
+            command_template = f"{base_cmd} {ph}" if ph else f"{base_cmd} {{{{input_file}}}}"
+        else:
+            command_template = f"{base_cmd} {{{{input_file}}}}"
 
     # inputs schema: prefer params parsed from the tool's real --help output
     # (execute_test.py step 3.6). Fall back to a placeholder, tagged with source
