@@ -240,13 +240,33 @@ def _scan_external_commands(repo: "BloblessRepo", files: list[str],
 
 
 def _pypi_name(repo: "BloblessRepo", files: list[str]) -> str:
-    """Best-effort PyPI package name from pyproject.toml [project] name."""
+    """Best-effort PyPI package name from pyproject.toml [project] name.
+
+    Also verifies the package actually exists on PyPI; returns "" if it doesn't
+    (so the caller knows `pip install <name>` would fail and can keep the git
+    URL instead).
+    """
+    name = ""
     for f in files:
         if f.split("/")[-1] == "pyproject.toml" and f.count("/") <= 1:
             m = re.search(r"^name\s*=\s*[\"']([^\"']+)[\"']",
                           repo.show(f), re.M)
             if m:
-                return m.group(1)
+                name = m.group(1)
+                break
+    if not name:
+        return ""
+    # verify on PyPI (with a short timeout so a slow/unreachable PyPI doesn't
+    # hang the whole verify step)
+    try:
+        import urllib.request
+        url = f"https://pypi.org/pypi/{name}/json"
+        req = urllib.request.Request(url, headers={"User-Agent": "tool-discovery"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status == 200:
+                return name
+    except Exception:
+        pass
     return ""
 
 
