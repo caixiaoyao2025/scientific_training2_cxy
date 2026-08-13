@@ -1341,12 +1341,16 @@ def execute_test(repo_url: str, install_method: str = "",
                             report["reason"] = f"README usage: python -m {mod} --help"
                             report["callable_via"] = readme_usage
                             report["run_evidence"] = (out_m + err_m)[-400:]
-                            # inputs for python -m tools: flags from README
-                            # examples (--sequence/--num_samples/...) so the
-                            # agent knows what to pass
-                            flag_params = _extract_flag_params(report["readme_examples"])
-                            if flag_params:
-                                report["params_schema"] = flag_params
+                            # REAL parameters come from the tool's --help
+                            # (authoritative + current), not the README text.
+                            # README is only a fallback if --help yields nothing.
+                            help_params = _parse_help_params(out_m or err_m)
+                            if help_params:
+                                report["params_schema"] = help_params
+                            else:
+                                flag_params = _extract_flag_params(report["readme_examples"])
+                                if flag_params:
+                                    report["params_schema"] = flag_params
                         else:
                             report["status"] = "failed"
                             report["reason"] = ("importable but no callable entry point "
