@@ -35,6 +35,10 @@ jobs:
           # use default PyPI (GH runners are in the US; the tsinghua mirror can
           # be unreachable from there and breaks pip install)
           pip install --quiet requests beautifulsoup4 pyyaml
+          # preinstall torch (CPU) so heavy-ML tools (bioemu etc.) don't
+          # re-download it during execute/agent test
+          pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1 || \
+            pip install --quiet torch >/dev/null 2>&1 || echo "torch preinstall skipped"
           sudo apt-get update -qq
           sudo apt-get install -y -qq git build-essential gcc g++ make \
             libhts-dev libcurl4-openssl-dev libssl-dev zlib1g-dev libbz2-dev \
