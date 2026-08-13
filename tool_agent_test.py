@@ -170,6 +170,12 @@ def main() -> int:
             skipped.append(t["name"])
             print(f"[skip] {t['name']}: heavy ML deps (torch/tf) - needs preinstall")
             continue
+        # subcommand CLI with incomplete discovery: subcommand --help probing
+        # failed for some subcommand -> agent would hallucinate args
+        if as_ == "subcommand" and not t.get("subcommand_discovery_complete"):
+            skipped.append(t["name"])
+            print(f"[skip] {t['name']}: subcommand discovery incomplete (would hallucinate args)")
+            continue
         callable_tools.append(t)
     schemas = []
     fnmap = {}
@@ -241,7 +247,12 @@ def main() -> int:
                         tool_spec = dict(spec_map[tool_name])
                         if sub:
                             tool_spec["_active_subcommand"] = sub
-                        result = format_result(run_tool_spec(tool_spec, args))
+                        raw = run_tool_spec(tool_spec, args)
+                        result = format_result(raw)
+                        if raw.get("argv"):
+                            print(f"          argv: {raw['argv']}")
+                            print(f"          exit: {raw.get('return_code')}")
+                            per_tool_last = raw  # keep raw for final status
                     low = result.lower()
                     started = started or ("command not found" not in low and "exit code: 127" not in low)
                     # tool ran and exited 0 -> succeeded

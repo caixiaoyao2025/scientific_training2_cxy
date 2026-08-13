@@ -908,6 +908,7 @@ def execute_test(repo_url: str, install_method: str = "",
         "positional_args": [],
         "subcommands": [],
         "subcommand_details": {},
+        "subcommand_discovery_complete": False,
         "installed_versions": [],
         "exec_retries": 0,
         "heal_evidence": "",
@@ -1261,14 +1262,20 @@ def execute_test(repo_url: str, install_method: str = "",
                 if report["arg_style"] == "subcommand" and report["subcommands"]:
                     subs = {}
                     exe_base = args[0]  # the executable
+                    probed = 0
+                    ok = 0
                     for sub in report["subcommands"]:
+                        probed += 1
                         rc_s, out_s, err_s = _run(
                             [exe_base, sub, "--help"], RUN_TIMEOUT, env=env)
                         if rc_s == 0 and (out_s.strip() or err_s.strip()):
+                            ok += 1
                             subs[sub] = {
                                 "params": _parse_help_params(out_s or err_s),
                                 "usage": _extract_usage(out_s or err_s),
                             }
+                    # complete only if every subcommand was probed successfully
+                    report["subcommand_discovery_complete"] = (probed > 0 and ok == probed)
                     if subs:
                         report["subcommand_details"] = subs
                 return True
