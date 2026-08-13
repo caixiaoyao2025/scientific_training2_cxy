@@ -1,0 +1,1291 @@
+tools:
+- name: bqtools
+  type: cli
+  command: bqtools {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] A command line utilty for working with BINSEQ files
+    (⭐39, Rust) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: cargo
+    command: cargo install --git https://github.com/ArcInstitute/bqtools
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute__i8mxr0_/venv
+  _discovery_metadata:
+    github: https://github.com/ArcInstitute/bqtools
+    stars: 39
+    language: Rust
+    tags:
+    - bqtools
+    - software
+    quality_score: 48.400000000000006
+    paper_doi: 10.64898/2026.06.02.729736
+    paper_title: 'Chromap Suite: an open-source single-binary platform for agentic
+      multiomic RNA + ATAC profiling.'
+    install_method: cargo
+    install_url: cargo install --git https://github.com/ArcInstitute/bqtools
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps:  lang=Rust no-license);
+      command not installed'
+    verified_license: false
+    verified_license_path: ''
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-13T13:41:34.707857'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: cargo
+    exec_status: passed
+    exec_reason: '`/tmp/execute__i8mxr0_/bqtools/target/release/bqtools --help` ->
+      exit 0'
+    exec_install_evidence: " v2.0.2\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
+      \   Compiling is-terminal v0.4.17\n   Compiling fixedbitset v0.5.7\n   Compiling\
+      \ xxhash-rust v0.8.18\n   Compiling thousands v0.2.0\n   Compiling rust-htslib\
+      \ v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling\
+      \ bqtools v0.5.13 (/tmp/execute__i8mxr0_/bqtools)\n    Finished `release` profile\
+      \ [optimized] target(s) in 2m 19s\n"
+    exec_run_evidence: "into multiple files based on patterns provided in a pattern\
+      \ file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc      \
+      \ \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify \
+      \  Compute an order-independent checksum over a BINSEQ file\n  help     Print\
+      \ this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help\
+      \     Print help\n  -V, --version  Print version\n"
+    exec_params_schema: []
+    exec_installed_versions: []
+    exec_executable: bqtools
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
+- name: nanosimformer
+  type: cli
+  command: nanosimformer {{nano_signal_simulator}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] NanoSimFormer: an end-to-end transformer-based nanopore
+    signal simulator with basecaller guidance. (⭐3, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    nano_signal_simulator:
+      type: path
+      description: Positional argument nano_signal_simulator
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/BioinfoSZU/NanoSimFormer
+    system_commands: []
+    python_packages:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - attrs==26.1.0
+    - biopython==1.88
+    - blinker==1.9.0
+    - blobfile==3.2.0
+    - certifi==2026.7.22
+    - cffi==2.1.1
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - datasets==5.0.1
+    - Deprecated==1.3.1
+    - dill==0.4.1
+    - edlib==1.3.9.post1
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - bonito
+    - create_dataset
+    - dataset
+    - flask
+    - main
+    - mappy
+    - model
+    - numpy
+    - packaging
+    - pandas
+    - pod5
+    - pysam
+    - remora
+    - scipy
+    - setuptools
+    - toml
+    - torch
+    - torchtune
+    - tqdm
+    - train
+    - utils
+    - uuid
+    - version
+    - visualize_dataset
+    venv_path: /tmp/execute_fm460hyk/venv
+  _discovery_metadata:
+    github: https://github.com/BioinfoSZU/NanoSimFormer
+    stars: 3
+    language: Python
+    tags:
+    - nanosimformer
+    - software
+    quality_score: 16.8
+    paper_doi: 10.1093/bioinformatics/btag402
+    paper_title: 'NanoSimFormer: an end-to-end transformer-based nanopore signal simulator
+      with basecaller guidance.'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/BioinfoSZU/NanoSimFormer
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: nano_signal_simulator/__main__.py,
+      nano_signal_simulator/main.py; deps: setup.py lang=Python license); command
+      not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts:
+    - nano_signal_simulator/__main__.py
+    - nano_signal_simulator/main.py
+    verified_checked_at: '2026-08-13T13:42:25.271251'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_fm460hyk/venv/bin/nanosimformer --help` -> exit 0'
+    exec_install_evidence: 'WARNING: huggingface-hub 1.27.0 does not provide the extra
+      ''hf-transfer''
+
+      '
+    exec_run_evidence: "equence/dwells .npy\n                        files) from an\
+      \ aligned BAM and POD5 file.\n    visualize           Launch an interactive\
+      \ web viewer to inspect dataset\n                        chunks (supports SSH\
+      \ port forwarding).\n    train               Train a NanoSimFormer model with\
+      \ basecaller-guided CTC\n                        loss.\n\noptions:\n  -h, --help\
+      \            show this help message and exit\n"
+    exec_params_schema: []
+    exec_installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - attrs==26.1.0
+    - biopython==1.88
+    - blinker==1.9.0
+    - blobfile==3.2.0
+    - certifi==2026.7.22
+    - cffi==2.1.1
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - datasets==5.0.1
+    - Deprecated==1.3.1
+    - dill==0.4.1
+    - edlib==1.3.9.post1
+    - fast_ctc_decode==0.3.7
+    - filelock==3.32.2
+    - Flask==3.1.3
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.6.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.16.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - idna==3.18
+    - importlib_resources==7.1.0
+    - iso8601==2.1.0
+    - itsdangerous==2.2.0
+    - Jinja2==3.1.6
+    - joblib==1.5.3
+    - kagglehub==1.0.2
+    - kagglesdk==0.1.37
+    - kiwisolver==1.5.0
+    - lib_pod5==0.3.44
+    - lxml==6.1.1
+    - mappy==2.31
+    - Markdown==3.10.3
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mizani==0.9.3
+    - more-itertools==11.1.0
+    - mpmath==1.3.0
+    - multidict==6.7.1
+    - multiprocess==0.70.19
+    - nanosimformer @ file:///tmp/execute_fm460hyk/NanoSimFormer
+    - narwhals==2.24.0
+    - networkx==3.6.1
+    - numpy==1.26.4
+    - nvidia-cublas-cu12==12.8.4.1
+    - nvidia-cuda-cupti-cu12==12.8.90
+    - nvidia-cuda-nvrtc-cu12==12.8.93
+    - nvidia-cuda-runtime-cu12==12.8.90
+    - nvidia-cudnn-cu12==9.10.2.21
+    - nvidia-cufft-cu12==11.3.3.83
+    - nvidia-cufile-cu12==1.13.1.3
+    - nvidia-curand-cu12==10.3.9.90
+    - nvidia-cusolver-cu12==11.7.3.90
+    - nvidia-cusparse-cu12==12.5.8.93
+    - nvidia-cusparselt-cu12==0.7.1
+    - nvidia-nccl-cu12==2.27.5
+    - nvidia-nvjitlink-cu12==12.8.93
+    - nvidia-nvshmem-cu12==3.3.20
+    - nvidia-nvtx-cu12==12.8.90
+    - omegaconf==2.3.1
+    - ont-bonito==1.1.0
+    - ont-koi==0.6.5
+    - ont-remora==3.3.0
+    - packaging==26.3
+    - pandas==3.0.5
+    - parasail==1.3.4
+    - patsy==1.0.2
+    exec_executable: nanosimformer
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
+- name: morphic-provenance
+  type: cli
+  command: morphic-provenance {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Chromap Suite: an open-source single-binary platform
+    for agentic multiomic RNA + ATAC profiling. (⭐0, Python) (NO license - research
+    use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    '{init,check,ingest_jsonl,import_repository,serve}':
+      type: path
+      description: Positional argument {init,check,ingest-jsonl,import-repository,serve}
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/morphic-bio/morphic-provenance
+    system_commands: []
+    python_packages:
+    - annotated-types==0.8.0
+    - anyio==4.14.2
+    - click==8.4.2
+    - fastapi==0.115.14
+    - h11==0.16.0
+    - idna==3.18
+    - morphic-provenance @ file:///tmp/execute_u6gzi8ey/morphic-provenance
+    - packaging==26.3
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - starlette==0.45.3
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - uvicorn==0.52.2
+    declared_packages: []
+    missing_deps:
+    - api
+    - cli
+    - config
+    - database
+    - errors
+    - fastapi
+    - hmac
+    - importer
+    - importlib
+    - models
+    - pydantic
+    - service
+    - uvicorn
+    venv_path: /tmp/execute_u6gzi8ey/venv
+  _discovery_metadata:
+    github: https://github.com/morphic-bio/morphic-provenance
+    stars: 0
+    language: Python
+    tags:
+    - morphic
+    - provenance
+    - software
+    - rna
+    quality_score: 15.0
+    paper_doi: 10.64898/2026.06.02.729736
+    paper_title: 'Chromap Suite: an open-source single-binary platform for agentic
+      multiomic RNA + ATAC profiling.'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/morphic-bio/morphic-provenance
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: provenance_service/__main__.py,
+      provenance_service/cli.py; deps: pyproject.toml lang=Python no-license); command
+      not installed'
+    verified_license: false
+    verified_license_path: ''
+    verified_entry_scripts:
+    - provenance_service/__main__.py
+    - provenance_service/cli.py
+    verified_checked_at: '2026-08-13T13:42:48.706485'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_u6gzi8ey/venv/bin/morphic-provenance --help` -> exit
+      0'
+    exec_install_evidence: ''
+    exec_run_evidence: "onl,import-repository,serve}\n    init                initialize\
+      \ the database and artifact root\n    check               check database and\
+      \ artifact-root readiness\n    ingest-jsonl        ingest an event JSONL sidecar\n\
+      \    import-repository   index canonical run records from this repository\n\
+      \    serve               run the HTTP service\n\noptions:\n  -h, --help    \
+      \        show this help message and exit\n"
+    exec_params_schema: []
+    exec_installed_versions:
+    - annotated-types==0.8.0
+    - anyio==4.14.2
+    - click==8.4.2
+    - fastapi==0.115.14
+    - h11==0.16.0
+    - idna==3.18
+    - morphic-provenance @ file:///tmp/execute_u6gzi8ey/morphic-provenance
+    - packaging==26.3
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - starlette==0.45.3
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - uvicorn==0.52.2
+    exec_executable: morphic-provenance
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
+- name: strainmake
+  type: cli
+  command: "strainmake {{ARGS]...\e[0m\e[1m}} {{\e[0m\e[1m}} {{\e[0m}}"
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] StrainMake: reproducible hybrid metagenomics with
+    MAG recovery and strain-level resolution. (⭐0, ) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    "ARGS]...\e[0m\e[1m":
+      type: path
+      description: "Positional argument ARGS]...\e[0m\e[1m"
+      source: help_parsed
+      positional: true
+    "\e[0m\e[1m":
+      type: path
+      description: "Positional argument \e[0m\e[1m"
+      source: help_parsed
+      positional: true
+    "\e[0m":
+      type: path
+      description: "Positional argument \e[0m"
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/UMMISCO/strainmake
+    system_commands: []
+    python_packages:
+    - annotated-doc==0.0.5
+    - Jinja2==3.1.6
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - mdurl==0.1.2
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - Pygments==2.20.0
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - rich==15.0.0
+    - shellingham==1.5.4
+    - six==1.17.0
+    - strainmake @ file:///tmp/execute_5dcao7n9/strainmake
+    - typer==0.27.1
+    declared_packages: []
+    missing_deps:
+    - concurrent
+    - defaults
+    - importlib
+    - jinja2
+    - matplotlib
+    - numpy
+    - pandas
+    - pprint
+    - pyfastx
+    - shlex
+    - strainmake
+    - tqdm
+    - typer
+    - venn
+    - workflow
+    - yaml
+    venv_path: /tmp/execute_5dcao7n9/venv
+  _discovery_metadata:
+    github: https://github.com/UMMISCO/strainmake
+    stars: 0
+    language: ''
+    tags:
+    - strainmake
+    - software
+    quality_score: 5.0
+    paper_doi: 10.1093/bioinformatics/btag212
+    paper_title: 'StrainMake: reproducible hybrid metagenomics with MAG recovery and
+      strain-level resolution.'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/UMMISCO/strainmake
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: dev/run.sh, strainmake/cli/main.py;
+      deps: pyproject.toml docker lang=Python no-license); command not installed'
+    verified_license: false
+    verified_license_path: ''
+    verified_entry_scripts:
+    - dev/run.sh
+    - strainmake/cli/main.py
+    verified_checked_at: '2026-08-13T13:43:43.060677'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files:
+      - .docker/Dockerfile
+      - dev/Dockerfile
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_5dcao7n9/venv/bin/strainmake --help` -> exit 0'
+    exec_install_evidence: 'WARNING: typer 0.27.1 does not provide the extra ''all''
+
+      '
+    exec_run_evidence: "\e[0m pipeline using Snakemake.                        \e\
+      [2m│\e[0m\n\e[2m│\e[0m \e[1;36mreport \e[0m\e[1;36m \e[0m Generate \e[1mMultiQC\
+      \ report(s)\e[0m from StrainMake pipeline results.        \e[2m│\e[0m\n\e[2m│\e\
+      [0m \e[1;36mprepare\e[0m\e[1;36m \e[0m Prepare input data and results for the\
+      \ pipeline.                    \e[2m│\e[0m\n\e[2m╰──────────────────────────────────────────────────────────────────────────────╯\e\
+      [0m\n\n"
+    exec_params_schema: []
+    exec_installed_versions:
+    - annotated-doc==0.0.5
+    - Jinja2==3.1.6
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - mdurl==0.1.2
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - Pygments==2.20.0
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - rich==15.0.0
+    - shellingham==1.5.4
+    - six==1.17.0
+    - strainmake @ file:///tmp/execute_5dcao7n9/strainmake
+    - typer==0.27.1
+    exec_executable: strainmake
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
+- name: kaptain
+  type: cli
+  command: kaptain {{...}} {{DB}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Filtering for truth: high-precision taxonomic classification
+    in nanopore shotgun metagenomics data t (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    output:
+      type: string
+      description: / --subsampling 500M --fdr 5
+      source: help_parsed
+    i:
+      type: string
+      description: '[ONT_IN ...], --ont-in ONT_IN [ONT_IN ...]'
+      source: help_parsed
+    db:
+      type: string
+      description: Basename of KMA database. Database exists of four
+      source: help_parsed
+    db_lookup:
+      type: string
+      description: CLI flag --db-lookup
+      source: help_parsed
+    dir_working:
+      type: string
+      description: CLI flag --dir-working
+      source: help_parsed
+    o:
+      type: string
+      description: ', --output OUTPUT'
+      source: help_parsed
+    output_html:
+      type: string
+      description: CLI flag --output-html
+      source: help_parsed
+    subsampling:
+      type: string
+      description: '[{200M,500M,1000M,1500M,2000M,None} ...]'
+      source: help_parsed
+    fdr:
+      type: string
+      description: '[{15,10,5,1} ...]'
+      source: help_parsed
+    threads:
+      type: string
+      description: 'Number of threads (default: 4)'
+      source: help_parsed
+    version:
+      type: string
+      description: version and exit
+      source: help_parsed
+    log:
+      type: string
+      description: 'out log information to file (default: False)'
+      source: help_parsed
+    '...':
+      type: path
+      description: Positional argument ...
+      source: help_parsed
+      positional: true
+    DB:
+      type: path
+      description: Positional argument DB
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install kaptain  # source: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN'
+    system_commands: []
+    python_packages:
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.1
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
+    declared_packages: []
+    missing_deps:
+    - bs4
+    - importlib
+    - kaptain
+    - pandas
+    - yaml
+    - yattag
+    venv_path: /tmp/execute_rem8umbv/venv
+  _discovery_metadata:
+    github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
+    stars: 0
+    language: ''
+    tags:
+    - kaptain
+    - software
+    quality_score: 5.0
+    paper_doi: 10.1186/s12864-026-12668-0
+    paper_title: 'Filtering for truth: high-precision taxonomic classification in
+      nanopore shotgun metagenomics data t'
+    install_method: pip_pkg
+    install_url: 'pip install kaptain  # source: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN'
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: kaptain/__main__.py; deps: pyproject.toml
+      lang=Python license); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts:
+    - kaptain/__main__.py
+    verified_checked_at: '2026-08-13T13:44:21.614555'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_rem8umbv/venv/bin/kaptain --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: "efore\n                        classification. Leave empty\
+      \ or use None for no\n                        downsampling. (default: [None])\n\
+      \  --fdr {15,10,5,1} [{15,10,5,1} ...]\n                        FDR setting.\
+      \ (default: [5])\n  --threads THREADS     Number of threads (default: 4)\n \
+      \ --version             Print version and exit\n  --log                 Write\
+      \ out log information to file (default: False)\n"
+    exec_params_schema:
+    - name: --output
+      type: string
+      description: / --subsampling 500M --fdr 5
+    - name: -i
+      type: string
+      description: '[ONT_IN ...], --ont-in ONT_IN [ONT_IN ...]'
+    - name: --db
+      type: string
+      description: Basename of KMA database. Database exists of four
+    - name: --db-lookup
+      type: string
+      description: CLI flag --db-lookup
+    - name: --dir-working
+      type: string
+      description: CLI flag --dir-working
+    - name: -o
+      type: string
+      description: ', --output OUTPUT'
+    - name: --output-html
+      type: string
+      description: CLI flag --output-html
+    - name: --subsampling
+      type: string
+      description: '[{200M,500M,1000M,1500M,2000M,None} ...]'
+    - name: --fdr
+      type: string
+      description: '[{15,10,5,1} ...]'
+    - name: --threads
+      type: string
+      description: 'Number of threads (default: 4)'
+    - name: --version
+      type: string
+      description: version and exit
+    - name: --log
+      type: string
+      description: 'out log information to file (default: False)'
+    exec_installed_versions:
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.1
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
+    - Jinja2==3.1.6
+    - jsonschema==4.26.0
+    - jsonschema-specifications==2025.9.1
+    - jupyter_core==5.9.1
+    - kaptain @ file:///tmp/execute_rem8umbv/KAPTAIN
+    - MarkupSafe==3.0.3
+    - nbformat==5.11.0
+    - numpy==2.4.6
+    - packaging==25.0
+    - pandas==3.0.5
+    - platformdirs==4.11.2
+    - pluggy==1.6.0
+    - psutil==7.2.2
+    - PuLP==2.7.0
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - Pygments==2.20.0
+    - pytest==9.1.1
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - referencing==0.37.0
+    - requests==2.34.2
+    - rpds-py==2026.6.3
+    - six==1.17.0
+    - smart_open==7.7.1
+    - smmap==5.0.3
+    - snakemake==9.25.1
+    - snakemake-interface-common==1.23.0
+    - snakemake-interface-executor-plugins==9.4.0
+    - snakemake-interface-logger-plugins==2.1.0
+    - snakemake-interface-report-plugins==1.3.0
+    - snakemake-interface-scheduler-plugins==2.0.2
+    - snakemake-interface-storage-plugins==4.4.1
+    - soupsieve==2.9.2
+    - SQLAlchemy==2.0.52
+    - sqlmodel==0.0.37
+    - tabulate==0.10.0
+    - tenacity==9.1.4
+    - throttler==1.2.3
+    - traitlets==5.16.1
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - urllib3==2.7.0
+    - wrapt==2.3.0
+    - yattag==1.16.1
+    - yte==1.9.4
+    exec_executable: kaptain
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: help_parsed
+- name: bioemu
+  type: python
+  command: python -m bioemu.sample --sequence {{sequence}} --num_samples {{num_samples}}
+    --output_dir {{output_dir}} --pdb-path {{pdb_path}} --xtc-path {{xtc_path}}
+  arg_style: python
+  callable_via: python -m bioemu.sample
+  readme_examples:
+  - python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10 --output_dir ~/test-chignolin
+  - python -m bioemu.sample \
+  - python -m bioemu.sidechain_relax --pdb-path path/to/topology.pdb --xtc-path path/to/samples.xtc
+  readme_usage: python -m bioemu.sample
+  description: '[Auto-discovered] PETIMOT: a novel framework for inferring protein
+    motions from sparse data using SE(3)-equivariant gr (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    sequence:
+      type: string
+      description: CLI flag --sequence (from README example)
+      source: help_parsed
+    num_samples:
+      type: int
+      description: CLI flag --num_samples (from README example)
+      source: help_parsed
+    output_dir:
+      type: path
+      description: CLI flag --output_dir (from README example)
+      source: help_parsed
+    pdb_path:
+      type: path
+      description: CLI flag --pdb-path (from README example)
+      source: help_parsed
+    xtc_path:
+      type: path
+      description: CLI flag --xtc-path (from README example)
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
+    system_commands: []
+    python_packages:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_eq_kkzqs/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - FastMBAR
+    - alphafold
+    - bioemu
+    - chemgraph
+    - collective_variables
+    - denoiser
+    - fire
+    - hpacker
+    - huggingface_hub
+    - hydra
+    - matplotlib
+    - mdtraj
+    - models
+    - numpy
+    - omegaconf
+    - openfold
+    - openmm
+    - potentials
+    - requests
+    - scipy
+    - sde_lib
+    - so3_sde
+    - stackprinter
+    - steered_dg_lib
+    - structure_module
+    - torch
+    - torch_geometric
+    - toy_gmm
+    - tqdm
+    venv_path: /tmp/execute_eq_kkzqs/venv
+  _discovery_metadata:
+    github: https://github.com/microsoft/bioemu
+    stars: 0
+    language: ''
+    tags:
+    - bioemu
+    - protein
+    - software
+    quality_score: 5.0
+    paper_doi: 10.1107/S2059798326006054
+    paper_title: 'PETIMOT: a novel framework for inferring protein motions from sparse
+      data using SE(3)-equivariant gr'
+    install_method: pip_pkg
+    install_url: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml lang=Python
+      license); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-13T13:44:40.906717'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: 'README usage: python -m bioemu.sample --help'
+    exec_install_evidence: ''
+    exec_run_evidence: "      Type: bool\n        Default: True\n        Filter out\
+      \ unphysical samples with e.g. long bond distances or steric clashes.\n    --base_seed=BASE_SEED\n\
+      \        Type: Optional[int | None]\n        Default: None\n        Base random\
+      \ seed for sampling. If set, each batch's seed will be set to base_seed + (num\
+      \ samples already generated).\n\nNOTES\n    You can also use flags syntax for\
+      \ POSITIONAL ARGUMENTS\n"
+    exec_params_schema:
+    - name: sequence
+      type: string
+      description: CLI flag --sequence (from README example)
+      flag: --sequence
+    - name: num_samples
+      type: int
+      description: CLI flag --num_samples (from README example)
+      flag: --num_samples
+    - name: output_dir
+      type: path
+      description: CLI flag --output_dir (from README example)
+      flag: --output_dir
+    - name: pdb_path
+      type: path
+      description: CLI flag --pdb-path (from README example)
+      flag: --pdb-path
+    - name: xtc_path
+      type: path
+      description: CLI flag --xtc-path (from README example)
+      flag: --xtc-path
+    exec_installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_eq_kkzqs/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    - cycler==0.12.1
+    - dm-haiku==0.0.17
+    - dm-tree==0.1.10
+    - einops==0.8.2
+    - filelock==3.32.2
+    - fire==0.7.1
+    - flatbuffers==25.12.19
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.7.0
+    - gast==0.7.0
+    - google-pasta==0.2.0
+    - gprofiler-official==1.0.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.14.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - hydra-core==1.3.5
+    - idna==3.18
+    - ihm==2.11
+    - jax==0.10.2
+    - jaxlib==0.10.2
+    - Jinja2==3.1.6
+    - jmp==0.0.4
+    - keras==3.15.1
+    - kiwisolver==1.5.0
+    - libclang==18.1.1
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mdtraj==1.11.1.post2
+    - mdurl==0.1.2
+    - ml_collections==1.1.0
+    - ml_dtypes==0.5.4
+    - modelcif==1.7
+    - mpmath==1.3.0
+    - msgpack==1.2.1
+    - multidict==6.7.1
+    - mygene==3.2.2
+    - namex==0.1.0
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - nvidia-cublas==13.1.1.3
+    - nvidia-cuda-cupti==13.0.85
+    - nvidia-cuda-nvrtc==13.0.88
+    - nvidia-cuda-runtime==13.0.96
+    - nvidia-cudnn-cu13==9.20.0.48
+    - nvidia-cufft==12.0.0.61
+    - nvidia-cufile==1.15.1.6
+    - nvidia-curand==10.4.0.35
+    - nvidia-cusolver==12.0.4.66
+    - nvidia-cusparse==12.6.3.3
+    - nvidia-cusparselt-cu13==0.8.1
+    - nvidia-nccl-cu13==2.29.7
+    - nvidia-nvjitlink==13.3.33
+    - nvidia-nvshmem-cu13==3.4.5
+    - nvidia-nvtx==13.0.85
+    exec_executable: bioemu
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: help_parsed
+- name: fmdseromonitor
+  type: cli
+  command: FMDSeroMonitor {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Estimation of seroconversion and vaccination impact
+    against FMD in India during 2006-2022 using surv (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/ICARNIFMD/FMDSeroMonitor")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_sflv70lw/venv
+  _discovery_metadata:
+    github: https://github.com/ICARNIFMD/FMDSeroMonitor
+    stars: 0
+    language: ''
+    tags:
+    - fmdseromonitor
+    - software
+    quality_score: 5.0
+    paper_doi: 10.1038/s41598-026-46432-x
+    paper_title: Estimation of seroconversion and vaccination impact against FMD in
+      India during 2006-2022 using surv
+    install_method: r_pkg
+    install_url: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/ICARNIFMD/FMDSeroMonitor")'
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps:  lang=R license); command
+      not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-13T13:51:04.963049'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: r_pkg
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(FMDSeroMonitor)''` -> exit 0'
+    exec_install_evidence: 'on ‘0.0.1’
+
+      ** using staged installation
+
+      ** R
+
+      ** byte-compile and prepare package for lazy loading
+
+      ** help
+
+      *** installing help indices
+
+      ** building package indices
+
+      ** testing if installed package can be loaded from temporary location
+
+      ** testing if installed package can be loaded from final location
+
+      ** testing if installed package keeps a record of temporary installation path
+
+      * DONE (FMDSeroMonitor)
+
+      '
+    exec_run_evidence: "r 'licence()' for distribution details.\n\nR is a collaborative\
+      \ project with many contributors.\nType 'contributors()' for more information\
+      \ and\n'citation()' on how to cite R or R packages in publications.\n\nType\
+      \ 'demo()' for some demos, 'help()' for on-line help, or\n'help.start()' for\
+      \ an HTML browser interface to help.\nType 'q()' to quit R.\n\n> library(FMDSeroMonitor);\
+      \ cat('R_IMPORT_OK')\nR_IMPORT_OK> \n"
+    exec_params_schema: []
+    exec_installed_versions: []
+    exec_executable: FMDSeroMonitor
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
+- name: dcifer
+  type: cli
+  command: dcifer {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Toward an Open Analysis Ecosystem for Plasmodium
+    Genomic Epidemiology. (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/EPPIcenter/dcifer")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_8ukr8_08/venv
+  _discovery_metadata:
+    github: https://github.com/EPPIcenter/dcifer
+    stars: 0
+    language: ''
+    tags:
+    - dcifer
+    - software
+    quality_score: 5.0
+    paper_doi: 10.4269/ajtmh.25-0418
+    paper_title: Toward an Open Analysis Ecosystem for Plasmodium Genomic Epidemiology.
+    install_method: r_pkg
+    install_url: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/EPPIcenter/dcifer")'
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps:  lang=R license); command
+      not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-13T13:52:06.522400'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: r_pkg
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(dcifer)''` -> exit 0'
+    exec_install_evidence: 'r lazy loading
+
+      ** help
+
+      *** installing help indices
+
+      ** building package indices
+
+      ** installing vignettes
+
+      ** testing if installed package can be loaded from temporary location
+
+      ** checking absolute paths in shared objects and dynamic libraries
+
+      ** testing if installed package can be loaded from final location
+
+      ** testing if installed package keeps a record of temporary installation path
+
+      * DONE (dcifer)
+
+      '
+    exec_run_evidence: "nse()' or 'licence()' for distribution details.\n\nR is a\
+      \ collaborative project with many contributors.\nType 'contributors()' for more\
+      \ information and\n'citation()' on how to cite R or R packages in publications.\n\
+      \nType 'demo()' for some demos, 'help()' for on-line help, or\n'help.start()'\
+      \ for an HTML browser interface to help.\nType 'q()' to quit R.\n\n> library(dcifer);\
+      \ cat('R_IMPORT_OK')\nR_IMPORT_OK> \n"
+    exec_params_schema: []
+    exec_installed_versions: []
+    exec_executable: dcifer
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
+- name: freqestimationmodel
+  type: cli
+  command: FreqEstimationModel {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Toward an Open Analysis Ecosystem for Plasmodium
+    Genomic Epidemiology. (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/aimeertaylor/FreqEstimationModel")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_q2xfe50l/venv
+  _discovery_metadata:
+    github: https://github.com/aimeertaylor/FreqEstimationModel
+    stars: 0
+    language: ''
+    tags:
+    - software
+    - freqestimationmodel
+    quality_score: 5.0
+    paper_doi: 10.4269/ajtmh.25-0418
+    paper_title: Toward an Open Analysis Ecosystem for Plasmodium Genomic Epidemiology.
+    install_method: r_pkg
+    install_url: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/aimeertaylor/FreqEstimationModel")'
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps:  lang=R license); command
+      not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-13T13:52:15.335467'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: r_pkg
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(FreqEstimationModel)''` -> exit
+      0'
+    exec_install_evidence: '** data
+
+      ** inst
+
+      ** byte-compile and prepare package for lazy loading
+
+      ** help
+
+      *** installing help indices
+
+      ** building package indices
+
+      ** installing vignettes
+
+      ** testing if installed package can be loaded from temporary location
+
+      ** testing if installed package can be loaded from final location
+
+      ** testing if installed package keeps a record of temporary installation path
+
+      * DONE (FreqEstimationModel)
+
+      '
+    exec_run_evidence: "cence()' for distribution details.\n\nR is a collaborative\
+      \ project with many contributors.\nType 'contributors()' for more information\
+      \ and\n'citation()' on how to cite R or R packages in publications.\n\nType\
+      \ 'demo()' for some demos, 'help()' for on-line help, or\n'help.start()' for\
+      \ an HTML browser interface to help.\nType 'q()' to quit R.\n\n> library(FreqEstimationModel);\
+      \ cat('R_IMPORT_OK')\nR_IMPORT_OK> \n"
+    exec_params_schema: []
+    exec_installed_versions: []
+    exec_executable: FreqEstimationModel
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
