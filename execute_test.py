@@ -169,6 +169,44 @@ def _detect_arg_style(help_output: str) -> str:
     return "named"
 
 
+def _extract_readme_usage(repo_dir: str, pkg: str) -> str:
+    """Find a runnable usage of a python package from the README.
+
+    Looks for `python -m <pkg>.module ...` lines (a real entry point) or
+    `import <pkg>...` code blocks. Returns the first `python -m` invocation as
+    a (module, args) hint, or "" if none. This is author-written usage, more
+    reliable than an LLM guessing the API.
+    """
+    readme = ""
+    for root, _dirs, files in os.walk(repo_dir):
+        for fn in files:
+            if fn.lower().startswith("readme"):
+                try:
+                    readme = open(os.path.join(root, fn), encoding="utf-8",
+                                  errors="replace").read()
+                except Exception:
+                    continue
+                if readme:
+                    break
+        if readme:
+            break
+    if not readme:
+        return ""
+    # 1) python -m <pkg>.module ...  (real entry point)
+    for m in re.finditer(r"python\s+-m\s+([\w.]+(?:\.[\w]+)+)", readme):
+        mod = m.group(1)
+        if mod.split(".")[0] == pkg:
+            return f"python -m {mod}"
+    # 2) `from <pkg> import ...` or `import <pkg>.x` inside code blocks
+    for blk in re.findall(r"```(?:python)?\s*\n(.*?)```", readme, re.S):
+        if re.search(rf"\b(from\s+{pkg}(?:\.\w+)*\s+import|import\s+{pkg}(?:\.\w+)*)", blk):
+            # return a sanitized one-liner: first line with import + call
+            lines = [ln.strip() for ln in blk.splitlines() if ln.strip()]
+            if lines:
+                return " | ".join(lines[:2])
+    return ""
+
+
 def _llm_attempt_call(pkg_name: str, repo_dir: str, venv_py: str,
                       env: dict, sample: str, max_attempts: int = 3) -> dict:
     """Let an LLM try to write a working call for a python-import tool.
@@ -1106,35 +1144,43 @@ def execute_test(repo_url: str, install_method: str = "",
             ev_imp = f"`python -c 'import {import_name}'` -> exit {rc_imp}"
             runs.append(ev_imp)
             if rc_imp == 0 and "IMPORT_OK" in out_imp:
-                report["status"] = "passed"
-                report["reason"] = ev_imp
                 report["run_ok"] = True
                 report["run_evidence"] = (out_imp + err_imp)[-400:]
                 report["executable"] = import_name  # Python API, no CLI
-                # determine how the python package can be invoked
+                report["arg_style"] = "python"
+                # determine how the python package can be invoked: prefer a real
+                # entry point (__main__.py or README `python -m pkg.module`).
+                # If we can't find a callable entry, the tool is NOT passed --
+                # it's importable but we don't know how to invoke it.
                 has_main = False
                 for root, _dirs, files in os.walk(repo_dir):
                     if "__main__.py" in files:
                         has_main = True
                         break
-                report["callable_via"] = "python -m " + import_name if has_main \
-                    else "python_import"
-                report["arg_style"] = "python"
-                if not has_main:
-                    # importable but no CLI: have an LLM try to write a working
-                    # call (max 3 attempts). If it succeeds, the tool is
-                    # genuinely callable; otherwise mark not_callable.
-                    llm_res = _llm_attempt_call(
-                        import_name, repo_dir, venv_py, env, sample)
-                    if llm_res.get("ok"):
-                        report["reason"] = f"LLM wrote working call: {llm_res['code'][:80]}"
-                        report["run_evidence"] = llm_res["evidence"]
-                        report["callable_via"] = "python_llm_wrapper"
-                        report["llm_call_code"] = llm_res["code"]
+                if has_main:
+                    report["status"] = "passed"
+                    report["reason"] = f"`python -m {import_name}` entry point"
+                    report["callable_via"] = f"python -m {import_name}"
+                else:
+                    readme_usage = _extract_readme_usage(repo_dir, import_name)
+                    if readme_usage.startswith("python -m "):
+                        mod = readme_usage.replace("python -m ", "").split()[0]
+                        rc_m, out_m, err_m = _run(
+                            [venv_py, "-m", mod, "--help"], RUN_TIMEOUT, env=env)
+                        if rc_m in (0, 1, 2) and (out_m.strip() or err_m.strip()):
+                            report["status"] = "passed"
+                            report["reason"] = f"README usage: python -m {mod} --help"
+                            report["callable_via"] = readme_usage
+                            report["run_evidence"] = (out_m + err_m)[-400:]
+                        else:
+                            report["status"] = "failed"
+                            report["reason"] = ("importable but no callable entry point "
+                                                f"(README suggests {readme_usage[:60]} but it doesn't run)")
+                            report["callable_via"] = "python_import_no_entry"
                     else:
-                        report["callable_via"] = "python_import"
-                        report["llm_call_status"] = llm_res.get("status", "not_callable")
-                        report["reason"] += f" | LLM call attempt: {llm_res.get('status')}"
+                        report["status"] = "failed"
+                        report["reason"] = "importable but no callable usage found in README; dropped"
+                        report["callable_via"] = "python_import_no_entry"
                 return report
             cls_imp = _classify_failure((out_imp + err_imp)[-1200:])
             if cls_imp == "incomplete":
