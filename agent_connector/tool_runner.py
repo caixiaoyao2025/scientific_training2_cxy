@@ -61,12 +61,13 @@ def _coerce_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[s
     return coerced
 
 
-def _run_cli(command: str, arguments: dict[str, Any], timeout: int = 600) -> dict[str, Any]:
+def _run_cli(command: str, arguments: dict[str, Any], timeout: int = 600,
+             env: dict | None = None) -> dict[str, Any]:
     argv = _render_command(command, arguments)
     try:
         completed = subprocess.run(
             argv, capture_output=True, text=True, check=False,
-            timeout=timeout, encoding="utf-8", errors="replace",
+            timeout=timeout, encoding="utf-8", errors="replace", env=env,
         )
     except FileNotFoundError:
         return {
@@ -120,15 +121,18 @@ print(json.dumps({"output": output}))
 '''
 
 
-def _run_python(entry_point: str, arguments: dict[str, Any], timeout: int = 600) -> dict[str, Any]:
+def _run_python(entry_point: str, arguments: dict[str, Any], timeout: int = 600,
+                venv_py: str | None = None, env: dict | None = None) -> dict[str, Any]:
     module_name, _, function_name = entry_point.partition(":")
     if not function_name:
         raise ValueError(f"entry_point must be 'module:function', got {entry_point!r}")
-    env = os.environ.copy()
-    # Let the child interpreter resolve the same modules as the host process
-    # (e.g. tool_helpers living in the tools repo, added to sys.path at setup).
-    env["PYTHONPATH"] = os.pathsep.join(sys.path)
-    argv = [sys.executable, "-c", _PYTHON_RUNNER_SOURCE, entry_point,
+    if env is None:
+        env = os.environ.copy()
+        # Let the child interpreter resolve the same modules as the host process
+        # (e.g. tool_helpers living in the tools repo, added to sys.path at setup).
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
+    interpreter = venv_py or sys.executable
+    argv = [interpreter, "-c", _PYTHON_RUNNER_SOURCE, entry_point,
             json.dumps(arguments, ensure_ascii=False)]
     try:
         completed = subprocess.run(
@@ -323,6 +327,11 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
             return False
 
     if method in ("pip_pkg", "pip_url"):
+        # if the pipeline's execute step already installed this tool into a kept
+        # venv, reuse it (skip on-demand install - heavy deps like torch).
+        venv_path = (spec.get("install") or {}).get("venv_path", "")
+        if venv_path and os.path.isdir(venv_path):
+            return [], []
         # python-API tools (arg_style=python) are verified by import, not which
         is_python = spec.get("arg_style") == "python" or exec_type == "python"
         # determine the importable package name. For `python -m pkg.module` the
@@ -407,18 +416,30 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
     if install_errors:
         print(f"[tool-runner] auto-install failed: {install_errors}")
 
+    # if a kept venv exists (from execute step), run the tool inside it
+    venv_path = (spec.get("install") or {}).get("venv_path", "")
+    venv_py = os.path.join(venv_path, "Scripts", "python.exe") if os.name == "nt" \
+        else os.path.join(venv_path, "bin", "python")
+    if venv_path and os.path.isdir(venv_path) and os.path.exists(venv_py):
+        bin_dir = os.path.join(venv_path, "Scripts") if os.name == "nt" else os.path.join(venv_path, "bin")
+        env_run = dict(os.environ)
+        env_run["PATH"] = bin_dir + os.pathsep + env_run.get("PATH", "")
+    else:
+        env_run = None
+
     if exec_type == "python":
         ep = execution.get("entry_point")
         if ep:
-            return _run_python(ep, arguments, timeout=timeout)
-        # python-API tool without a module:Class entry -> fall back to the
-        # command template (e.g. `python -m bioemu.sample ...`)
-        return _run_cli(execution.get("command", ""), arguments, timeout=timeout)
+            return _run_python(ep, arguments, timeout=timeout, venv_py=venv_py if env_run else None,
+                               env=env_run)
+        return _run_cli(execution.get("command", ""), arguments, timeout=timeout,
+                        env=env_run)
     if exec_type == "api":
         return _run_api(execution, arguments, timeout=timeout)
     if exec_type == "docker":
         return _run_docker(execution, arguments, timeout=timeout)
-    result = _run_cli(execution.get("command", ""), arguments, timeout=timeout)
+    result = _run_cli(execution.get("command", ""), arguments, timeout=timeout,
+                      env=env_run)
     # if the command still can't be found after auto-install, tell the caller
     if result.get("return_code") == 127 and install_errors:
         result["stderr"] = (result.get("stderr", "") +

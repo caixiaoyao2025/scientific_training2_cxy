@@ -223,6 +223,7 @@ def tool_to_registry_entry(tool, verification=None):
             "python_packages": e.get("installed_versions", [])[:20],
             "declared_packages": v.get("declared_packages", []),
             "missing_deps": v.get("missing_deps", []),
+            "venv_path": e.get("venv_path", ""),
         },
         "_discovery_metadata": {
             "github": github_url,

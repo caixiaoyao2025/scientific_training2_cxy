@@ -945,16 +945,26 @@ def execute_test(repo_url: str, install_method: str = "",
             r_bin = shutil.which("R") or shutil.which("Rscript")
             conda_r = None
             if not r_bin and shutil.which("conda"):
-                for env in ("base", os.environ.get("CONDA_DEFAULT_ENV", "")):
-                    if not env:
+                # scan all conda envs for R, not just base/current
+                rc_envs, out_envs, _ = _run(["conda", "env", "list"], 60)
+                env_names = []
+                if rc_envs == 0:
+                    for line in out_envs.splitlines():
+                        line = line.strip()
+                        if line and not line.startswith("#") and line != "base":
+                            env_names.append(line.split()[0])
+                env_names = ["base"] + env_names + [os.environ.get("CONDA_DEFAULT_ENV", "")]
+                seen_env = set()
+                for env in env_names:
+                    if not env or env in seen_env:
                         continue
+                    seen_env.add(env)
                     rc_r, out_r, _ = _run(
                         ["conda", "run", "-n", env, "which", "R"], 60)
                     if rc_r == 0 and out_r.strip():
                         conda_r = ["conda", "run", "-n", env, "R"]
                         break
                 if conda_r is None:
-                    # default env fallback
                     rc_r, out_r, _ = _run(["conda", "run", "which", "R"], 60)
                     if rc_r == 0 and out_r.strip():
                         conda_r = ["conda", "run", "R"]
@@ -1336,7 +1346,15 @@ def execute_test(repo_url: str, install_method: str = "",
         report["run_evidence"] = "no candidate exited 0 with output"
         return report
     finally:
-        shutil.rmtree(workdir, ignore_errors=True)
+        # keep the venv for passed tools so the agent test can reuse the
+        # installed environment instead of re-running pip install (esp. heavy
+        # deps like torch). Record the venv path for the caller.
+        if report.get("status") == "passed" and report.get("install_ok"):
+            report["venv_path"] = venv_dir
+            report["venv_kept"] = True
+            print(f"    [keep] venv kept at {venv_dir} for agent reuse")
+        else:
+            shutil.rmtree(workdir, ignore_errors=True)
 
 
 def url_to_pip(cmd: str, repo_url: str) -> str:
