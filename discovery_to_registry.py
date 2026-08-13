@@ -207,8 +207,9 @@ def tool_to_registry_entry(tool, verification=None):
         "type": "python" if arg_style == "python" else "cli",
         "command": command_template,
         "arg_style": arg_style or "named",
-        "callable_via": e.get("callable_via", ""),
-        "readme_examples": e.get("readme_examples", []),
+        "callable_via": e.get("callable_via", "") or v.get("callable_hint", ""),
+        "readme_examples": (e.get("readme_examples") or v.get("readme_examples") or []),
+        "readme_usage": v.get("readme_usage", ""),
         "description": f"[Auto-discovered] {description} (⭐{stars}, {language}){license_note}",
         "output_control": {
             "intercept_large_output": True,

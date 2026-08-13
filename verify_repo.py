@@ -100,6 +100,9 @@ class VerifyResult:
     external_commands: list = field(default_factory=list)  # system deps
     declared_packages: list = field(default_factory=list)  # top-level pip deps
     missing_deps: list = field(default_factory=list)       # imported but undeclared
+    readme_usage: str = ""        # python -m pkg.module ... from README
+    readme_examples: list = field(default_factory=list)   # invocation examples
+    callable_hint: str = ""       # how to invoke (python -m / command / import)
     has_license: bool = False
     license_path: str = ""
     license_text_snippet: str = ""
@@ -126,6 +129,9 @@ class VerifyResult:
             "external_commands": self.external_commands,
             "declared_packages": self.declared_packages,
             "missing_deps": self.missing_deps,
+            "readme_usage": self.readme_usage,
+            "readme_examples": self.readme_examples,
+            "callable_hint": self.callable_hint,
             "has_license": self.has_license,
             "license_path": self.license_path,
             "license_text_snippet": self.license_text_snippet,
@@ -293,6 +299,57 @@ def _scan_external_commands(repo: "BloblessRepo", files: list[str],
             entry["install_hint"] = hint
         out.append(entry)
     return out[:30]
+
+
+def _analyze_readme_invocation(repo: "BloblessRepo", files: list[str],
+                               pkg: str) -> tuple[str, list[str], str]:
+    """Read the README to find how to invoke a tool (callable_via / examples).
+
+    Returns (readme_usage, readme_examples, callable_hint):
+      - readme_usage:  first `python -m <pkg>.module` line, or import line
+      - readme_examples: full invocation examples from the README
+      - callable_hint:  "python -m <module>" / "python_import" / "cli" / ""
+    """
+    readme = ""
+    for f in files:
+        base = f.split("/")[-1].lower()
+        if base.startswith("readme"):
+            readme = repo.show(f)
+            if readme:
+                break
+    if not readme:
+        return "", [], ""
+    usage = ""
+    examples = []
+    # 1) `python -m <pkg>.module` invocations (real entry points)
+    for m in re.finditer(r"python\s+-m\s+([\w.]+(?:\.[\w]+)+)", readme):
+        mod = m.group(1)
+        if mod.split(".")[0] == pkg:
+            usage = usage or f"python -m {mod}"
+            line = m.group(0).strip()
+            if line not in examples:
+                examples.append(line)
+    # 2) `from <pkg> import ...` code blocks
+    for blk in re.findall(r"```(?:python)?\s*\n(.*?)```", readme, re.S):
+        if re.search(rf"\bfrom\s+{pkg}(?:\.\w+)*\s+import", blk):
+            lines = [ln.strip() for ln in blk.splitlines()
+                     if ln.strip() and not ln.startswith("#")]
+            for ln in lines:
+                if pkg in ln and ln not in examples:
+                    examples.append(ln)
+    # 3) `import <pkg> ...` lines
+    if not examples:
+        for m in re.finditer(rf"\bimport\s+{pkg}(?:\.\w+)*", readme):
+            line = m.group(0).strip()
+            if line not in examples:
+                examples.append(line)
+    hint = ""
+    if usage:
+        hint = usage.split()[2] if len(usage.split()) >= 3 else ""
+        hint = f"python -m {usage.split()[2]}" if usage.startswith("python -m ") else hint
+    elif examples and examples[0].startswith("from "):
+        hint = "python_import"
+    return usage, examples[:4], hint
 
 
 def _pypi_name(repo: "BloblessRepo", files: list[str]) -> str:
@@ -516,6 +573,11 @@ def verify_repo(repo_url: str, work_dir: Optional[str] = None,
         res.entry_scripts = _find_entry_scripts(files)
         res.declared_packages = _parse_declared_packages(repo, files)
         res.missing_deps = _scan_python_imports(repo, files, res.declared_packages)
+        # README invocation analysis (callable_via / usage / examples) --
+        # the "discovery agent" writes how to call the tool here.
+        pkg_for_readme = res.declared_packages[0] if res.declared_packages else name.lower()
+        res.readme_usage, res.readme_examples, res.callable_hint = \
+            _analyze_readme_invocation(repo, files, pkg_for_readme)
 
         # language hint
         bases = set(f.split("/")[-1] for f in files)
