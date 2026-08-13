@@ -108,7 +108,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add github_from_html.json tool_library.json tool_library_clean.json discovered_registry.yaml tool_verification.json tool_execution.json excluded_tools.json seen_papers.json data/mcp_registry.yaml auto_fix_report.json agent_test_report.json || true
+          # -f: force-add outputs that .gitignore may exclude (data/* etc.)
+          git add -f github_from_html.json tool_library.json tool_library_clean.json discovered_registry.yaml tool_verification.json tool_execution.json excluded_tools.json seen_papers.json data/mcp_registry.yaml 2>/dev/null || true
           git diff --cached --quiet || git commit -m "auto: deep tool discovery $(date -u +%Y-%m-%d)"
           for i in 1 2 3; do
             if git pull --rebase "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" main; then
