@@ -45,6 +45,34 @@ def load_tools(path: str) -> list[dict]:
     return [t for t in tools if isinstance(t, dict) and t.get("name")]
 
 
+# tokens that indicate a broken/mis-parsed schema (Usage text leaked as params)
+_POLLUTION = re.compile(r"[{}\[\]]|\x1b\[|\.\.\.|\[OPTIONS\]|\[ARGS\]|COMMAND|^\.$")
+
+
+def validate_tool_schema(tool: dict) -> str:
+    """Return '' if the tool's schema is clean enough to give an LLM, else a
+    reason (SCHEMA_INVALID / NO_CMD / SUBCOMMAND_INCOMPLETE / R_PACKAGE)."""
+    name = tool.get("name", "")
+    cmd = tool.get("command") or ""
+    as_ = tool.get("arg_style") or "cli"
+    inputs = tool.get("inputs") or {}
+    # broken command template (pollution in command)
+    if _POLLUTION.search(cmd):
+        return f"SCHEMA_INVALID: command polluted ({cmd[:40]})"
+    # broken input names (pollution as parameter keys)
+    for k in inputs.keys():
+        if _POLLUTION.search(k):
+            return f"SCHEMA_INVALID: input name polluted ({k!r})"
+    if not cmd.strip():
+        return "NO_CMD"
+    # R package / python_import without -m: not directly callable as a command
+    if as_ == "python" and not (tool.get("callable_via") or "").startswith("python -m "):
+        return "R_PACKAGE_OR_IMPORT"
+    if as_ == "subcommand" and not tool.get("subcommand_discovery_complete"):
+        return "SUBCOMMAND_INCOMPLETE"
+    return ""
+
+
 def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     """Build OpenAI function schema(s) for a tool.
 
@@ -156,25 +184,18 @@ def main() -> int:
     for t in tools:
         cv = t.get("callable_via") or ""
         as_ = t.get("arg_style") or "cli"
-        if as_ == "python" and not cv.startswith("python -m "):
+        # strict registry validation FIRST: polluted/ambiguous schemas must not
+        # reach the LLM (they cause the retry-loop/timeout we saw).
+        vres = validate_tool_schema(t)
+        if vres:
             skipped.append(t["name"])
-            print(f"[skip] {t['name']}: python API without -m entry (not function-callable)")
-            continue
-        if not (t.get("command") or "").strip():
-            skipped.append(t["name"])
-            print(f"[skip] {t['name']}: no command")
+            print(f"[skip] {t['name']}: {vres}")
             continue
         # heavy ML deps: installing torch on-demand is too slow/unreliable
         decl = (t.get("install") or {}).get("declared_packages") or []
         if any(h in " ".join(decl).lower() for h in heavy):
             skipped.append(t["name"])
             print(f"[skip] {t['name']}: heavy ML deps (torch/tf) - needs preinstall")
-            continue
-        # subcommand CLI with incomplete discovery: subcommand --help probing
-        # failed for some subcommand -> agent would hallucinate args
-        if as_ == "subcommand" and not t.get("subcommand_discovery_complete"):
-            skipped.append(t["name"])
-            print(f"[skip] {t['name']}: subcommand discovery incomplete (would hallucinate args)")
             continue
         callable_tools.append(t)
     schemas = []

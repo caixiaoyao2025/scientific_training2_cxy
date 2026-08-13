@@ -24,7 +24,9 @@ from typing import Any
 
 
 def _render_command(command_template: str, arguments: dict[str, Any]) -> list[str]:
-    quoted = {key: shlex.quote(str(value)) for key, value in arguments.items()}
+    # drop empty-string / None args so `--flag ""` never renders
+    filtered = {k: v for k, v in arguments.items() if v not in (None, "", False)}
+    quoted = {key: shlex.quote(str(value)) for key, value in filtered.items()}
     # templates may use either Jinja-style {{x}} or Python-style {x} placeholders
     template = re.sub(r"\{\{(\w+)\}\}", r"{\1}", command_template)
     # build a format kwargs with defaults for missing placeholders so a missing
@@ -433,10 +435,9 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
         name = p.get("name", "")
         key = name.lstrip("-").replace("-", "_")
         val = arguments.get(key)
+        # omit empty/None optional values entirely (don't render --flag "")
         if val in (None, "", False):
             continue
-        # use the long flag name as the CLI flag (--output-dir), falling back to
-        # short alias if only a short flag exists
         if name.startswith("--"):
             argv.append(name)
         else:
