@@ -420,7 +420,9 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
     passes all params; we dispatch by the `subcommand` argument.
     """
     command = (spec.get("command") or "").split()[0]
-    sub = arguments.get("subcommand", "")
+    # subcommand can come from the `subcommand` argument OR from an
+    # explicitly-dispatched call (fnmap set _active_subcommand)
+    sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
     details = (spec.get("subcommand_details") or {}).get(sub) or {}
     params = details.get("params") or []
     if not params:

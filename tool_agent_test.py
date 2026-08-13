@@ -45,29 +45,52 @@ def load_tools(path: str) -> list[dict]:
     return [t for t in tools if isinstance(t, dict) and t.get("name")]
 
 
-def to_function_schema(tool: dict) -> dict:
+def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
+    """Build OpenAI function schema(s) for a tool.
+
+    For subcommand CLIs we expand each subcommand into its OWN function so the
+    agent picks `bqtools_encode(input, output)` instead of guessing a
+    `subcommand` argument. Returns (schemas, fnmap) where fnmap maps the
+    function name -> (tool_name, subcommand) for execution dispatch.
+    """
+    fnmap: dict = {}
+    if (tool.get("arg_style") == "subcommand") and tool.get("subcommand_details"):
+        out = []
+        for sub, detail in (tool.get("subcommand_details") or {}).items():
+            props = {}
+            required = []
+            for p in (detail.get("params") or []):
+                key = p.get("name", "").lstrip("-").replace("-", "_")
+                props[key] = {"type": "string",
+                              "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
+                required.append(key)
+            fname = f"{tool['name']}_{sub.replace('-', '_')}"
+            out.append({"type": "function", "function": {
+                "name": fname,
+                "description": (tool.get("description") or "") + f" -- subcommand {sub}",
+                "parameters": {"type": "object", "properties": props, "required": required},
+            }})
+            fnmap[fname] = (tool["name"], sub)
+        return out, fnmap
+    # non-subcommand: single function
     props = {}
     required = []
     for name, meta in (tool.get("inputs") or {}).items():
-        desc = (meta or {}).get("description", "") or ""
-        # for subcommand CLIs, make the subcommand input's allowed values explicit
-        if name == "subcommand" and tool.get("subcommands"):
-            desc = ("Choose ONE of: " + " | ".join(tool["subcommands"]) + ". " + desc)
-        props[name] = {"type": "string", "description": desc}
+        props[name] = {"type": "string",
+                       "description": (meta or {}).get("description", "") or ""}
         if (meta or {}).get("required"):
             required.append(name)
-    fn = {
+    fn = {"type": "function", "function": {
         "name": tool["name"],
         "description": (tool.get("description") or "")[:300],
         "parameters": {"type": "object", "properties": props, "required": required},
-    }
+    }}
     if tool.get("arg_style"):
-        fn["arg_style"] = tool["arg_style"]
-    if tool.get("subcommands"):
-        fn["subcommands"] = tool["subcommands"]
+        fn["function"]["arg_style"] = tool["arg_style"]
     if tool.get("install"):
-        fn["install"] = tool["install"]
-    return {"type": "function", "function": fn}
+        fn["function"]["install"] = tool["install"]
+    fnmap[tool["name"]] = (tool["name"], "")
+    return [fn], fnmap
 
 
 def ensure_repo() -> None:
@@ -148,7 +171,12 @@ def main() -> int:
             print(f"[skip] {t['name']}: heavy ML deps (torch/tf) - needs preinstall")
             continue
         callable_tools.append(t)
-    schemas = [to_function_schema(t) for t in callable_tools]
+    schemas = []
+    fnmap = {}
+    for t in callable_tools:
+        sch, fm = to_function_schemas(t)
+        schemas.extend(sch)
+        fnmap.update(fm)
     spec_map = {t["name"]: t for t in callable_tools}
     if not callable_tools:
         print("no function-callable tools in registry; nothing to test")
@@ -203,10 +231,17 @@ def main() -> int:
                 args = json.loads(tc.function.arguments or "{}")
                 print(f"[turn {turn}] agent chose: {fn_name} args={json.dumps(args)[:120]}")
                 selected = True
-                if fn_name not in spec_map:
+                if fn_name not in fnmap:
                     result = f"unknown tool {fn_name}"
                 else:
-                    result = format_result(run_tool_spec(spec_map[fn_name], args))
+                    tool_name, sub = fnmap[fn_name]
+                    if tool_name not in spec_map:
+                        result = f"unknown tool {tool_name}"
+                    else:
+                        tool_spec = dict(spec_map[tool_name])
+                        if sub:
+                            tool_spec["_active_subcommand"] = sub
+                        result = format_result(run_tool_spec(tool_spec, args))
                     low = result.lower()
                     started = started or ("command not found" not in low and "exit code: 127" not in low)
                     # tool ran and exited 0 -> succeeded
