@@ -3,6 +3,22 @@ import os
 import re
 import yaml
 
+def _infer_python_entry(readme_examples: list, pkg: str) -> str:
+    """From readme import examples, infer a module:Class/function entry point.
+
+    e.g. 'from pygenomeviz import GenomeViz' -> 'pygenomeviz:GenomeViz'
+         'python -m bioemu.sample ...'       -> '' (use command template)
+    Returns "" if nothing usable.
+    """
+    for ex in readme_examples:
+        m = re.search(r"from\s+([\w.]+)\s+import\s+([\w]+)", ex)
+        if m:
+            mod, name = m.group(1), m.group(2)
+            if mod.split(".")[0] == pkg and name[:1].isupper() or mod.split(".")[0] == pkg:
+                return f"{mod}:{name}"
+    return ""
+
+
 def _missing_system_commands(external: list) -> list:
     """Normalize scanned external commands (dicts with kind) to a stable form
     that downstream agents can read. Strings are kept as-is; dicts keep
@@ -185,6 +201,13 @@ def tool_to_registry_entry(tool, verification=None):
             "max_preview_lines": 50,
         },
         "inputs": inputs,
+        # python-API tools: expose an execution entry_point (module:Class) so
+        # run_tool_spec's python runner can invoke it: `from m import C; C(**args)`
+        "execution": (
+            {"type": "python", "entry_point": _infer_python_entry(e.get("readme_examples", []), clean_name)}
+            if arg_style == "python" and _infer_python_entry(e.get("readme_examples", []), clean_name)
+            else None
+        ),
         # subcommand CLIs: subcommand names + per-subcommand param details so
         # agents know how to invoke (e.g. bqtools encode <in> <out>)
         "subcommands": e.get("subcommands", []),
