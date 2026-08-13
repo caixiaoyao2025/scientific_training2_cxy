@@ -411,6 +411,33 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
     return actions, errors
 
 
+def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[str]:
+    """Render a subcommand-CLI invocation by dispatching to the chosen subcommand.
+
+    spec.subcommand_details[sub] = {params: [{name:'--input',...}], usage}.
+    We build `<cmd> <sub> --input <val> --output <val>` using ONLY the params
+    that subcommand declares, from the agent-passed arguments. The agent just
+    passes all params; we dispatch by the `subcommand` argument.
+    """
+    command = (spec.get("command") or "").split()[0]
+    sub = arguments.get("subcommand", "")
+    details = (spec.get("subcommand_details") or {}).get(sub) or {}
+    params = details.get("params") or []
+    if not params:
+        # no per-sub detail: fall back to generic template
+        return _render_command(spec.get("command") or "", arguments)
+    argv = [command, sub]
+    for p in params:
+        flag = p.get("name", "")
+        key = flag.lstrip("-").replace("-", "_")
+        val = arguments.get(key)
+        if val in (None, "", False):
+            continue
+        argv.append(flag)
+        argv.append(shlex.quote(str(val)))
+    return argv
+
+
 def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
     """Execute a ToolSpec (registry.yaml entry) with the given arguments."""
     execution = spec.get("execution")
@@ -449,6 +476,29 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
         return _run_api(execution, arguments, timeout=timeout)
     if exec_type == "docker":
         return _run_docker(execution, arguments, timeout=timeout)
+    # subcommand CLIs: dispatch by the `subcommand` argument to that sub's params
+    if spec.get("arg_style") == "subcommand":
+        try:
+            argv = _render_subcommand(spec, arguments)
+            try:
+                completed = subprocess.run(
+                    argv, capture_output=True, text=True, check=False,
+                    timeout=timeout, encoding="utf-8", errors="replace", env=env_run)
+                return {
+                    "status": "ok" if completed.returncode == 0 else "command_error",
+                    "return_code": completed.returncode,
+                    "stdout": completed.stdout or "",
+                    "stderr": completed.stderr or "",
+                    "argv": argv,
+                }
+            except FileNotFoundError:
+                return {"status": "command_error", "return_code": 127,
+                        "stdout": "", "stderr": f"command not found: {argv[0]}", "argv": argv}
+            except subprocess.TimeoutExpired:
+                return {"status": "command_error", "return_code": None,
+                        "stdout": "", "stderr": f"timed out after {timeout}s", "argv": argv}
+        except Exception:
+            pass  # fall through to generic template below
     result = _run_cli(execution.get("command", ""), arguments, timeout=timeout,
                       env=env_run)
     # if the command still can't be found after auto-install, tell the caller
