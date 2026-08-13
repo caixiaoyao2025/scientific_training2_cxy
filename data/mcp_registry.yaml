@@ -1,0 +1,914 @@
+tools:
+- name: bioemu
+  type: python
+  command: python -m bioemu.sample --sequence {{sequence}} --num_samples {{num_samples}}
+    --output_dir {{output_dir}} --pdb-path {{pdb_path}} --xtc-path {{xtc_path}}
+  arg_style: python
+  callable_via: python -m bioemu.sample
+  readme_examples:
+  - python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10 --output_dir ~/test-chignolin
+  - python -m bioemu.sample \
+  - python -m bioemu.sidechain_relax --pdb-path path/to/topology.pdb --xtc-path path/to/samples.xtc
+  readme_usage: python -m bioemu.sample
+  description: '[Auto-discovered] Inference code for scalable emulation of protein
+    equilibrium ensembles with generative deep learning (⭐863, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    sequence:
+      type: string
+      description: CLI flag --sequence (from README example)
+      source: help_parsed
+    num_samples:
+      type: int
+      description: CLI flag --num_samples (from README example)
+      source: help_parsed
+    output_dir:
+      type: path
+      description: CLI flag --output_dir (from README example)
+      source: help_parsed
+    pdb_path:
+      type: path
+      description: CLI flag --pdb-path (from README example)
+      source: help_parsed
+    xtc_path:
+      type: path
+      description: CLI flag --xtc-path (from README example)
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
+    system_commands: []
+    python_packages:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_e8j8qpc4/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - FastMBAR
+    - alphafold
+    - bioemu
+    - chemgraph
+    - collective_variables
+    - denoiser
+    - fire
+    - hpacker
+    - huggingface_hub
+    - hydra
+    - matplotlib
+    - mdtraj
+    - models
+    - numpy
+    - omegaconf
+    - openfold
+    - openmm
+    - potentials
+    - requests
+    - scipy
+    - sde_lib
+    - so3_sde
+    - stackprinter
+    - steered_dg_lib
+    - structure_module
+    - torch
+    - torch_geometric
+    - toy_gmm
+    - tqdm
+    venv_path: /tmp/execute_e8j8qpc4/venv
+  evidence:
+    exec_status: passed
+    exec_reason: 'README usage: python -m bioemu.sample --help'
+    exec_executable: bioemu
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: sequence
+      type: string
+      description: CLI flag --sequence (from README example)
+      flag: --sequence
+    - name: num_samples
+      type: int
+      description: CLI flag --num_samples (from README example)
+      flag: --num_samples
+    - name: output_dir
+      type: path
+      description: CLI flag --output_dir (from README example)
+      flag: --output_dir
+    - name: pdb_path
+      type: path
+      description: CLI flag --pdb-path (from README example)
+      flag: --pdb-path
+    - name: xtc_path
+      type: path
+      description: CLI flag --xtc-path (from README example)
+      flag: --xtc-path
+    installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_e8j8qpc4/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    - cycler==0.12.1
+    - dm-haiku==0.0.17
+    - dm-tree==0.1.10
+    - einops==0.8.2
+    - filelock==3.32.3
+    - fire==0.7.1
+    - flatbuffers==25.12.19
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.7.0
+    - gast==0.7.0
+    - google-pasta==0.2.0
+    - gprofiler-official==1.0.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.14.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - hydra-core==1.3.5
+    - idna==3.18
+    - ihm==2.11
+    - jax==0.10.2
+    - jaxlib==0.10.2
+    - Jinja2==3.1.6
+    - jmp==0.0.4
+    - keras==3.15.1
+    - kiwisolver==1.5.0
+    - libclang==18.1.1
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mdtraj==1.11.1.post2
+    - mdurl==0.1.2
+    - ml_collections==1.1.0
+    - ml_dtypes==0.6.0
+    - modelcif==1.7
+    - mpmath==1.3.0
+    - msgpack==1.2.1
+    - multidict==6.7.1
+    - mygene==3.2.2
+    - namex==0.1.0
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - nvidia-cublas==13.1.1.3
+    - nvidia-cuda-cupti==13.0.85
+    - nvidia-cuda-nvrtc==13.0.88
+    - nvidia-cuda-runtime==13.0.96
+    - nvidia-cudnn-cu13==9.20.0.48
+    - nvidia-cufft==12.0.0.61
+    - nvidia-cufile==1.15.1.6
+    - nvidia-curand==10.4.0.35
+    - nvidia-cusolver==12.0.4.66
+    - nvidia-cusparse==12.6.3.3
+    - nvidia-cusparselt-cu13==0.8.1
+    - nvidia-nccl-cu13==2.29.7
+    - nvidia-nvjitlink==13.3.33
+    - nvidia-nvshmem-cu13==3.4.5
+    - nvidia-nvtx==13.0.85
+- name: bqtools
+  type: cli
+  command: bqtools {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] A command line utilty for working with BINSEQ files
+    (⭐39, Rust) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: cargo
+    command: cargo install --git https://github.com/ArcInstitute/bqtools
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_wp17hufg/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_wp17hufg/bqtools/target/release/bqtools --help` ->
+      exit 0'
+    exec_executable: bqtools
+    verified_license: false
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: strainmake
+  type: cli
+  command: strainmake {{input_file}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Reproducible hybrid metagenomics with MAG recovery
+    and strain-level resolution (⭐11, Python) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/UMMISCO/strainmake
+    system_commands: []
+    python_packages:
+    - annotated-doc==0.0.5
+    - Jinja2==3.1.6
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - mdurl==0.1.2
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - Pygments==2.20.0
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - rich==15.0.0
+    - shellingham==1.5.4
+    - six==1.17.0
+    - strainmake @ file:///tmp/execute_09b1hj04/strainmake
+    - typer==0.27.1
+    declared_packages: []
+    missing_deps:
+    - concurrent
+    - defaults
+    - importlib
+    - jinja2
+    - matplotlib
+    - numpy
+    - pandas
+    - pprint
+    - pyfastx
+    - shlex
+    - strainmake
+    - tqdm
+    - typer
+    - venn
+    - workflow
+    - yaml
+    venv_path: /tmp/execute_09b1hj04/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_09b1hj04/venv/bin/strainmake --help` -> exit 0'
+    exec_executable: strainmake
+    verified_license: false
+    verified_status: repo_ok
+    inputs_source: placeholder
+    installed_versions:
+    - annotated-doc==0.0.5
+    - Jinja2==3.1.6
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - mdurl==0.1.2
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - Pygments==2.20.0
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - rich==15.0.0
+    - shellingham==1.5.4
+    - six==1.17.0
+    - strainmake @ file:///tmp/execute_09b1hj04/strainmake
+    - typer==0.27.1
+- name: kaptain
+  type: cli
+  command: kaptain {{ONT_IN}} {{ONT_IN}} {{DB}} {{DB_LOOKUP}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] KMA-bAsed Pipeline for meTAgenomic specIes ideNtification
+    (⭐3, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    output:
+      type: string
+      description: / --subsampling 500M --fdr 5
+      source: help_parsed
+    i:
+      type: string
+      description: '[ONT_IN ...], --ont-in ONT_IN [ONT_IN ...]'
+      source: help_parsed
+    db:
+      type: string
+      description: Basename of KMA database. Database exists of four
+      source: help_parsed
+    db_lookup:
+      type: string
+      description: CLI flag --db-lookup
+      source: help_parsed
+    dir_working:
+      type: string
+      description: CLI flag --dir-working
+      source: help_parsed
+    o:
+      type: string
+      description: ', --output OUTPUT'
+      source: help_parsed
+    output_html:
+      type: string
+      description: CLI flag --output-html
+      source: help_parsed
+    subsampling:
+      type: string
+      description: '[{200M,500M,1000M,1500M,2000M,None} ...]'
+      source: help_parsed
+    fdr:
+      type: string
+      description: '[{15,10,5,1} ...]'
+      source: help_parsed
+    threads:
+      type: string
+      description: 'Number of threads (default: 4)'
+      source: help_parsed
+    version:
+      type: string
+      description: version and exit
+      source: help_parsed
+    log:
+      type: string
+      description: 'out log information to file (default: False)'
+      source: help_parsed
+    ONT_IN:
+      type: path
+      description: Positional argument ONT_IN
+      source: help_parsed
+      positional: true
+    DB:
+      type: path
+      description: Positional argument DB
+      source: help_parsed
+      positional: true
+    DB_LOOKUP:
+      type: path
+      description: Positional argument DB_LOOKUP
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install kaptain  # source: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN'
+    system_commands: []
+    python_packages:
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.1
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
+    declared_packages: []
+    missing_deps:
+    - bs4
+    - importlib
+    - kaptain
+    - pandas
+    - yaml
+    - yattag
+    venv_path: /tmp/execute_gg34sa67/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_gg34sa67/venv/bin/kaptain --help` -> exit 0'
+    exec_executable: kaptain
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --output
+      type: string
+      description: / --subsampling 500M --fdr 5
+    - name: -i
+      type: string
+      description: '[ONT_IN ...], --ont-in ONT_IN [ONT_IN ...]'
+    - name: --db
+      type: string
+      description: Basename of KMA database. Database exists of four
+    - name: --db-lookup
+      type: string
+      description: CLI flag --db-lookup
+    - name: --dir-working
+      type: string
+      description: CLI flag --dir-working
+    - name: -o
+      type: string
+      description: ', --output OUTPUT'
+    - name: --output-html
+      type: string
+      description: CLI flag --output-html
+    - name: --subsampling
+      type: string
+      description: '[{200M,500M,1000M,1500M,2000M,None} ...]'
+    - name: --fdr
+      type: string
+      description: '[{15,10,5,1} ...]'
+    - name: --threads
+      type: string
+      description: 'Number of threads (default: 4)'
+    - name: --version
+      type: string
+      description: version and exit
+    - name: --log
+      type: string
+      description: 'out log information to file (default: False)'
+    installed_versions:
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.1
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
+    - Jinja2==3.1.6
+    - jsonschema==4.26.0
+    - jsonschema-specifications==2025.9.1
+    - jupyter_core==5.9.1
+    - kaptain @ file:///tmp/execute_gg34sa67/KAPTAIN
+    - MarkupSafe==3.0.3
+    - nbformat==5.11.0
+    - numpy==2.4.6
+    - packaging==25.0
+    - pandas==3.0.5
+    - platformdirs==4.11.2
+    - pluggy==1.6.0
+    - psutil==7.2.2
+    - PuLP==2.7.0
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - Pygments==2.20.0
+    - pytest==9.1.1
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - referencing==0.37.0
+    - requests==2.34.2
+    - rpds-py==2026.6.3
+    - six==1.17.0
+    - smart_open==7.7.1
+    - smmap==5.0.3
+    - snakemake==9.25.1
+    - snakemake-interface-common==1.23.0
+    - snakemake-interface-executor-plugins==9.4.0
+    - snakemake-interface-logger-plugins==2.1.0
+    - snakemake-interface-report-plugins==1.3.0
+    - snakemake-interface-scheduler-plugins==2.0.2
+    - snakemake-interface-storage-plugins==4.4.1
+    - soupsieve==2.9.2
+    - SQLAlchemy==2.0.52
+    - sqlmodel==0.0.37
+    - tabulate==0.10.0
+    - tenacity==9.1.4
+    - throttler==1.2.3
+    - traitlets==5.16.1
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - urllib3==2.7.0
+    - wrapt==2.3.0
+    - yattag==1.16.1
+    - yte==1.9.4
+- name: nanosimformer
+  type: cli
+  command: nanosimformer {{nano_signal_simulator}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] NanoSimFormer: an end-to-end transformer-based nanopore
+    signal simulator with basecaller guidance. (⭐3, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    nano_signal_simulator:
+      type: path
+      description: Positional argument nano_signal_simulator
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/BioinfoSZU/NanoSimFormer
+    system_commands: []
+    python_packages:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - attrs==26.1.0
+    - biopython==1.88
+    - blinker==1.9.0
+    - blobfile==3.2.0
+    - certifi==2026.7.22
+    - cffi==2.1.1
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - datasets==5.0.1
+    - Deprecated==1.3.1
+    - dill==0.4.1
+    - edlib==1.3.9.post1
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - bonito
+    - create_dataset
+    - dataset
+    - flask
+    - main
+    - mappy
+    - model
+    - numpy
+    - packaging
+    - pandas
+    - pod5
+    - pysam
+    - remora
+    - scipy
+    - setuptools
+    - toml
+    - torch
+    - torchtune
+    - tqdm
+    - train
+    - utils
+    - uuid
+    - version
+    - visualize_dataset
+    venv_path: /tmp/execute_353aq1eh/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_353aq1eh/venv/bin/nanosimformer --help` -> exit 0'
+    exec_executable: nanosimformer
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+    installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - attrs==26.1.0
+    - biopython==1.88
+    - blinker==1.9.0
+    - blobfile==3.2.0
+    - certifi==2026.7.22
+    - cffi==2.1.1
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - datasets==5.0.1
+    - Deprecated==1.3.1
+    - dill==0.4.1
+    - edlib==1.3.9.post1
+    - fast_ctc_decode==0.3.7
+    - filelock==3.32.3
+    - Flask==3.1.3
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.6.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.16.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - idna==3.18
+    - importlib_resources==7.1.0
+    - iso8601==2.1.0
+    - itsdangerous==2.2.0
+    - Jinja2==3.1.6
+    - joblib==1.5.3
+    - kagglehub==1.0.2
+    - kagglesdk==0.1.37
+    - kiwisolver==1.5.0
+    - lib_pod5==0.3.44
+    - lxml==6.1.1
+    - mappy==2.31
+    - Markdown==3.10.3
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mizani==0.9.3
+    - more-itertools==11.1.0
+    - mpmath==1.3.0
+    - multidict==6.7.1
+    - multiprocess==0.70.19
+    - nanosimformer @ file:///tmp/execute_353aq1eh/NanoSimFormer
+    - narwhals==2.24.0
+    - networkx==3.6.1
+    - numpy==1.26.4
+    - nvidia-cublas-cu12==12.8.4.1
+    - nvidia-cuda-cupti-cu12==12.8.90
+    - nvidia-cuda-nvrtc-cu12==12.8.93
+    - nvidia-cuda-runtime-cu12==12.8.90
+    - nvidia-cudnn-cu12==9.10.2.21
+    - nvidia-cufft-cu12==11.3.3.83
+    - nvidia-cufile-cu12==1.13.1.3
+    - nvidia-curand-cu12==10.3.9.90
+    - nvidia-cusolver-cu12==11.7.3.90
+    - nvidia-cusparse-cu12==12.5.8.93
+    - nvidia-cusparselt-cu12==0.7.1
+    - nvidia-nccl-cu12==2.27.5
+    - nvidia-nvjitlink-cu12==12.8.93
+    - nvidia-nvshmem-cu12==3.3.20
+    - nvidia-nvtx-cu12==12.8.90
+    - omegaconf==2.3.1
+    - ont-bonito==1.1.0
+    - ont-koi==0.6.5
+    - ont-remora==3.3.0
+    - packaging==26.3
+    - pandas==3.0.5
+    - parasail==1.3.4
+    - patsy==1.0.2
+- name: morphic-provenance
+  type: cli
+  command: morphic-provenance {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Chromap Suite: an open-source single-binary platform
+    for agentic multiomic RNA + ATAC profiling. (⭐0, Python) (NO license - research
+    use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/morphic-bio/morphic-provenance
+    system_commands: []
+    python_packages:
+    - annotated-types==0.8.0
+    - anyio==4.14.2
+    - click==8.4.2
+    - fastapi==0.115.14
+    - h11==0.16.0
+    - idna==3.18
+    - morphic-provenance @ file:///tmp/execute_u_i8rmm_/morphic-provenance
+    - packaging==26.3
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - starlette==0.45.3
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - uvicorn==0.52.3
+    declared_packages: []
+    missing_deps:
+    - api
+    - cli
+    - config
+    - database
+    - errors
+    - fastapi
+    - hmac
+    - importer
+    - importlib
+    - models
+    - pydantic
+    - service
+    - uvicorn
+    venv_path: /tmp/execute_u_i8rmm_/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_u_i8rmm_/venv/bin/morphic-provenance --help` -> exit
+      0'
+    exec_executable: morphic-provenance
+    verified_license: false
+    verified_status: repo_ok
+    inputs_source: placeholder
+    installed_versions:
+    - annotated-types==0.8.0
+    - anyio==4.14.2
+    - click==8.4.2
+    - fastapi==0.115.14
+    - h11==0.16.0
+    - idna==3.18
+    - morphic-provenance @ file:///tmp/execute_u_i8rmm_/morphic-provenance
+    - packaging==26.3
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - starlette==0.45.3
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - uvicorn==0.52.3
+- name: fmdseromonitor
+  type: cli
+  command: FMDSeroMonitor {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Estimation of seroconversion and vaccination impact
+    against FMD in India during 2006-2022 using surv (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/ICARNIFMD/FMDSeroMonitor")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_n37ykn6f/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(FMDSeroMonitor)''` -> exit 0'
+    exec_executable: FMDSeroMonitor
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: dcifer
+  type: cli
+  command: dcifer {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Toward an Open Analysis Ecosystem for Plasmodium
+    Genomic Epidemiology. (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/EPPIcenter/dcifer")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_ppqjozvm/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(dcifer)''` -> exit 0'
+    exec_executable: dcifer
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: freqestimationmodel
+  type: cli
+  command: FreqEstimationModel {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Toward an Open Analysis Ecosystem for Plasmodium
+    Genomic Epidemiology. (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/aimeertaylor/FreqEstimationModel")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_y3l6auxr/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(FreqEstimationModel)''` -> exit
+      0'
+    exec_executable: FreqEstimationModel
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
