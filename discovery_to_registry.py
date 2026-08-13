@@ -149,6 +149,15 @@ def tool_to_registry_entry(tool, verification=None):
     parsed = e.get("params_schema") or []
     positional = e.get("positional_args") or []
     arg_style = e.get("arg_style") or ""
+    # for subcommand CLIs, collect each subcommand's declared params (from its
+    # --help) so the agent knows what each subcommand takes
+    sub_params = {}
+    if arg_style == "subcommand":
+        for sub, detail in (e.get("subcommand_details") or {}).items():
+            for p in (detail.get("params") or []):
+                key = p.get("name", "").lstrip("-").replace("-", "_")
+                sub_params.setdefault(key, {"subcommand": sub, "type": p.get("type", "string"),
+                                            "description": p.get("description", "") or f"Argument {p.get('name')} for {sub}"})
     if parsed:
         inputs = {
             p["name"].lstrip("-").replace("-", "_"): {
@@ -159,9 +168,20 @@ def tool_to_registry_entry(tool, verification=None):
             for p in parsed
         }
         inputs_src = "help_parsed"
+    elif sub_params:
+        # subcommand params take priority over placeholder
+        inputs = {}
+        inputs_src = "subcommand_help"
     else:
         inputs = {}
         inputs_src = "placeholder"
+    # merge subcommand params into inputs (for the selected subcommand usage)
+    for key, meta in sub_params.items():
+        inputs.setdefault(key, {
+            "type": meta["type"],
+            "description": f"[{meta['subcommand']}] {meta['description']}",
+            "source": "subcommand_help",
+        })
     # positional args (usage: cmd file1 file2 -o out) - mark them clearly
     for pa in positional:
         key = pa["name"].lstrip("<>[]").replace("-", "_")
