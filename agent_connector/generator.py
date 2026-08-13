@@ -87,37 +87,63 @@ def generate_wrappers(
 
     written: list[str] = []
     for tool in tools:
-        class_name = make_class_name(tool["name"])
+        # --- expand subcommand CLIs into one leaf wrapper per subcommand ---
+        # e.g. bqtools -> bqtools_encode(input, output), bqtools_decode(input)
+        # The leaf wrapper sets _active_subcommand so the unified runner
+        # dispatches to the right subcommand's params.
+        if tool.get("arg_style") == "subcommand" and tool.get("subcommand_details"):
+            base = dict(tool)
+            for sub, detail in (tool.get("subcommand_details") or {}).items():
+                leaf = dict(base)
+                leaf["name"] = f"{tool['name']}_{sub.replace('-', '_')}"
+                leaf["_active_subcommand"] = sub
+                leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
+                # leaf inputs = this subcommand's params only
+                leaf_inputs = {}
+                for p in (detail.get("params") or []):
+                    key = p.get("name", "").lstrip("-").replace("-", "_")
+                    leaf_inputs[key] = {"type": p.get("type", "string"),
+                                        "description": p.get("description", "") or f"Argument {p.get('name')}",
+                                        "source": "help_parsed"}
+                leaf["inputs"] = leaf_inputs
+                code = _emit_wrapper(leaf, registration_style, execution_method)
+                filename = Path(out_dir) / f"{leaf['name']}_wrapper.py"
+                filename.write_text(code, encoding="utf-8")
+                written.append(str(filename))
+            continue
+        code = _emit_wrapper(tool, registration_style, execution_method)
         filename = Path(out_dir) / f"{tool['name']}_wrapper.py"
-
-        if registration_style == "function":
-            inputs = tool.get("inputs", {})
-            func_name = _safe_identifier(tool["name"])
-            signature = ", ".join(f"{name}: str" for name in inputs) or "**kwargs"
-            if inputs:
-                kwargs_dict = "{" + ", ".join(f"{name!r}: {name}" for name in inputs) + "}"
-            else:
-                kwargs_dict = "dict(kwargs)"
-            code = FUNCTION_WRAPPER_TEMPLATE.format(
-                name=tool["name"],
-                func_name=func_name,
-                signature=signature,
-                desc=tool.get("description", ""),
-                spec_repr=repr(tool),
-                kwargs_dict=kwargs_dict,
-            )
-        else:
-            code = WRAPPER_TEMPLATE.format(
-                class_name=class_name,
-                name=tool["name"],
-                name_json=json.dumps(tool["name"], ensure_ascii=False),
-                desc_json=json.dumps(tool.get("description", ""), ensure_ascii=False),
-                spec_repr=repr(tool),
-                method=_safe_identifier(execution_method),
-            )
         filename.write_text(code, encoding="utf-8")
         written.append(str(filename))
     return written
+
+
+def _emit_wrapper(tool: dict, registration_style: str, execution_method: str) -> str:
+    class_name = make_class_name(tool["name"])
+    if registration_style == "function":
+        inputs = tool.get("inputs", {})
+        func_name = _safe_identifier(tool["name"])
+        signature = ", ".join(f"{name}: str" for name in inputs) or "**kwargs"
+        if inputs:
+            kwargs_dict = "{" + ", ".join(f"{name!r}: {name}" for name in inputs) + "}"
+        else:
+            kwargs_dict = "dict(kwargs)"
+        return FUNCTION_WRAPPER_TEMPLATE.format(
+            name=tool["name"],
+            func_name=func_name,
+            signature=signature,
+            desc=tool.get("description", ""),
+            spec_repr=repr(tool),
+            kwargs_dict=kwargs_dict,
+        )
+    return WRAPPER_TEMPLATE.format(
+        class_name=class_name,
+        name=tool["name"],
+        name_json=json.dumps(tool["name"], ensure_ascii=False),
+        desc_json=json.dumps(tool.get("description", ""), ensure_ascii=False),
+        spec_repr=repr(tool),
+        method=_safe_identifier(execution_method),
+    )
 
 
 def _safe_identifier(name: str) -> str:
