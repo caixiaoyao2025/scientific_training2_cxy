@@ -204,9 +204,10 @@ def tool_to_registry_entry(tool, verification=None):
         # python-API tools: expose an execution entry_point (module:Class) so
         # run_tool_spec's python runner can invoke it: `from m import C; C(**args)`
         "execution": (
-            {"type": "python", "entry_point": _infer_python_entry(e.get("readme_examples", []), clean_name)}
-            if arg_style == "python" and _infer_python_entry(e.get("readme_examples", []), clean_name)
-            else None
+            e.get("execution")
+            or ({"type": "python", "entry_point": _infer_python_entry(e.get("readme_examples", []), clean_name)}
+                if arg_style == "python" and _infer_python_entry(e.get("readme_examples", []), clean_name)
+                else None)
         ),
         # subcommand CLIs: subcommand names + per-subcommand param details so
         # agents know how to invoke (e.g. bqtools encode <in> <out>)

@@ -464,6 +464,59 @@ def _find_installed_executable(bin_dir: str, candidates: list[str]) -> tuple[str
     return "", ""
 
 
+def _infer_entry_from_examples(readme_examples: list, pkg: str) -> str:
+    """From readme import examples, infer module:Class entry point."""
+    for ex in readme_examples:
+        m = re.search(r"from\s+([\w.]+)\s+import\s+([\w]+)", ex)
+        if m:
+            mod, name = m.group(1), m.group(2)
+            if mod.split(".")[0] == pkg:
+                return f"{mod}:{name}"
+    return ""
+
+
+def _inspect_python_entry(venv_py: str, entry_point: str, env: dict) -> list[dict[str, str]]:
+    """Inspect a module:Class entry point and return its __init__ parameters.
+
+    Runs in the venv: imports the module, reads the class __init__ signature,
+    and returns [{name, type, description, required}] based on real Python
+    params (with defaults -> optional). This is the correct source of inputs
+    for python-API tools (NOT the CLI --help, which differs from Python args).
+    """
+    code = (
+        "import importlib, inspect, json, sys\n"
+        "module_name, _, class_name = sys.argv[1].partition(':')\n"
+        "m = importlib.import_module(module_name)\n"
+        "cls = getattr(m, class_name)\n"
+        "sig = inspect.signature(cls.__init__)\n"
+        "out = []\n"
+        "for name, p in sig.parameters.items():\n"
+        "    if name in ('self', 'args', 'kwargs'):\n"
+        "        continue\n"
+        "    default = None if p.default is inspect.Parameter.empty else p.default\n"
+        "    t = type(default).__name__ if default is not None else 'str'\n"
+        "    out.append({'name': name, 'type': t, 'default': default is not None,\n"
+        "               'description': ''})\n"
+        "print(json.dumps(out))\n"
+    )
+    try:
+        cp = subprocess.run(
+            [venv_py, "-c", code, entry_point],
+            capture_output=True, text=True, timeout=60,
+            encoding="utf-8", errors="replace", env=env)
+        if cp.returncode == 0 and cp.stdout.strip():
+            import json as _json
+            params = _json.loads(cp.stdout.strip().splitlines()[-1])
+            return [{"name": p["name"],
+                     "type": p["type"],
+                     "description": f"Python parameter {p['name']}" + ("" if p["default"] else " (required)"),
+                     "required": not p["default"]}
+                    for p in params][:20]
+    except Exception:
+        pass
+    return []
+
+
 def _python_import_smoke(venv_py: str, module_name: str, env: dict) -> tuple[int, str, str]:
     """Try importing a module in the venv (Python-API style tools with no CLI)."""
     return _run([venv_py, "-c",
@@ -807,6 +860,7 @@ def execute_test(repo_url: str, install_method: str = "",
         "params_schema": [],
         "arg_style": "",
         "callable_via": "",
+        "execution": None,
         "readme_examples": [],
         "llm_call_code": "",
         "llm_call_status": "",
@@ -1218,6 +1272,12 @@ def execute_test(repo_url: str, install_method: str = "",
                     report["status"] = "passed"
                     report["reason"] = f"`python -m {import_name}` entry point"
                     report["callable_via"] = f"python -m {import_name}"
+                    # if README shows a from X import Y, use real Python params
+                    report["readme_examples"] = _extract_readme_examples(repo_dir, import_name)
+                    entry = _infer_entry_from_examples(report["readme_examples"], import_name)
+                    if entry:
+                        report["execution"] = {"type": "python", "entry_point": entry}
+                        report["params_schema"] = _inspect_python_entry(venv_py, entry, env)
                 else:
                     readme_usage = _extract_readme_usage(repo_dir, import_name)
                     report["readme_examples"] = _extract_readme_examples(repo_dir, import_name)
