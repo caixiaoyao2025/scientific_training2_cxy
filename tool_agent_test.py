@@ -49,9 +49,13 @@ def to_function_schema(tool: dict) -> dict:
     props = {}
     required = []
     for name, meta in (tool.get("inputs") or {}).items():
-        props[name] = {"type": "string",
-                       "description": (meta or {}).get("description", "") or ""}
-        required.append(name)
+        desc = (meta or {}).get("description", "") or ""
+        # for subcommand CLIs, make the subcommand input's allowed values explicit
+        if name == "subcommand" and tool.get("subcommands"):
+            desc = ("Choose ONE of: " + " | ".join(tool["subcommands"]) + ". " + desc)
+        props[name] = {"type": "string", "description": desc}
+        if (meta or {}).get("required"):
+            required.append(name)
     fn = {
         "name": tool["name"],
         "description": (tool.get("description") or "")[:300],
@@ -59,6 +63,8 @@ def to_function_schema(tool: dict) -> dict:
     }
     if tool.get("arg_style"):
         fn["arg_style"] = tool["arg_style"]
+    if tool.get("subcommands"):
+        fn["subcommands"] = tool["subcommands"]
     if tool.get("install"):
         fn["install"] = tool["install"]
     return {"type": "function", "function": fn}
@@ -153,20 +159,37 @@ def main() -> int:
     with open(sample, "w", encoding="utf-8") as f:
         f.write(">seq1\nACGT\nACGT\n>seq2\nTTTTTT\n>seq3\nCCCGGG\n>seq4\nAAAAT\n>seq5\nGATAC\n")
 
-    # task: agent picks a tool, inspects its usage (schema/--help), and attempts
-    # a valid invocation. PASS = at least one tool_call executed without 127.
-    prompts = [
-        ("call a tool",
-         f"Inspect the file {sample}. Pick one of the available tools and invoke "
-         "it correctly (pass the arguments its schema requires). If a tool needs "
-         "a subcommand, pass the subcommand. Report what the tool output."),
-    ]
-    passed, total = 0, 0
-    for label, user_prompt in prompts:
+    # --- per-tool concrete tasks so a "success" is meaningful ---
+    # Each task names a tool + a verifiable outcome (exit 0 and/or an output
+    # file). This is far stronger than "call a tool and see if it runs".
+    outdir = os.path.join(tempfile.gettempdir(), "agent_task_out")
+    os.makedirs(outdir, exist_ok=True)
+    tasks = []
+    for t in callable_tools:
+        name = t["name"]
+        as_ = t.get("arg_style") or "cli"
+        if as_ == "subcommand":
+            subs = t.get("subcommands") or []
+            if subs:
+                tasks.append((f"{name}: run its '{subs[0]}' subcommand on the sample",
+                              f"Use the {name} tool to run its '{subs[0]}' subcommand on "
+                              f"{sample}. Pass the 'subcommand' argument and the required "
+                              f"inputs for '{subs[0]}'. Try to get exit code 0."))
+                continue
+        tasks.append((f"{name}: invoke it with valid args on the sample",
+                      f"Use the {name} tool to process {sample}. Pass the arguments its "
+                      "schema requires. Aim for exit code 0 (a running tool that exits 0)."))
+
+    print(f"\n== {len(tasks)} concrete per-tool tasks ==")
+    stats = {"selected": 0, "started": 0, "succeeded": 0, "task_done": 0}
+    per_tool = {}
+    for label, user_prompt in tasks:
         print(f"\n=== task: {label} ===")
         messages = [{"role": "user", "content": user_prompt}]
         final = None
-        invoked_ok = False
+        selected = False
+        started = False
+        succeeded = False
         for turn in range(MAX_TURNS):
             resp = client.chat.completions.create(
                 model=MODEL, messages=messages, tools=schemas, tool_choice="auto")
@@ -179,24 +202,38 @@ def main() -> int:
                 fn_name = tc.function.name
                 args = json.loads(tc.function.arguments or "{}")
                 print(f"[turn {turn}] agent chose: {fn_name} args={json.dumps(args)[:120]}")
+                selected = True
                 if fn_name not in spec_map:
                     result = f"unknown tool {fn_name}"
                 else:
                     result = format_result(run_tool_spec(spec_map[fn_name], args))
-                    # command actually ran (not "command not found")
-                    if "command not found" not in result.lower() and "exit code: 127" not in result:
-                        invoked_ok = True
+                    low = result.lower()
+                    started = started or ("command not found" not in low and "exit code: 127" not in low)
+                    # tool ran and exited 0 -> succeeded
+                    if "exit code: 0" in low or "status: ok" in low:
+                        succeeded = True
                 print(f"          result: {result[:150]}")
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-        print(f"LLM final: {final}")
-        total += 1
-        if invoked_ok:
-            passed += 1
-            print("  PASS: agent invoked a tool and it executed (not command-not-found)")
-        else:
-            print("  (agent's tool calls did not execute successfully - inspect above)")
+        # final status for this tool (strict: succeeded = exit 0)
+        status = ("TASK_SUCCEEDED" if succeeded else
+                  "TOOL_STARTED" if started else
+                  "TOOL_SELECTED" if selected else "NOT_SELECTED")
+        per_tool[label.split(":")[0]] = {
+            "selected": selected, "started": started, "succeeded": succeeded,
+            "exit0": succeeded,
+        }
+        if selected: stats["selected"] += 1
+        if started: stats["started"] += 1
+        if succeeded: stats["succeeded"] += 1
+        print(f"  => {status}")
 
-    print(f"\n== agent tool-usage test: {passed}/{total} ==")
+    print(f"\n== agent tool-usage summary ==")
+    n = len(tasks)
+    print(f"  tools tested:            {n}")
+    print(f"  tool selected:           {stats['selected']}/{n}")
+    print(f"  tool started (ran):      {stats['started']}/{n}")
+    print(f"  tool exited 0 (success): {stats['succeeded']}/{n}")
+    # honest report: exit-0 is "tool ran correctly", not necessarily "task done"
     return 0
 
 
