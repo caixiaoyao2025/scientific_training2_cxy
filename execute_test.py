@@ -246,6 +246,36 @@ def _extract_readme_usage(repo_dir: str, pkg: str) -> str:
     return ""
 
 
+def _extract_flag_params(readme_examples: list) -> list[dict[str, str]]:
+    """Extract CLI flags from readme example commands.
+
+    e.g. 'python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10
+    --output_dir out' -> [--sequence, --num_samples, --output_dir]
+    Returns [{name, type, description}] with --strip for schema keys.
+    """
+    out = []
+    seen = set()
+    for ex in readme_examples:
+        for m in re.finditer(r"(--[\w-]+)", ex):
+            flag = m.group(1)
+            if flag in seen:
+                continue
+            seen.add(flag)
+            # guess type from the following token (int/float/path)
+            rest = ex[m.end():].lstrip()
+            nxt = rest.split()[0] if rest else ""
+            ptype = "string"
+            if nxt.replace(".", "", 1).isdigit() or nxt.lstrip("-").isdigit():
+                ptype = "int" if nxt.lstrip("-").isdigit() and "." not in nxt else "float"
+            elif nxt and ("/" in nxt or nxt.startswith("~") or "." in nxt):
+                ptype = "path"
+            out.append({"name": flag.lstrip("-").replace("-", "_"),
+                        "type": ptype,
+                        "description": f"CLI flag {flag} (from README example)",
+                        "flag": flag})
+    return out[:15]
+
+
 def _llm_attempt_call(pkg_name: str, repo_dir: str, venv_py: str,
                       env: dict, sample: str, max_attempts: int = 3) -> dict:
     """Let an LLM try to write a working call for a python-import tool.
@@ -1300,6 +1330,12 @@ def execute_test(repo_url: str, install_method: str = "",
                             report["reason"] = f"README usage: python -m {mod} --help"
                             report["callable_via"] = readme_usage
                             report["run_evidence"] = (out_m + err_m)[-400:]
+                            # inputs for python -m tools: flags from README
+                            # examples (--sequence/--num_samples/...) so the
+                            # agent knows what to pass
+                            flag_params = _extract_flag_params(report["readme_examples"])
+                            if flag_params:
+                                report["params_schema"] = flag_params
                         else:
                             report["status"] = "failed"
                             report["reason"] = ("importable but no callable entry point "

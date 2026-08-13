@@ -106,7 +106,21 @@ def tool_to_registry_entry(tool, verification=None):
         mod = callable_via.replace("python -m ", "").split()[0]
         base_cmd = f"python -m {mod}"
     if base_cmd:
-        if positional and arg_style == "positional":
+        if arg_style == "python" and callable_via.startswith("python -m "):
+            # python -m tools: if README showed flags (--sequence/--num_samples),
+            # render them as --flag {{value}}; else generic input_file
+            flag_params = [p for p in (e.get("params_schema") or []) if p.get("flag")]
+            if flag_params:
+                parts = []
+                for p in flag_params:
+                    flag = p.get("flag", "--" + p["name"].replace("_", "-"))
+                    parts.append(f"{flag} {{{{ {p['name']} }}}}")
+                # fix the double-brace placeholders: {{ name }} -> {{name}}
+                tmpl = " ".join(parts).replace("{{ ", "{{").replace(" }}", "}}")
+                command_template = f"{base_cmd} {tmpl}"
+            else:
+                command_template = f"{base_cmd} {{{{input_file}}}}"
+        elif positional and arg_style == "positional":
             # positional CLI: pgv-blast <seq1> <seq2> ... -o <outdir>
             # template fills each positional arg by its name
             ph = " ".join(f"{{{{{p['name']}}}}}" for p in positional)
