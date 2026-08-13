@@ -23,8 +23,6 @@ jobs:
         run: |
           # default PyPI (tsinghua mirror unreachable from GH runners)
           pip install --quiet requests beautifulsoup4 pyyaml
-          pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu >/dev/null 2>&1 || \
-            pip install --quiet torch >/dev/null 2>&1 || echo "torch preinstall skipped"
           # build toolchain + htslib (samtools/rapidmacs make), libcurl/ssl (pysam),
           # R headers, and common bio deps so C/pysam/R tools can actually build
           sudo apt-get update -qq
