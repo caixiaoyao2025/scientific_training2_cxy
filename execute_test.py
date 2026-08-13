@@ -424,17 +424,25 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
         line = line.strip()
         if not line:
             continue
-        m = re.match(r'^\s*(?:-\w,\s+)?(--?[\w][\w-]*)\s+([A-Z_]+|\{[^}]+\}|<[^>]+>)?\s*(.*)$',
+        m = re.match(r'^\s*(-[a-zA-Z],?\s+)?(--[\w][\w-]*|-[\w])\s+([A-Z_]+|\{[^}]+\}|<[^>]+>)?\s*(.*)$',
                      line, re.IGNORECASE)
         if not m:
             continue
-        flag, metavar, desc = m.group(1), m.group(2) or "", m.group(3) or ""
+        short_flag, flag, metavar, desc = m.group(1), m.group(2), m.group(3) or "", m.group(4) or ""
+        # if both a short and long flag are present, use the long name as the key
+        if short_flag and flag.startswith("--"):
+            name = flag
+            aliases = [short_flag.strip().rstrip(",")]
+        else:
+            name = flag
+            aliases = []
         # skip the standard help flag itself; it's not a real tool parameter
-        if flag in ("--help", "-h"):
+        if name in ("--help", "-h"):
             continue
-        # only flags (--x) make sense as named params; skip bare -v etc.
-        if flag.startswith("--") and flag not in seen:
-            seen.add(flag)
+        # only flags (--x or short) make sense as named params
+        if (name.startswith("--") or (name.startswith("-") and not name.startswith("--"))) \
+                and name not in seen:
+            seen.add(name)
             ptype = "string"
             if metavar and metavar.lower() in ("path", "file", "dir", "directory", "infile", "outfile"):
                 ptype = "path"
@@ -445,11 +453,14 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
             # keep only the human description, drop argparse noise like
             # [required], [default: x], [choices: a|b]
             desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$", "", desc).strip()
-            params.append({
-                "name": flag,
+            entry = {
+                "name": name,
                 "type": ptype,
-                "description": desc or f"CLI flag {flag}",
-            })
+                "description": desc or f"CLI flag {name}",
+            }
+            if aliases:
+                entry["aliases"] = aliases
+            params.append(entry)
         elif flag.startswith("--"):
             continue
     return params[:20]

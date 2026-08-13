@@ -428,12 +428,17 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
         return _render_command(spec.get("command") or "", arguments)
     argv = [command, sub]
     for p in params:
-        flag = p.get("name", "")
-        key = flag.lstrip("-").replace("-", "_")
+        name = p.get("name", "")
+        key = name.lstrip("-").replace("-", "_")
         val = arguments.get(key)
         if val in (None, "", False):
             continue
-        argv.append(flag)
+        # use the long flag name as the CLI flag (--output-dir), falling back to
+        # short alias if only a short flag exists
+        if name.startswith("--"):
+            argv.append(name)
+        else:
+            argv.append(name)
         argv.append(shlex.quote(str(val)))
     return argv
 
