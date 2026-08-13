@@ -92,7 +92,9 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
                 key = p.get("name", "").lstrip("-").replace("-", "_")
                 props[key] = {"type": "string",
                               "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
-                required.append(key)
+                # only truly-required params go in `required` (not everything)
+                if p.get("required"):
+                    required.append(key)
             fname = f"{tool['name']}_{sub.replace('-', '_')}"
             out.append({"type": "function", "function": {
                 "name": fname,
@@ -114,10 +116,10 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
         "description": (tool.get("description") or "")[:300],
         "parameters": {"type": "object", "properties": props, "required": required},
     }}
+    # execution infrastructure (install/venv/command) is NOT tool-call semantics
+    # for the LLM; keep only arg_style as a hint.
     if tool.get("arg_style"):
         fn["function"]["arg_style"] = tool["arg_style"]
-    if tool.get("install"):
-        fn["function"]["install"] = tool["install"]
     fnmap[tool["name"]] = (tool["name"], "")
     return [fn], fnmap
 

@@ -98,12 +98,13 @@ def generate_wrappers(
                 leaf["name"] = f"{tool['name']}_{sub.replace('-', '_')}"
                 leaf["_active_subcommand"] = sub
                 leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
-                # leaf inputs = this subcommand's params only
+                # leaf inputs = this subcommand's params only (keep required/type)
                 leaf_inputs = {}
                 for p in (detail.get("params") or []):
                     key = p.get("name", "").lstrip("-").replace("-", "_")
                     leaf_inputs[key] = {"type": p.get("type", "string"),
                                         "description": p.get("description", "") or f"Argument {p.get('name')}",
+                                        "required": bool(p.get("required", False)),
                                         "source": "help_parsed"}
                 leaf["inputs"] = leaf_inputs
                 code = _emit_wrapper(leaf, registration_style, execution_method)
