@@ -83,7 +83,12 @@ def tool_to_registry_entry(tool, verification=None):
     verified_cmd = v.get("command") or ""
     positional = e.get("positional_args") or []
     arg_style = e.get("arg_style") or ""
+    callable_via = e.get("callable_via") or ""
     base_cmd = exec_exe or verified_cmd or ""
+    # python tools with a `python -m <module>` entry point -> use that
+    if arg_style == "python" and callable_via.startswith("python -m "):
+        mod = callable_via.replace("python -m ", "").split()[0]
+        base_cmd = f"python -m {mod}"
     if base_cmd:
         if positional and arg_style == "positional":
             # positional CLI: pgv-blast <seq1> <seq2> ... -o <outdir>
