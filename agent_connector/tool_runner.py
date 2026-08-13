@@ -315,7 +315,23 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
     if method in ("pip_pkg", "pip_url"):
         # python-API tools (arg_style=python) are verified by import, not which
         is_python = spec.get("arg_style") == "python" or exec_type == "python"
-        pkg_for_import = (install.get("declared_packages") or [""])[0] or exe_name or ""
+        # determine the importable package name. For `python -m pkg.module` the
+        # package is pkg, NOT the literal "python". Prefer install.command's
+        # PyPI name (e.g. "bioemu") or execution.entry_point's module.
+        pkg_for_import = (install.get("declared_packages") or [""])[0] or ""
+        if not pkg_for_import:
+            target0 = install.get("command", "")
+            if target0.startswith("pip "):
+                parts = target0.split()
+                pkg_for_import = parts[2] if len(parts) >= 3 else ""
+            elif target0:
+                pkg_for_import = target0.split("==")[0].split(">=")[0].strip()
+        if not pkg_for_import:
+            cmd0 = (spec.get("command") or "").split()
+            if len(cmd0) >= 3 and cmd0[0] == "python" and cmd0[1] == "-m":
+                pkg_for_import = cmd0[2].split(".")[0]  # python -m bioemu.sample -> bioemu
+            else:
+                pkg_for_import = exe_name or ""
         need_install = False
         if is_python:
             # check importability
@@ -382,7 +398,12 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
         print(f"[tool-runner] auto-install failed: {install_errors}")
 
     if exec_type == "python":
-        return _run_python(execution["entry_point"], arguments, timeout=timeout)
+        ep = execution.get("entry_point")
+        if ep:
+            return _run_python(ep, arguments, timeout=timeout)
+        # python-API tool without a module:Class entry -> fall back to the
+        # command template (e.g. `python -m bioemu.sample ...`)
+        return _run_cli(execution.get("command", ""), arguments, timeout=timeout)
     if exec_type == "api":
         return _run_api(execution, arguments, timeout=timeout)
     if exec_type == "docker":
