@@ -290,19 +290,34 @@ def _llm_attempt_call(pkg_name: str, repo_dir: str, venv_py: str,
 
 
 def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
-    """Extract positional arguments from a usage line.
+    """Extract positional arguments from --help output.
 
-    usage: pgv-blast [options] seq1.gbk seq2.gbk seq3.gbk -o outdir
-    -> [{"name": "seq1.gbk", ...}, ...] but those are placeholders, not real
-    names. Better: use the metavar tokens as hints. Returns [] if none.
+    Two sources:
+      - usage line:  pgv-blast [options] seq1.gbk seq2.gbk seq3.gbk -o out
+      - argparse 'positional arguments:' block with real descriptions:
+            positional arguments:
+              fasta       input FASTA file
+    Returns [{name, type, description, positional}].
     """
     if not help_output:
         return []
+    # source 1: argparse positional arguments: block (real names + descriptions)
+    desc_map = {}
+    m = re.search(r"positional arguments?\s*:\s*\n(.*?)(?:\n\s*\n|\Z)",
+                  help_output, re.IGNORECASE | re.DOTALL)
+    if m:
+        for line in m.group(1).splitlines():
+            line = line.rstrip()
+            if not line.strip() or line.strip().startswith("-"):
+                continue
+            parts = line.split(None, 1)
+            if parts:
+                desc_map[parts[0]] = parts[1].strip() if len(parts) > 1 else ""
+    # source 2: usage line tokens
     m = re.search(r"usage:\s*\S+\s*(?:\[[^\]]*\]\s*)*(.+)", help_output, re.IGNORECASE)
     if not m:
         return []
     rest = m.group(1)
-    # cut at the first option flag (-o outdir etc.)
     cut = re.search(r"\s-\w", rest)
     if cut:
         rest = rest[:cut.start()]
@@ -316,8 +331,10 @@ def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
             continue
         if t.lower() in pseudo or (t.isupper() and len(t) > 2):
             continue
-        out.append({"name": t, "type": "path",
-                    "description": f"Positional argument {t}", "positional": True})
+        desc = desc_map.get(t, "") or desc_map.get(t.lower(), "") \
+            or f"Positional argument {t}"
+        out.append({"name": t, "type": "path", "description": desc,
+                    "positional": True})
     return out[:10]
 
 
