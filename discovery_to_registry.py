@@ -178,6 +178,7 @@ def tool_to_registry_entry(tool, verification=None):
         "command": command_template,
         "arg_style": arg_style or "named",
         "callable_via": e.get("callable_via", ""),
+        "readme_examples": e.get("readme_examples", []),
         "description": f"[Auto-discovered] {description} (⭐{stars}, {language}){license_note}",
         "output_control": {
             "intercept_large_output": True,

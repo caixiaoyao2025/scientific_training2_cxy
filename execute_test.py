@@ -169,6 +169,45 @@ def _detect_arg_style(help_output: str) -> str:
     return "named"
 
 
+def _extract_readme_examples(repo_dir: str, pkg: str, max_examples: int = 3) -> list[str]:
+    """Extract concrete invocation examples from the README.
+
+    Returns full commands (e.g. `python -m bioemu.sample --sequence GYDPETGTWG
+    --num_samples 10 --output_dir out`) that authors wrote. These show agents
+    exactly how to pass parameters. Also collects `import <pkg>...` call lines.
+    """
+    readme = ""
+    for root, _dirs, files in os.walk(repo_dir):
+        for fn in files:
+            if fn.lower().startswith("readme"):
+                try:
+                    readme = open(os.path.join(root, fn), encoding="utf-8",
+                                  errors="replace").read()
+                except Exception:
+                    continue
+                if readme:
+                    break
+        if readme:
+            break
+    if not readme:
+        return []
+    examples = []
+    # 1) full `python -m <pkg>.module ...` command lines
+    for m in re.finditer(r"python\s+-m\s+[\w.]+(?:[^\n`]*)", readme):
+        line = m.group(0).strip()
+        if pkg in line and line not in examples:
+            examples.append(line)
+    # 2) `import <pkg> ...` call snippets from python code blocks
+    for blk in re.findall(r"```(?:python)?\s*\n(.*?)```", readme, re.S):
+        if re.search(rf"\bfrom\s+{pkg}(?:\.\w+)*\s+import", blk):
+            lines = [ln.strip() for ln in blk.splitlines()
+                     if ln.strip() and not ln.startswith("#")]
+            for ln in lines:
+                if pkg in ln and ln not in examples:
+                    examples.append(ln)
+    return examples[:max_examples]
+
+
 def _extract_readme_usage(repo_dir: str, pkg: str) -> str:
     """Find a runnable usage of a python package from the README.
 
@@ -768,6 +807,7 @@ def execute_test(repo_url: str, install_method: str = "",
         "params_schema": [],
         "arg_style": "",
         "callable_via": "",
+        "readme_examples": [],
         "llm_call_code": "",
         "llm_call_status": "",
         "positional_args": [],
@@ -1180,6 +1220,7 @@ def execute_test(repo_url: str, install_method: str = "",
                     report["callable_via"] = f"python -m {import_name}"
                 else:
                     readme_usage = _extract_readme_usage(repo_dir, import_name)
+                    report["readme_examples"] = _extract_readme_examples(repo_dir, import_name)
                     if readme_usage.startswith("python -m "):
                         mod = readme_usage.replace("python -m ", "").split()[0]
                         rc_m, out_m, err_m = _run(
