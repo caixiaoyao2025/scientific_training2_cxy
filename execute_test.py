@@ -370,6 +370,7 @@ def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
     """
     if not help_output:
         return []
+    help_output = re.sub(r"\x1b\[[0-9;]*m", "", help_output)  # strip ANSI
     # source 1: argparse positional arguments: block (real names + descriptions)
     desc_map = {}
     m = re.search(r"positional arguments?\s*:\s*\n(.*?)(?:\n\s*\n|\Z)",
@@ -395,10 +396,12 @@ def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
     pseudo = {"options", "option", "options:", "commands", "command",
               "args", "arg"}
     for t in tokens:
-        t = t.strip("<>[]")
+        t = t.strip("<>[]").strip()
         if not t or t.startswith("-"):
             continue
-        if t.lower() in pseudo or (t.isupper() and len(t) > 2):
+        # skip argparse choices ({a,b,c}), ellipsis (...), and bare metavars
+        # that are uppercase or contain ']'/'...' (junk from ANSI/formatting)
+        if t.startswith("{") or t in ("...", ".") or "]" in t or t.isupper() or t.lower() in pseudo:
             continue
         desc = desc_map.get(t, "") or desc_map.get(t.lower(), "") \
             or f"Positional argument {t}"
@@ -418,6 +421,7 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
     """
     if not help_output:
         return []
+    help_output = re.sub(r"\x1b\[[0-9;]*m", "", help_output)  # strip ANSI
     params: list[dict[str, str]] = []
     seen: set[str] = set()
     for line in help_output.splitlines():
