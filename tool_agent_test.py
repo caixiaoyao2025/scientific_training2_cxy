@@ -89,7 +89,7 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
             props = {}
             required = []
             for p in (detail.get("params") or []):
-                key = p.get("name", "").lstrip("-").replace("-", "_")
+                key = p.get("name", "").lstrip("-").replace("-", "_").lower()
                 props[key] = {"type": "string",
                               "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
                 # only truly-required params go in `required` (not everything)

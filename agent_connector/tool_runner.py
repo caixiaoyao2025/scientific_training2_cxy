@@ -433,16 +433,20 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
     argv = [command, sub]
     for p in params:
         name = p.get("name", "")
-        key = name.lstrip("-").replace("-", "_")
+        key = name.lstrip("-").replace("-", "_").lower()
         val = arguments.get(key)
         # omit empty/None optional values entirely (don't render --flag "")
         if val in (None, "", False):
             continue
-        if name.startswith("--"):
+        if p.get("positional"):
+            # positional arg: just the value in order, no flag
+            argv.append(shlex.quote(str(val)))
+        elif name.startswith("--"):
             argv.append(name)
+            argv.append(shlex.quote(str(val)))
         else:
             argv.append(name)
-        argv.append(shlex.quote(str(val)))
+            argv.append(shlex.quote(str(val)))
     return argv
 
 

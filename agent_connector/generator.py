@@ -101,7 +101,7 @@ def generate_wrappers(
                 # leaf inputs = this subcommand's params only (keep required/type)
                 leaf_inputs = {}
                 for p in (detail.get("params") or []):
-                    key = p.get("name", "").lstrip("-").replace("-", "_")
+                    key = p.get("name", "").lstrip("-").replace("-", "_").lower()
                     leaf_inputs[key] = {"type": p.get("type", "string"),
                                         "description": p.get("description", "") or f"Argument {p.get('name')}",
                                         "required": bool(p.get("required", False)),

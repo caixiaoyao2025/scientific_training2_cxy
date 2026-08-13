@@ -358,7 +358,7 @@ def _llm_attempt_call(pkg_name: str, repo_dir: str, venv_py: str,
     return {"ok": False, "status": "not_callable", "code": "", "evidence": last_err}
 
 
-def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
+def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[dict[str, str]]:
     """Extract positional arguments from --help output.
 
     Two sources:
@@ -367,6 +367,9 @@ def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
             positional arguments:
               fasta       input FASTA file
     Returns [{name, type, description, positional}].
+    `skip_first` skips the first token (used for subcommand usage lines where
+    the first token is the subcommand name, e.g. 'encode' in
+    'bqtools encode <INPUT> <OUTPUT>').
     """
     if not help_output:
         return []
@@ -394,20 +397,37 @@ def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
     tokens = rest.split()
     out = []
     pseudo = {"options", "option", "options:", "commands", "command",
-              "args", "arg"}
-    for t in tokens:
+              "args", "arg", "subcommand"}
+    for idx, t in enumerate(tokens):
+        # skip the subcommand token for subcommand usage lines
+        if idx == 0 and skip_first and _is_probable_subcommand(t):
+            continue
+        raw = t
         t = t.strip("<>[]").strip()
         if not t or t.startswith("-"):
             continue
-        # skip argparse choices ({a,b,c}), ellipsis (...), and bare metavars
-        # that are uppercase or contain ']'/'...' (junk from ANSI/formatting)
-        if t.startswith("{") or t in ("...", ".") or "]" in t or t.isupper() or t.lower() in pseudo:
+        # skip argparse choices ({a,b,c}), ellipsis (...), and junk
+        if t.startswith("{") or t in ("...", ".") or "]" in t or t.lower() in pseudo:
             continue
+        # uppercase metavars (INPUT, OUTPUT, FILE) ARE positional args -- keep them
         desc = desc_map.get(t, "") or desc_map.get(t.lower(), "") \
-            or f"Positional argument {t}"
+            or f"Positional argument {raw}"
         out.append({"name": t, "type": "path", "description": desc,
-                    "positional": True})
+                    "positional": True, "position": idx})
     return out[:10]
+
+
+def _is_probable_subcommand(tok: str) -> bool:
+    """A usage token is probably a subcommand if it's lowercase/mixed and not a
+    metavar in <...> or ALL-CAPS. e.g. 'encode' in 'bqtools encode <INPUT>'."""
+    t = tok.strip("<>[]")
+    if not t:
+        return False
+    if t.isupper() or t in ("...", "."):
+        return False  # metavar or ellipsis, not a subcommand
+    if t.startswith("{") or t.startswith("-"):
+        return False
+    return True
 
 
 def _parse_help_params(help_output: str) -> list[dict[str, str]]:
@@ -1274,8 +1294,17 @@ def execute_test(repo_url: str, install_method: str = "",
                             [exe_base, sub, "--help"], RUN_TIMEOUT, env=env)
                         if rc_s == 0 and (out_s.strip() or err_s.strip()):
                             ok += 1
+                            # params = flags (--input) + positional (<INPUT>) --
+                            # positional skips the subcommand token itself
+                            flags = _parse_help_params(out_s or err_s)
+                            pos = _parse_positional_args(out_s or err_s, skip_first=True)
+                            merged = list(flags)
+                            for p in pos:
+                                if p.get("positional"):
+                                    p["positional"] = True
+                                    merged.append(p)
                             subs[sub] = {
-                                "params": _parse_help_params(out_s or err_s),
+                                "params": merged,
                                 "usage": _extract_usage(out_s or err_s),
                             }
                     # complete only if every subcommand was probed successfully
