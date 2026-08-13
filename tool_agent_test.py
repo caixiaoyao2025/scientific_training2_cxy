@@ -193,32 +193,41 @@ def main() -> int:
     with open(sample, "w", encoding="utf-8") as f:
         f.write(">seq1\nACGT\nACGT\n>seq2\nTTTTTT\n>seq3\nCCCGGG\n>seq4\nAAAAT\n>seq5\nGATAC\n")
 
-    # --- per-tool concrete tasks so a "success" is meaningful ---
-    # Each task names a tool + a verifiable outcome (exit 0 and/or an output
-    # file). This is far stronger than "call a tool and see if it runs".
+    # --- per-tool concrete tasks with specified params + output validation ---
+    # Each task tells the agent the tool, the input file, and a concrete output
+    # path to produce. Success = tool exits 0 AND the output file exists. This
+    # avoids "invoke it with valid args" (agent guessing) and catches the
+    # earlier bqtools "encode but no output" false-positive.
     outdir = os.path.join(tempfile.gettempdir(), "agent_task_out")
     os.makedirs(outdir, exist_ok=True)
     tasks = []
     for t in callable_tools:
         name = t["name"]
         as_ = t.get("arg_style") or "cli"
-        if as_ == "subcommand":
-            subs = t.get("subcommands") or []
-            if subs:
-                tasks.append((f"{name}: run its '{subs[0]}' subcommand on the sample",
-                              f"Use the {name} tool to run its '{subs[0]}' subcommand on "
-                              f"{sample}. Pass the 'subcommand' argument and the required "
-                              f"inputs for '{subs[0]}'. Try to get exit code 0."))
-                continue
-        tasks.append((f"{name}: invoke it with valid args on the sample",
-                      f"Use the {name} tool to process {sample}. Pass the arguments its "
-                      "schema requires. Aim for exit code 0 (a running tool that exits 0)."))
+        out = os.path.join(outdir, f"{name}_out")
+        if as_ == "subcommand" and t.get("subcommands"):
+            sub = t["subcommands"][0]
+            # task for the first subcommand: input file + explicit output path
+            label = f"{name}: {sub} on sample -> {os.path.basename(out)}"
+            prompt = (f"Call {name}_{sub} (or the {name} tool's {sub} subcommand) to "
+                      f"process the input file {sample}. Write the output to {out}. "
+                      "Pass the arguments the tool's schema requires (input file and "
+                      "output path). After running, the output file should exist.")
+            tasks.append((label, prompt, sub, out))
+        else:
+            label = f"{name}: process sample -> {os.path.basename(out)}"
+            prompt = (f"Call the {name} tool to process the input file {sample}. "
+                      "Pass the arguments its schema requires. If it has an output "
+                      "parameter, write to " + out + ". Aim for exit code 0.")
+            tasks.append((label, prompt, "", out))
 
     print(f"\n== {len(tasks)} concrete per-tool tasks ==")
-    stats = {"selected": 0, "started": 0, "succeeded": 0, "task_done": 0}
+    stats = {"selected": 0, "started": 0, "succeeded": 0, "output_valid": 0}
     per_tool = {}
-    for label, user_prompt in tasks:
+    for label, user_prompt, expect_sub, out_path in tasks:
         print(f"\n=== task: {label} ===")
+        if os.path.exists(out_path):
+            os.remove(out_path)
         messages = [{"role": "user", "content": user_prompt}]
         final = None
         selected = False
@@ -252,25 +261,25 @@ def main() -> int:
                         if raw.get("argv"):
                             print(f"          argv: {raw['argv']}")
                             print(f"          exit: {raw.get('return_code')}")
-                            per_tool_last = raw  # keep raw for final status
                     low = result.lower()
                     started = started or ("command not found" not in low and "exit code: 127" not in low)
-                    # tool ran and exited 0 -> succeeded
                     if "exit code: 0" in low or "status: ok" in low:
                         succeeded = True
                 print(f"          result: {result[:150]}")
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-        # final status for this tool (strict: succeeded = exit 0)
-        status = ("TASK_SUCCEEDED" if succeeded else
+        output_valid = succeeded and os.path.exists(out_path) and os.path.getsize(out_path) > 0
+        status = ("TASK_SUCCEEDED" if (succeeded and output_valid) else
+                  "EXECUTED_NO_OUTPUT" if succeeded else
                   "TOOL_STARTED" if started else
                   "TOOL_SELECTED" if selected else "NOT_SELECTED")
         per_tool[label.split(":")[0]] = {
             "selected": selected, "started": started, "succeeded": succeeded,
-            "exit0": succeeded,
+            "output_valid": output_valid, "status": status,
         }
         if selected: stats["selected"] += 1
         if started: stats["started"] += 1
         if succeeded: stats["succeeded"] += 1
+        if output_valid: stats["output_valid"] += 1
         print(f"  => {status}")
 
     print(f"\n== agent tool-usage summary ==")
@@ -278,8 +287,9 @@ def main() -> int:
     print(f"  tools tested:            {n}")
     print(f"  tool selected:           {stats['selected']}/{n}")
     print(f"  tool started (ran):      {stats['started']}/{n}")
-    print(f"  tool exited 0 (success): {stats['succeeded']}/{n}")
-    # honest report: exit-0 is "tool ran correctly", not necessarily "task done"
+    print(f"  tool exited 0:           {stats['succeeded']}/{n}")
+    print(f"  output file valid:       {stats['output_valid']}/{n}")
+    # honest: only output_valid is a real end-to-end success
     return 0
 
 
