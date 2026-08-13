@@ -630,6 +630,7 @@ def execute_test(repo_url: str, install_method: str = "",
         "executable": "",
         "params_schema": [],
         "arg_style": "",
+        "callable_via": "",
         "positional_args": [],
         "subcommands": [],
         "subcommand_details": {},
@@ -1026,6 +1027,15 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["run_ok"] = True
                 report["run_evidence"] = (out_imp + err_imp)[-400:]
                 report["executable"] = import_name  # Python API, no CLI
+                # determine how the python package can be invoked
+                has_main = False
+                for root, _dirs, files in os.walk(repo_dir):
+                    if "__main__.py" in files:
+                        has_main = True
+                        break
+                report["callable_via"] = "python -m " + import_name if has_main \
+                    else "python_import"
+                report["arg_style"] = "python"
                 return report
             cls_imp = _classify_failure((out_imp + err_imp)[-1200:])
             if cls_imp == "incomplete":

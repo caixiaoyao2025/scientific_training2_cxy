@@ -116,8 +116,22 @@ def main() -> int:
     from openai import OpenAI
     from agent_connector.tool_runner import run_tool_spec, format_result
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-    schemas = [to_function_schema(t) for t in tools]
-    spec_map = {t["name"]: t for t in tools}
+    # Only test tools the agent can actually invoke via function-calling.
+    # python_import-type tools (no CLI, no __main__) need import-based code,
+    # which a function-calling agent can't do - mark and skip them.
+    callable_tools = []
+    skipped = []
+    for t in tools:
+        if t.get("callable_via") == "python_import" or t.get("arg_style") == "python" and not t.get("callable_via"):
+            skipped.append(t["name"])
+            print(f"[skip] {t['name']}: python_import (not function-callable; use via import)")
+            continue
+        callable_tools.append(t)
+    schemas = [to_function_schema(t) for t in callable_tools]
+    spec_map = {t["name"]: t for t in callable_tools}
+    if not callable_tools:
+        print("no function-callable tools in registry; nothing to test")
+        return 0
 
     # sample input for tools that take a file path
     sample = os.path.join(tempfile.gettempdir(), "agent_test_sample.fasta")

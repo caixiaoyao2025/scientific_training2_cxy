@@ -172,6 +172,7 @@ def tool_to_registry_entry(tool, verification=None):
         "type": "python" if arg_style == "python" else "cli",
         "command": command_template,
         "arg_style": arg_style or "named",
+        "callable_via": e.get("callable_via", ""),
         "description": f"[Auto-discovered] {description} (⭐{stars}, {language}){license_note}",
         "output_control": {
             "intercept_large_output": True,
