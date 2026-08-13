@@ -169,6 +169,88 @@ def _detect_arg_style(help_output: str) -> str:
     return "named"
 
 
+def _llm_attempt_call(pkg_name: str, repo_dir: str, venv_py: str,
+                      env: dict, sample: str, max_attempts: int = 3) -> dict:
+    """Let an LLM try to write a working call for a python-import tool.
+
+    For tools that are importable but have no CLI entry (e.g. bioemu), we ask a
+    volcengine LLM to read the repo and write `import <pkg>; <call>`. Each
+    attempt executes the code; failures are fed back for the LLM to fix. After
+    `max_attempts` we give up.
+
+    Returns a dict: {ok, status, code, evidence}. Requires the same
+    LLM env vars as tool_agent_test.py (WESTLAKE_/OPENAI_/DEEPSEEK_).
+    """
+    import urllib.request
+    api_key = (os.environ.get("WESTLAKE_API_KEY") or os.environ.get("OPENAI_API_KEY")
+               or os.environ.get("DEEPSEEK_API_KEY") or "")
+    base_url = (os.environ.get("WESTLAKE_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
+                or os.environ.get("DEEPSEEK_BASE_URL")
+                or "https://ark.cn-beijing.volces.com/api/v3")
+    model = (os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL")
+             or os.environ.get("DEEPSEEK_MODEL") or "deepseek-v4-flash-ga-260731")
+    if not api_key:
+        return {"ok": False, "status": "no_llm_key", "code": "", "evidence": ""}
+
+    # gather repo hints: README + module list so the LLM knows what to call
+    hints = []
+    for f in sorted(os.listdir(repo_dir))[:10]:
+        hints.append(f)
+    readme = ""
+    for root, _dirs, files in os.walk(repo_dir):
+        for fn in files:
+            if fn.lower().startswith("readme"):
+                try:
+                    readme = open(os.path.join(root, fn), encoding="utf-8",
+                                  errors="replace").read()
+                except Exception:
+                    pass
+                if readme:
+                    break
+        if readme:
+            break
+
+    def _call_llm(prompt: str) -> str:
+        body = json.dumps({
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 600, "temperature": 0.1,
+        }).encode()
+        req = urllib.request.Request(f"{base_url}/chat/completions", data=body,
+                                     headers={"Authorization": f"Bearer {api_key}",
+                                              "Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                data = json.loads(resp.read().decode())
+                return data["choices"][0]["message"]["content"] or ""
+        except Exception as exc:
+            return f"LLM_ERROR: {exc}"
+
+    last_err = ""
+    for attempt in range(1, max_attempts + 1):
+        prompt = (f"The Python package '{pkg_name}' is installed in a venv. "
+                  f"Its repo contains files: {', '.join(hints)}.\n"
+                  f"README (excerpt):\n{readme[:1500]}\n"
+                  f"Write a single python -c command that imports {pkg_name} and "
+                  "performs a minimal, valid invocation on the sample file "
+                  f"'{sample}' (if relevant), printing some output. "
+                  "Output ONLY the python code, no explanation.\n"
+                  f"{('Previous attempt failed with: ' + last_err + ' Fix the code.') if last_err else ''}")
+        code = _call_llm(prompt).strip()
+        # strip markdown fences
+        code = re.sub(r"^```(?:python)?\s*|\s*```$", "", code).strip()
+        if not code or code.startswith("LLM_ERROR"):
+            last_err = code or "empty LLM response"
+            continue
+        # execute in the venv
+        rc, out, err = _run([venv_py, "-c", code], RUN_TIMEOUT, env=env)
+        if rc == 0 and (out.strip() or err.strip()):
+            return {"ok": True, "status": "passed",
+                    "code": code, "evidence": (out + err)[-400:]}
+        last_err = f"exit {rc}: {(out + err)[-300:]}"
+    return {"ok": False, "status": "not_callable", "code": "", "evidence": last_err}
+
+
 def _parse_positional_args(help_output: str) -> list[dict[str, str]]:
     """Extract positional arguments from a usage line.
 
@@ -631,6 +713,8 @@ def execute_test(repo_url: str, install_method: str = "",
         "params_schema": [],
         "arg_style": "",
         "callable_via": "",
+        "llm_call_code": "",
+        "llm_call_status": "",
         "positional_args": [],
         "subcommands": [],
         "subcommand_details": {},
@@ -1036,6 +1120,21 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["callable_via"] = "python -m " + import_name if has_main \
                     else "python_import"
                 report["arg_style"] = "python"
+                if not has_main:
+                    # importable but no CLI: have an LLM try to write a working
+                    # call (max 3 attempts). If it succeeds, the tool is
+                    # genuinely callable; otherwise mark not_callable.
+                    llm_res = _llm_attempt_call(
+                        import_name, repo_dir, venv_py, env, sample)
+                    if llm_res.get("ok"):
+                        report["reason"] = f"LLM wrote working call: {llm_res['code'][:80]}"
+                        report["run_evidence"] = llm_res["evidence"]
+                        report["callable_via"] = "python_llm_wrapper"
+                        report["llm_call_code"] = llm_res["code"]
+                    else:
+                        report["callable_via"] = "python_import"
+                        report["llm_call_status"] = llm_res.get("status", "not_callable")
+                        report["reason"] += f" | LLM call attempt: {llm_res.get('status')}"
                 return report
             cls_imp = _classify_failure((out_imp + err_imp)[-1200:])
             if cls_imp == "incomplete":
