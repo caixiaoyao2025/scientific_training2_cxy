@@ -275,7 +275,21 @@ def _run_docker(execution: dict[str, Any], arguments: dict[str, Any], timeout: i
     }
 
 
-def _ensure_installed(spec: dict[str, Any]) -> tuple[list[str], list[str]]:
+def _try_import(pkg_name: str) -> tuple[int, str, str]:
+    """Check whether a python package can be imported (python-API tools)."""
+    if not pkg_name:
+        return 1, "", "no package name"
+    try:
+        cp = subprocess.run(
+            [sys.executable, "-c", f"import {pkg_name}"],
+            capture_output=True, text=True, timeout=60,
+            encoding="utf-8", errors="replace")
+        return cp.returncode, cp.stdout or "", cp.stderr or ""
+    except Exception as exc:
+        return 1, "", str(exc)
+
+
+def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[list[str], list[str]]:
     """Auto-install a tool's environment if its command/module is missing.
 
     Returns (actions_performed, errors). Errors are surfaced so the caller
@@ -298,26 +312,42 @@ def _ensure_installed(spec: dict[str, Any]) -> tuple[list[str], list[str]]:
         except Exception:
             return False
 
-    if method in ("pip_pkg", "pip_url") and exe_name and _sh.which(exe_name) is None:
-        target = install.get("command", "")
-        if target.startswith("pip "):
-            parts = target.split()
-            target = parts[2] if len(parts) >= 3 else ""
-        candidates = []
-        if target and not target.startswith("pip "):
-            candidates.append(target)
-        # fall back to PyPI package name = repo name if the URL form fails
-        if not candidates:
-            candidates.append(exe_name)
-        installed = False
-        for cand in candidates:
-            if _try_install([sys.executable, "-m", "pip", "install", "-q", cand]):
-                actions.append(f"pip install {cand}")
-                installed = True
-                break
-            errors.append(f"pip install {cand} failed")
-        if not installed and errors:
-            errors = [errors[0]]  # keep the first/most relevant error
+    if method in ("pip_pkg", "pip_url"):
+        # python-API tools (arg_style=python) are verified by import, not which
+        is_python = spec.get("arg_style") == "python" or exec_type == "python"
+        pkg_for_import = (install.get("declared_packages") or [""])[0] or exe_name or ""
+        need_install = False
+        if is_python:
+            # check importability
+            rc_imp, _, _ = _try_import(pkg_for_import)
+            if rc_imp != 0:
+                need_install = True
+        elif exe_name and _sh.which(exe_name) is None:
+            need_install = True
+        if need_install:
+            target = install.get("command", "")
+            if target.startswith("pip "):
+                parts = target.split()
+                target = parts[2] if len(parts) >= 3 else ""
+            candidates = []
+            if target and not target.startswith("pip "):
+                candidates.append(target)
+            if not candidates:
+                candidates.append(pkg_for_import or exe_name)
+            installed = False
+            for cand in candidates:
+                if _try_install([sys.executable, "-m", "pip", "install", "-q", cand]):
+                    actions.append(f"pip install {cand}")
+                    installed = True
+                    break
+                errors.append(f"pip install {cand} failed")
+            if not installed and errors:
+                errors = [errors[0]]
+            elif installed and is_python:
+                # verify import after install
+                rc2, _, _ = _try_import(pkg_for_import)
+                if rc2 != 0:
+                    errors.append(f"installed but 'import {pkg_for_import}' still fails")
     elif method == "cargo" and exe_name and _sh.which(exe_name) is None:
         url = install.get("command", "")
         if url:
@@ -345,7 +375,7 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
     arguments = _coerce_arguments(spec, arguments)
 
     # auto-install the tool's environment on first use (agent self-provisioning)
-    installed, install_errors = _ensure_installed(spec)
+    installed, install_errors = _ensure_installed(spec, exec_type)
     if installed:
         print(f"[tool-runner] auto-installed: {installed}")
     if install_errors:
