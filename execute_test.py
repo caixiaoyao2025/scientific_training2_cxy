@@ -99,6 +99,42 @@ def _detect_heavy_deps(repo_dir: str) -> bool:
     return any(d in blob for d in HEAVY_DEPS)
 
 
+def _extract_usage(help_output: str) -> str:
+    """Extract the usage line from --help output (first usage: ... line)."""
+    if not help_output:
+        return ""
+    m = re.search(r"usage:\s*(.+)", help_output, re.IGNORECASE)
+    return m.group(1).strip()[:200] if m else ""
+
+
+def _parse_subcommands(help_output: str) -> list[str]:
+    """Extract subcommand names from --help output.
+
+    Handles click/typer/argparse-subparsers style:
+      Commands:
+        encode   Encode FAS
+        decode   Decode BINSEQ
+        info     Show info
+    Returns command names (e.g. ['encode', 'decode', 'info']).
+    """
+    if not help_output:
+        return []
+    low = help_output
+    m = re.search(r"(?:^|\n)\s*commands?\s*:\s*\n(.*?)(?:\n\s*\n|\Z)",
+                  low, re.IGNORECASE | re.DOTALL)
+    if not m:
+        return []
+    cmds = []
+    for line in m.group(1).splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        name = line.split()[0] if line.split() else ""
+        if name and name not in cmds and not name.startswith("-"):
+            cmds.append(name)
+    return cmds[:20]
+
+
 def _detect_arg_style(help_output: str) -> str:
     """Classify how the tool expects arguments.
 
@@ -595,6 +631,8 @@ def execute_test(repo_url: str, install_method: str = "",
         "params_schema": [],
         "arg_style": "",
         "positional_args": [],
+        "subcommands": [],
+        "subcommand_details": {},
         "installed_versions": [],
         "exec_retries": 0,
         "heal_evidence": "",
@@ -932,6 +970,22 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["params_schema"] = _parse_help_params(out or err)
                 report["arg_style"] = _detect_arg_style(out or err)
                 report["positional_args"] = _parse_positional_args(out or err)
+                report["subcommands"] = _parse_subcommands(out or err)
+                # for subcommand CLIs, probe each subcommand's --help to capture
+                # its own parameters (so the schema tells agents how to call it)
+                if report["arg_style"] == "subcommand" and report["subcommands"]:
+                    subs = {}
+                    exe_base = args[0]  # the executable
+                    for sub in report["subcommands"]:
+                        rc_s, out_s, err_s = _run(
+                            [exe_base, sub, "--help"], RUN_TIMEOUT, env=env)
+                        if rc_s == 0 and (out_s.strip() or err_s.strip()):
+                            subs[sub] = {
+                                "params": _parse_help_params(out_s or err_s),
+                                "usage": _extract_usage(out_s or err_s),
+                            }
+                    if subs:
+                        report["subcommand_details"] = subs
                 return True
             cls = _classify_failure((out + err)[-1200:])
             if cls == "incomplete":
