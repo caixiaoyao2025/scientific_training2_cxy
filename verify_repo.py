@@ -329,6 +329,23 @@ def _analyze_readme_invocation(repo: "BloblessRepo", files: list[str],
             line = m.group(0).strip()
             if line not in examples:
                 examples.append(line)
+    # 1b) bare `pkg <subcommand> ...` invocations (Rust/CLI tools like bqtools)
+    #     e.g. "bqtools encode some.fq -o out"
+    prose = ("provides", "can be", "is a", "supports", "is", "are", "was",
+             "with", "without", "into", "for", "from", "using", "used")
+    for m in re.finditer(rf"\b{pkg}\s+([a-z][a-z0-9_-]*)\b[^\n`]*", readme):
+        line = m.group(0).strip().rstrip(".,;")
+        sub = m.group(1).lower()
+        # skip prose: 'bqtools provides...', 'bqtools can be...'
+        if sub in prose or line.split()[2] if len(line.split()) > 2 else True:
+            continue
+        if len(line.split()) >= 3 and line not in examples:
+            examples.append(line)
+    if not usage:
+        for ex in examples:
+            if ex.startswith(f"{pkg} "):
+                usage = ex  # first bare command as usage hint
+                break
     # 2) `from <pkg> import ...` code blocks
     for blk in re.findall(r"```(?:python)?\s*\n(.*?)```", readme, re.S):
         if re.search(rf"\bfrom\s+{pkg}(?:\.\w+)*\s+import", blk):
@@ -349,6 +366,8 @@ def _analyze_readme_invocation(repo: "BloblessRepo", files: list[str],
         hint = f"python -m {usage.split()[2]}" if usage.startswith("python -m ") else hint
     elif examples and examples[0].startswith("from "):
         hint = "python_import"
+    elif examples and examples[0].startswith(f"{pkg} "):
+        hint = "subcommand"  # bare `pkg <subcommand>` CLI
     return usage, examples[:4], hint
 
 
