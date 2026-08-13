@@ -267,14 +267,28 @@ def main() -> int:
                         succeeded = True
                 print(f"          result: {result[:150]}")
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-        output_valid = succeeded and os.path.exists(out_path) and os.path.getsize(out_path) > 0
-        status = ("TASK_SUCCEEDED" if (succeeded and output_valid) else
-                  "EXECUTED_NO_OUTPUT" if succeeded else
-                  "TOOL_STARTED" if started else
-                  "TOOL_SELECTED" if selected else "NOT_SELECTED")
+        output_exists = succeeded and os.path.exists(out_path)
+        output_size = os.path.getsize(out_path) if output_exists else 0
+        # output is "valid" only if it's a real artifact: non-empty and not a
+        # suspicious tiny/empty shell (e.g. an error message written to the
+        # output path, or a 0/1-byte placeholder).
+        output_valid = output_exists and output_size > 4
+        output_suspicious = output_exists and output_size <= 4
+        if succeeded and output_valid:
+            status = "TASK_SUCCEEDED"
+        elif succeeded and output_exists and output_suspicious:
+            status = "OUTPUT_INVALID"
+        elif succeeded:
+            status = "EXECUTED_NO_OUTPUT"
+        elif started:
+            status = "TOOL_STARTED"
+        elif selected:
+            status = "TOOL_SELECTED"
+        else:
+            status = "NOT_SELECTED"
         per_tool[label.split(":")[0]] = {
             "selected": selected, "started": started, "succeeded": succeeded,
-            "output_valid": output_valid, "status": status,
+            "output_valid": output_valid, "output_size": output_size, "status": status,
         }
         if selected: stats["selected"] += 1
         if started: stats["started"] += 1
@@ -289,6 +303,7 @@ def main() -> int:
     print(f"  tool started (ran):      {stats['started']}/{n}")
     print(f"  tool exited 0:           {stats['succeeded']}/{n}")
     print(f"  output file valid:       {stats['output_valid']}/{n}")
+    print("  (OUTPUT_INVALID/EXECUTED_NO_OUTPUT are NOT successes)")
     # honest: only output_valid is a real end-to-end success
     return 0
 
