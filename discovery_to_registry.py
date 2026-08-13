@@ -153,6 +153,10 @@ def tool_to_registry_entry(tool, verification=None):
             "max_preview_lines": 50,
         },
         "inputs": inputs,
+        # subcommand CLIs: subcommand names + per-subcommand param details so
+        # agents know how to invoke (e.g. bqtools encode <in> <out>)
+        "subcommands": e.get("subcommands", []),
+        "subcommand_details": e.get("subcommand_details", {}),
         # --- environment / install contract (surfaces to downstream agents) ---
         # Tells the caller what to install before invoking, and which system
         # commands the tool expects on PATH (environment grounding).
