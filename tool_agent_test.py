@@ -122,6 +122,8 @@ def main() -> int:
     # function-calling agent (it can't write import code) - mark and skip them.
     callable_tools = []
     skipped = []
+    heavy = ("torch", "tensorflow", "torchvision", "torchaudio", "jax",
+             "cupy", "paddle", "triton", "pytorch", "transformers", "diffusers")
     for t in tools:
         cv = t.get("callable_via") or ""
         as_ = t.get("arg_style") or "cli"
@@ -132,6 +134,12 @@ def main() -> int:
         if not (t.get("command") or "").strip():
             skipped.append(t["name"])
             print(f"[skip] {t['name']}: no command")
+            continue
+        # heavy ML deps: installing torch on-demand is too slow/unreliable
+        decl = (t.get("install") or {}).get("declared_packages") or []
+        if any(h in " ".join(decl).lower() for h in heavy):
+            skipped.append(t["name"])
+            print(f"[skip] {t['name']}: heavy ML deps (torch/tf) - needs preinstall")
             continue
         callable_tools.append(t)
     schemas = [to_function_schema(t) for t in callable_tools]

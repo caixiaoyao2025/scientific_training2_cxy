@@ -294,8 +294,18 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
 
     Returns (actions_performed, errors). Errors are surfaced so the caller
     (and the LLM) can tell 'not installed' from 'install failed'.
+    Tools with heavy deps (torch/tensorflow etc.) are NOT auto-installed here:
+    their install is too slow/flaky to do on-demand; they must be preinstalled
+    in the environment (e.g. by the pipeline's execute step) or skipped.
     """
     import shutil as _sh
+    heavy = ("torch", "tensorflow", "torchvision", "torchaudio", "jax",
+             "cupy", "paddle", "triton", "pytorch", "transformers", "diffusers")
+    declared = (spec.get("install") or {}).get("declared_packages") or []
+    installed_pkgs = (spec.get("install") or {}).get("python_packages") or []
+    declared_txt = " ".join(declared).lower()
+    if any(h in declared_txt for h in heavy) or any(h in str(installed_pkgs).lower() for h in heavy):
+        return [], ["heavy ML deps (torch/tf) detected - install is not auto-run here; preinstall or skip"]
     actions: list[str] = []
     errors: list[str] = []
     install = spec.get("install") or {}
