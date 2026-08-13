@@ -90,6 +90,21 @@ def tool_to_registry_entry(tool, verification=None):
             # template fills each positional arg by its name
             ph = " ".join(f"{{{{{p['name']}}}}}" for p in positional)
             command_template = f"{base_cmd} {ph}" if ph else f"{base_cmd} {{{{input_file}}}}"
+        elif arg_style == "subcommand":
+            # subcommand CLI: bqtools <subcommand> [args...]
+            # use the first subcommand's params if available, else generic
+            subs = e.get("subcommand_details") or {}
+            if subs:
+                first = next(iter(subs.values()))
+                params = first.get("params") or []
+                if params:
+                    ph = " ".join(f"{{{{{p['name'].lstrip('-').replace('-','_')}}}}}" for p in params)
+                    command_template = f"{base_cmd} {{{{subcommand}}}} {ph}" if ph \
+                        else f"{base_cmd} {{{{subcommand}}}} {{{{input_file}}}}"
+                else:
+                    command_template = f"{base_cmd} {{{{subcommand}}}} {{{{input_file}}}}"
+            else:
+                command_template = f"{base_cmd} {{{{subcommand}}}} {{{{input_file}}}}"
         else:
             command_template = f"{base_cmd} {{{{input_file}}}}"
 
@@ -130,6 +145,16 @@ def tool_to_registry_entry(tool, verification=None):
             }
         }
         inputs_src = "placeholder"
+    # subcommand CLIs: add the subcommand selector input (e.g. encode|decode|info)
+    if arg_style == "subcommand":
+        sub_names = e.get("subcommands", [])
+        inputs["subcommand"] = {
+            "type": "string",
+            "description": ("Which subcommand to run: " + (" | ".join(sub_names) if sub_names
+                            else "see subcommands field")),
+            "source": "help_parsed",
+            "required": True,
+        }
 
     # license status is surfaced to end users in the description (the MCP
     # registry / tool list drops _discovery_metadata, so this is the only
