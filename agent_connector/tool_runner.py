@@ -27,7 +27,18 @@ def _render_command(command_template: str, arguments: dict[str, Any]) -> list[st
     quoted = {key: shlex.quote(str(value)) for key, value in arguments.items()}
     # templates may use either Jinja-style {{x}} or Python-style {x} placeholders
     template = re.sub(r"\{\{(\w+)\}\}", r"{\1}", command_template)
-    rendered = template.format(**quoted)
+    # build a format kwargs with defaults for missing placeholders so a missing
+    # arg doesn't crash with KeyError -- leave the placeholder as-is instead
+    import string as _string
+    try:
+        rendered = template.format(**quoted)
+    except (KeyError, ValueError, IndexError):
+        # missing param -> render with empty value for the missing placeholders
+        fmtr = _string.Formatter()
+        missing = {f for _, f, _, _ in fmtr.parse(template) if f}
+        for m in missing:
+            quoted.setdefault(m, "")
+        rendered = template.format(**quoted)
     argv = shlex.split(rendered, posix=True)
     if not argv:
         raise ValueError("Rendered command is empty.")
