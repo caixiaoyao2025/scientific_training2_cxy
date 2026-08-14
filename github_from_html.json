@@ -1,659 +1,675 @@
 [
   {
-    "title": "Quantifying stability via count splitting to guide model selection in RNA velocity analyses.",
-    "doi": "10.1101/2024.11.23.625009",
+    "title": "MyClone: rapid and precise reconstruction of clonal population structures for tumors.",
+    "doi": "10.1186/s12859-025-06252-8",
     "github_links": [
-      "https://github.com/GreenleafLab/brainchromatin",
-      "https://github.com/linnykos/veloUncertainty"
+      "https://github.com/zaccaria-lab/TRACERx_simulation_tool"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41959044/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41062923/"
   },
   {
-    "title": "GRNFormer: accurate gene regulatory network inference using graph transformer.",
-    "doi": "10.1093/bioinformatics/btag144",
+    "title": "MitoDelta: identifying mitochondrial DNA deletions at cell-type resolution from single-cell RNA sequ",
+    "doi": "10.1186/s12864-025-11931-0",
     "github_links": [
-      "https://github.com/BioinfoMachineLearning/GRNformer"
+      "https://github.com/NikaidoLaboratory/mitodelta"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41883144/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40999372/"
   },
   {
-    "title": "Illuminating cell states by a comprehensive and interpretable single cell foundation model.",
-    "doi": "10.1038/s41467-026-70071-5",
+    "title": "scNucMap: mapping the nucleosome landscapes at single-cell resolution.",
+    "doi": "10.1093/bioinformatics/btaf324",
     "github_links": [
-      "https://github.com/A4Bio/CellVQ",
-      "https://github.com/CompBioT/SCAD"
+      "https://github.com/qianming-bioinfo/scNucMap"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41839876/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40424338/"
   },
   {
-    "title": "Harmonizing single-cell 3D genome data with STARK and scNucleome.",
-    "doi": "10.1186/s13059-026-03938-x",
-    "github_links": [
-      "https://github.com/open2c/cooltools"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41566400/"
-  },
-  {
-    "title": "CellMap: precision mapping of cellular landscape in spatial transcriptomics.",
-    "doi": "10.1093/nar/gkaf1484",
-    "github_links": [
-      "https://github.com/romain-lopez/DestVI-reproducibility",
-      "https://github.com/CaiGroup/seqFISH-PLUS"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41505103/"
-  },
-  {
-    "title": "CIA: unveiling cellular identities with cluster-independent annotation in single-cell RNA sequencing",
-    "doi": "10.1186/s12859-025-06320-z",
-    "github_links": [
-      "https://github.com/ingmbioinfo/CIA_R",
-      "https://github.com/ingmbioinfo/cia",
-      "https://github.com/ingmbioinfo/CIA_benchmark"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41408153/"
-  },
-  {
-    "title": "Centriflaken: An automated data analysis pipeline for assembly and in silico analyses of foodborne p",
-    "doi": "10.1371/journal.pone.0329425",
-    "github_links": [
-      "https://github.com/CFSAN-Biostatistics/centriflaken",
-      "https://github.com/CFSAN-Biostatstics/centriflaken"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41433308/"
-  },
-  {
-    "title": "GRUMB: a genome-resolved metagenomic framework for monitoring urban microbiomes and diagnosing patho",
-    "doi": "10.1093/bioinformatics/btaf548",
-    "github_links": [
-      "https://github.com/SuleimanAminu/genome-resolved-urban-microbiome-biosurveillance"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41002268/"
-  },
-  {
-    "title": "mettannotator: a comprehensive and scalable Nextflow annotation pipeline for prokaryotic assemblies.",
-    "doi": "10.1093/bioinformatics/btaf037",
-    "github_links": [
-      "https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39854281/"
-  },
-  {
-    "title": "AnVILWorkflow: A runnable workflow package for Cloud-implemented bioinformatics analysis pipelines.",
-    "doi": "10.12688/f1000research.155449.1",
-    "github_links": [
-      "https://github.com/shbrief/AnVILWorkflow",
-      "https://github.com/shbrief/RunTerraWorkflow"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39669685/"
-  },
-  {
-    "title": "Castanet: a pipeline for rapid analysis of targeted multi-pathogen genomic data.",
-    "doi": "10.1093/bioinformatics/btae591",
-    "github_links": [
-      "https://github.com/tiangolo/fastapi"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39360992/"
-  },
-  {
-    "title": "NCBench: providing an open, reproducible, transparent, adaptable, and continuous benchmark approach ",
-    "doi": "10.12688/f1000research.140344.2",
-    "github_links": [
-      "https://github.com/ncbench/ncbench-workflow",
-      "https://github.com/snakemake-workflows/dna-seq-benchmark",
-      "https://github.com/RealTimeGenomics/rtg-tools"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39345270/"
-  },
-  {
-    "title": "An integrated strain-level analytic pipeline utilizing longitudinal metagenomic data.",
-    "doi": "10.1128/spectrum.01431-24",
-    "github_links": [
-      "https://github.com/BoyanZhou/LongStrain"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39311770/"
-  },
-  {
-    "title": "CELEBRIMBOR: core and accessory genes from metagenomes.",
-    "doi": "10.1093/bioinformatics/btae542",
-    "github_links": [
-      "https://github.com/bacpop/MAG_pangenome_pipeline"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39298479/"
-  },
-  {
-    "title": "Fairy: fast approximate coverage for multi-sample metagenomic binning.",
-    "doi": "10.1186/s40168-024-01861-6",
-    "github_links": [
-      "https://github.com/bluenote-1577/fairy",
-      "https://github.com/bluenote-1577/fairy-test"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39143609/"
-  },
-  {
-    "title": "EMERALD-UI: an interactive web application to unveil novel protein biology hidden in the alternative",
-    "doi": "10.1093/bioinformatics/btag305",
-    "github_links": [
-      "https://github.com/algbio/emerald-ui"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/42133828/"
-  },
-  {
-    "title": "The trRosettaRNA server for RNA structure prediction.",
-    "doi": "10.1038/s41596-026-01356-8",
-    "github_links": [
-      "https://github.com/YangLab-SDU/trRosettaRNA2"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41951853/"
-  },
-  {
-    "title": "The Open Molecular Software Foundation (OMSF) and the Growing Role of Open Source Software in Molecu",
-    "doi": "10.1021/acs.jcim.5c03137",
-    "github_links": [
-      "https://github.com/aqlaboratory/openfold-3"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41805121/"
-  },
-  {
-    "title": "Systematic functional interrogation of human pseudogenes using CRISPRi.",
-    "doi": "10.1186/s13059-021-02464-2",
-    "github_links": [
-      "https://github.com/ucdavis-bioinformatics/sickle"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/34425866/"
-  },
-  {
-    "title": "crispRdesignR: A Versatile Guide RNA Design Package in R for CRISPR/Cas9 Applications.",
-    "doi": "10.7150/jgen.41196",
-    "github_links": [
-      "https://github.com/dylanbeeber/crispRdesignR"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/32494309/"
-  },
-  {
-    "title": "The scalable variant call representation: enabling genetic analysis beyond one million genomes.",
-    "doi": "10.1093/bioinformatics/btae746",
-    "github_links": [
-      "https://github.com/samtools/hts-specs",
-      "https://github.com/hail-is/hail",
-      "https://github.com/DecodeGenetics/popvcf"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39718771/"
-  },
-  {
-    "title": "SARS-CoV-2 Illumina GeNome Assembly Line (SIGNAL), a Snakemate workflow for rapid and bulk analysis ",
-    "doi": "10.1093/nargab/lqae176",
-    "github_links": [
-      "https://github.com/jts/ncov-tools"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39703420/"
-  },
-  {
-    "title": "Detecting transposable elements in long-read genomes using sTELLeR.",
-    "doi": "10.1093/bioinformatics/btae686",
-    "github_links": [
-      "https://github.com/genome-in-a-bottle/giab_data_indexes"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39558574/"
-  },
-  {
-    "title": "Kled: an ultra-fast and sensitive structural variant detection tool for long-read sequencing data.",
-    "doi": "10.1093/bib/bbae049",
-    "github_links": [
-      "https://github.com/samtools/htslib"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38385878/"
-  },
-  {
-    "title": "HiPhase: jointly phasing small, structural, and tandem repeat variants from HiFi sequencing.",
-    "doi": "10.1093/bioinformatics/btae042",
-    "github_links": [
-      "https://github.com/PacificBiosciences/HiPhase"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38269623/"
-  },
-  {
-    "title": "Kuura-An automated workflow for analyzing WES and WGS data.",
-    "doi": "10.1371/journal.pone.0296785",
-    "github_links": [
-      "https://github.com/dhanaprakashj/kuura_pipeline"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38236904/"
-  },
-  {
-    "title": "BioConvert: a comprehensive format converter for life sciences.",
-    "doi": "10.1093/nargab/lqad074",
-    "github_links": [
-      "https://github.com/bioconvert/bioconvert"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/37608802/"
-  },
-  {
-    "title": "TRIAGE: an R package for regulatory gene analysis.",
-    "doi": "10.1093/bib/bbaf004",
-    "github_links": [
-      "https://github.com/palpant-comp/TRIAGE_R_Package"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39800877/"
-  },
-  {
-    "title": "Gene count estimation with pytximport enables reproducible analysis of bulk RNA sequencing data in P",
-    "doi": "10.1093/bioinformatics/btae700",
-    "github_links": [
-      "https://github.com/complextissue/snakemake-bulk-rna-seq-workflow"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39565903/"
-  },
-  {
-    "title": "Machine Learning Uncovers Vascular Endothelial Cell Identity Genes by Expression Regulation Features",
-    "doi": "10.1101/2024.08.27.609808",
-    "github_links": [
-      "https://github.com/kaifuchenlab/SCIG"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39253493/"
-  },
-  {
-    "title": "The role of graph topology in the performance of biomedical Knowledge Graph Completion models.",
-    "doi": "10.1093/bioinformatics/btaf547",
-    "github_links": [
-      "https://github.com/graphcore-research/kg-topology-toolbox"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41056421/"
-  },
-  {
-    "title": "PlasmoDocking: A User-Friendly Open-Source Web Tool for Virtual Screening Targeting Plasmodium falci",
-    "doi": "10.1002/jcc.70225",
-    "github_links": [
-      "https://github.com/LABIOQUIM/PlasmoDocking-Client"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40905563/"
-  },
-  {
-    "title": "PyVADesign: a python-based cloning tool for one-step generation of large mutant libraries.",
-    "doi": "10.1093/bioinformatics/btaf433",
-    "github_links": [
-      "https://github.com/CDDLeiden/PyVADesign"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40888753/"
-  },
-  {
-    "title": "ADCNet: a unified framework for predicting the activity of antibody-drug conjugates.",
-    "doi": "10.1093/bib/bbaf228",
-    "github_links": [
-      "https://github.com/facebookresearch/esm"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40421657/"
-  },
-  {
-    "title": "SciLinker: a large-scale text mining framework for mapping associations among biological entities.",
-    "doi": "10.3389/frai.2025.1528562",
-    "github_links": [
-      "https://github.com/huggingface/neuralcoref"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40212086/"
-  },
-  {
-    "title": "Protein-Ligand Structure and Affinity Prediction in CASP16 Using a Geometric Deep Learning Ensemble ",
-    "doi": "10.1002/prot.26827",
-    "github_links": [
-      "https://github.com/BioinfoMachineLearning/FlowDock",
-      "https://github.com/BioinfoMachineLearning/MULTICOM_ligand"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40195868/"
-  },
-  {
-    "title": "PDBe tools for an in-depth analysis of small molecules in the Protein Data Bank.",
-    "doi": "10.1002/pro.70084",
-    "github_links": [
-      "https://github.com/PDBeurope/pdbe-notebooks",
-      "https://github.com/PDBeurope/ligand-env",
-      "https://github.com/PDBeurope/rellig",
-      "https://github.com/PDBeurope/ccdutils",
-      "https://github.com/PDBeurope/arpeggio"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40100137/"
-  },
-  {
-    "title": "Lit-OTAR framework for extracting biological evidences from literature.",
-    "doi": "10.1093/bioinformatics/btaf113",
-    "github_links": [
-      "https://github.com/ML4LitS/otar-maintenance"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40097274/"
-  },
-  {
-    "title": "MFCADTI: improving drug-target interaction prediction by integrating multiple feature through cross ",
-    "doi": "10.1186/s12859-025-06075-7",
-    "github_links": [
-      "https://github.com/LabBioMedCoder/MFCADTI"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39966727/"
-  },
-  {
-    "title": "Addressing pandemic-wide systematic errors in the SARS-CoV-2 phylogeny.",
-    "doi": "10.1038/s41592-025-02947-1",
-    "github_links": [
-      "https://github.com/enasequence/enaBrowserTools",
-      "https://github.com/ncbi/sra-tools",
-      "https://github.com/pysam-developers/pysam",
-      "https://github.com/nebiolabs/VarSkip"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41663577/"
-  },
-  {
-    "title": "Cross-species prediction of histone modifications in plants via deep learning.",
-    "doi": "10.1186/s13059-025-03929-4",
-    "github_links": [
-      "https://github.com/compbioNJU/SeiPlant"
-    ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41514301/"
-  },
-  {
-    "title": "Linking the epidemiology of coccidioidomycosis and environmental exposure through targeted genomic e",
-    "doi": "10.1128/mbio.03396-25",
+    "title": "gNOMO2: a comprehensive and modular pipeline for integrated multi-omics analyses of microbiomes.",
+    "doi": "10.1093/gigascience/giae038",
     "github_links": [
       "https://github.com/kblin/ncbi-genome-download"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41467789/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38995144/"
   },
   {
-    "title": "Function inference of million-scale microbiomes using multi-GPU acceleration.",
-    "doi": "10.1128/spectrum.02072-25",
+    "title": "Microbial Abundances Retrieved from Sequencing data-automated NCBI Taxonomy (MARS): a pipeline to cr",
+    "doi": "10.1093/bioadv/vbae068",
     "github_links": [
-      "https://github.com/qdu-bioinfo/MGFunc"
+      "https://github.com/ThieleLab/mars-pipeline"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41201258/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38911823/"
   },
   {
-    "title": "Clonal spread of Mycobacterium monacense strains among patients with extrapulmonary mycobacteriosis.",
-    "doi": "10.1007/s10096-025-05318-y",
+    "title": "AnVILWorkflow: A runnable workflow package for Cloud-implemented bioinformatics analysis pipelines.",
+    "doi": "10.21203/rs.3.rs-4370115/v1",
     "github_links": [
-      "https://github.com/raivokolde/pheatmap"
+      "https://github.com/DataBiosphere/leonardo",
+      "https://github.com/shbrief/AnVILWorkflow"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41148508/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38798429/"
   },
   {
-    "title": "Ortho2Web: a workflow for disentangling the roles of hybridization and allopolyploidization in retic",
-    "doi": "10.1186/s12915-025-02426-1",
+    "title": "INSaFLU-TELEVIR: an open web-based bioinformatics suite for viral metagenomic detection and routine ",
+    "doi": "10.1186/s13073-024-01334-3",
     "github_links": [
-      "https://github.com/PhyloAI/Mutation-Calculation-based-on-Coalescent-Model",
-      "https://github.com/PhyloAI/Coalescent-Simulation-Analysis",
-      "https://github.com/PhyloAI/Ortho2Web"
+      "https://github.com/rfm-targa/BioinfUtils",
+      "https://github.com/artic-network/fieldbioinformatics",
+      "https://github.com/INSaFLU/nextstrain_builds"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41137113/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38659008/"
   },
   {
-    "title": "RicePilaf: a post-GWAS/QTL dashboard to integrate pangenomic, coexpression, regulatory, epigenomic, ",
-    "doi": "10.1093/gigascience/giae013",
+    "title": "OCTOPUS: Disk-based, Multiplatform, Mobile-friendly Metagenomics Classifier.",
+    "doi": "10.1101/2024.03.15.585215",
     "github_links": [
-      "https://github.com/bioinfodlsu/rice-pilaf",
-      "https://github.com/bioinfodlsu/rice-pilaf&amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b",
-      "https://github.com/bioinfodlsu/rice-pilaf&amp;amp;revision=c3a0130128d6786f3490a288ff2a3884fcd8f649&amp;amp;snapshot=e62419c8297dbf36b45da298e665793ed618365b"
+      "https://github.com/DataIntellSystLab/OCTOPUS"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38832465/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38559026/"
   },
   {
-    "title": "mosGraphGen: a novel tool to generate multi-omics signaling graphs to facilitate integrative and int",
-    "doi": "10.1101/2024.05.15.594360",
+    "title": "Contigs directed gene annotation (ConDiGA) for accurate protein sequence database construction in me",
+    "doi": "10.1186/s40168-024-01775-3",
     "github_links": [
-      "https://github.com/FuhaiLiAiLab/mosGraphGen"
+      "https://github.com/metagentools/metagenomic-database-utilities",
+      "https://github.com/metagentools/ConDiGA"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38798349/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38504332/"
   },
   {
-    "title": "Software pipelines for RNA-Seq, ChIP-Seq and germline variant calling analyses in common workflow la",
-    "doi": "10.3389/fbinf.2023.1275593",
+    "title": "Recovery of metagenomic data from the Aedes aegypti microbiome using a reproducible snakemake pipeli",
+    "doi": "10.12688/wellcomeopenres.19155.2",
     "github_links": [
-      "https://github.com/common-workflow-language/cwltool",
-      "https://github.com/BiodataAnalysisGroup/CWL_HTS_pipelines"
+      "https://github.com/aidanfoo96/MINUUR",
+      "https://github.com/biobakery/MetaPhlAn"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/38025398/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37577055/"
   },
   {
-    "title": "Fragmentomic analysis of circulating tumor DNA-targeted cancer panels.",
-    "doi": "10.1016/j.annonc.2023.06.001",
+    "title": "The best practice for microbiome analysis using R.",
+    "doi": "10.1093/procel/pwad024",
     "github_links": [
-      "https://github.com/umich-brcf-bioinf/Connor"
+      "https://github.com/taowenmicro/EasyMicrobiomeR"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/37330052/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37128855/"
   },
   {
-    "title": "ASTER: accurately estimating the number of cell types in single-cell chromatin accessibility data.",
-    "doi": "10.1093/bioinformatics/btac842",
+    "title": "CRISPR-Cas-Docker: web-based in silico docking and machine learning-based classification of crRNAs w",
+    "doi": "10.1186/s12859-023-05296-y",
     "github_links": [
-      "https://github.com/biox-nku/aster"
+      "https://github.com/deepmind/alphafold"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/36610708/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37098485/"
   },
   {
-    "title": "genomeSidekick: A user-friendly epigenomics data analysis tool.",
-    "doi": "10.3389/fbinf.2022.831025",
+    "title": "OMAnnotator: a novel approach to building an annotated consensus genome sequence.",
+    "doi": "10.1093/bioadv/vbag015",
     "github_links": [
-      "https://github.com/dchapski/genomeSidekick"
+      "https://github.com/The-Sequence-Ontology/Specifications"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/36304311/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41736999/"
   },
   {
-    "title": "TVAR: assessing tissue-specific functional effects of non-coding variants with deep learning.",
-    "doi": "10.1093/bioinformatics/btac608",
+    "title": "Cascade PSI-BLAST 2.0: a fast-searching parallelized remote homology detection tool and development ",
+    "doi": "10.1186/s12859-026-06366-7",
     "github_links": [
-      "https://github.com/haiyang1986/TVAR"
+      "https://github.com/DheemanthRegati/cascade_PSI_BLAST"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/36063453/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41703447/"
   },
   {
-    "title": "RLEAAI: improving antibody-antigen interaction prediction using protein language model and sequence ",
-    "doi": "10.1093/bib/bbaf238",
+    "title": "Lipid Nanoparticle Database towards structure-function modeling and data-driven design for nucleic a",
+    "doi": "10.1038/s41467-026-68818-1",
     "github_links": [
-      "https://github.com/zhouyu9931/RLEAAI",
-      "https://github.com/enai4bio/DeepAAI",
-      "https://github.com/stau-7001/S3AI"
+      "https://github.com/evancollins1/LNPDB"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40462512/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41605942/"
   },
   {
-    "title": "Finding antibodies in cryo-EM maps with CrAI.",
-    "doi": "10.1093/bioinformatics/btaf157",
+    "title": "Guiding AlphaFold predictions with experimental knowledge to inform dynamics and interactions with V",
+    "doi": "10.1002/pro.70481",
     "github_links": [
-      "https://github.com/Sanofi-Public/crai"
+      "https://github.com/arcimboldo-team/vairo"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40203077/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41578971/"
   },
   {
-    "title": "$\\mathcal{S}$ able: bridging the gap in protein structure understanding with an empowering and versa",
-    "doi": "10.1093/bib/bbaf120",
+    "title": "ProteinDJ: A high-performance and modular protein design pipeline.",
+    "doi": "10.1002/pro.70464",
     "github_links": [
-      "https://github.com/baaihealth/Sable"
+      "https://github.com/bcov77/silent_tools",
+      "https://github.com/DigBioLab/de_novo_binder_scoring",
+      "https://github.com/nrbennet/dl_binder_design",
+      "https://github.com/RosettaCommons/RFdiffusion",
+      "https://github.com/PapenfussLab/proteindj"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/40163822/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41562285/"
   },
   {
-    "title": "PAPreC: A Pipeline for Antigenicity Prediction Comparison Methods across Bacteria.",
-    "doi": "10.1021/acsomega.4c07147",
+    "title": "VASCilia is an open-source, deep learning-based tool for 3D analysis of cochlear hair cell stereocil",
+    "doi": "10.1371/journal.pbio.3003591",
     "github_links": [
-      "https://github.com/YasCoMa/paprec_nx_workflow"
+      "https://github.com/openvinotoolkit/cvat"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39989760/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41557732/"
   },
   {
-    "title": "ADTGP: correcting single-cell antibody sequencing data using Gaussian process regression.",
-    "doi": "10.1093/bioinformatics/btae660",
+    "title": "Protein structure-informed bacteriophage genome annotation with Phold.",
+    "doi": "10.1093/nar/gkaf1448",
     "github_links": [
-      "https://github.com/MissionBio/mosaic"
+      "https://github.com/gbouras13/colabfoldv"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39504441/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41495893/"
   },
   {
-    "title": "MVSF-AB: accurate antibody-antigen binding affinity prediction via multi-view sequence feature learn",
-    "doi": "10.1093/bioinformatics/btae579",
+    "title": "SurfFold: a unified model for protein inverse folding by integrating surface and structural informat",
+    "doi": "10.1093/bioinformatics/btaf666",
     "github_links": [
-      "https://github.com/TAI-Medical-Lab/MVSF-AB"
+      "https://github.com/jiudizhengf/SurfFold"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39363630/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/41416920/"
   },
   {
-    "title": "Towards the accurate modelling of antibody-antigen complexes from sequence using machine learning an",
-    "doi": "10.1093/bioinformatics/btae583",
+    "title": "Is an SV caller compatible with sequencing data? An online recommendation tool to automatically reco",
+    "doi": "10.3389/fgene.2022.1096797",
     "github_links": [
-      "https://github.com/Graylab/IgFold",
-      "https://github.com/haddocking/ai-antibodies",
-      "https://github.com/google-deepmind/alphafold",
-      "https://github.com/haddocking/haddock3"
+      "https://github.com/PacificBiosciences/pbsv",
+      "https://github.com/klainfo/ScottKnottESD"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39348157/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/36685885/"
   },
   {
-    "title": "EpiScan: accurate high-throughput mapping of antibody-specific epitopes using sequence information.",
-    "doi": "10.1038/s41540-024-00432-7",
+    "title": "Duet: SNP-assisted structural variant calling and phasing using Oxford nanopore sequencing.",
+    "doi": "10.1186/s12859-022-05025-x",
     "github_links": [
-      "https://github.com/gzBiomedical/EpiScan"
+      "https://github.com/yekaizhou/duet"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/39251627/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/36344913/"
   },
   {
-    "title": "Cellsnake: a user-friendly tool for single-cell RNA sequencing analysis.",
-    "doi": "10.1093/gigascience/giad091",
+    "title": "EZTraits: A programmable tool to evaluate multi-site deterministic traits.",
+    "doi": "10.1371/journal.pone.0259327",
     "github_links": [
-      "https://github.com/sinanugur/scrna-workflow"
+      "https://github.com/selfdecode/rd-eztraits"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/37889009/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35533190/"
   },
   {
-    "title": "Inferring microbial co-occurrence networks from amplicon data: a systematic evaluation.",
-    "doi": "10.1128/msystems.00961-22",
+    "title": "Halvade somatic: Somatic variant calling with Apache Spark.",
+    "doi": "10.1093/gigascience/giab094",
     "github_links": [
-      "https://github.com/segrelab/MiCoNE-pipeline-paper"
+      "https://github.com/genome/gms"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/37338270/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35022699/"
   },
   {
-    "title": "MIntO: A Modular and Scalable Pipeline For Microbiome Metagenomic and Metatranscriptomic Data Integr",
-    "doi": "10.3389/fbinf.2022.846922",
+    "title": "metaSNV v2: detection of SNVs and subspecies in prokaryotic metagenomes.",
+    "doi": "10.1093/bioinformatics/btab789",
     "github_links": [
-      "https://github.com/arumugamlab/mseqtools",
-      "https://github.com/arumugamlab/msamtools"
+      "https://github.com/metasnv-tool/metaSNV"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/36304282/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34791031/"
   },
   {
-    "title": "Data analysis workflow for the detection of canine vector-borne pathogens using 16 S rRNA Next-Gener",
-    "doi": "10.1186/s12917-021-02969-9",
+    "title": "GenTB: A user-friendly genome-based predictor for tuberculosis resistance powered by machine learnin",
+    "doi": "10.1186/s13073-021-00953-4",
     "github_links": [
-      "https://github.com/eltonjrv/microbiome.westernu"
+      "https://github.com/linsalrob/fastq-pair"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/34332568/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34461978/"
   },
   {
-    "title": "NFnetFu: A novel workflow for microbiome data fusion.",
-    "doi": "10.1016/j.compbiomed.2021.104556",
+    "title": "HERON: A Novel Tool Enables Identification of Long, Weakly Enriched Genomic Domains in ChIP-seq Data",
+    "doi": "10.3390/ijms22158123",
     "github_links": [
-      "https://github.com/xia-lab/MicrobiomeAnalystR"
+      "https://github.com/maciosz/NGS_simulation",
+      "https://github.com/pysam-developers/pysam"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/34216888/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34360892/"
   },
   {
-    "title": "rANOMALY: AmplicoN wOrkflow for Microbial community AnaLYsis.",
-    "doi": "10.12688/f1000research.27268.1",
+    "title": "Founder reconstruction enables scalable and seamless pangenomic analysis.",
+    "doi": "10.1093/bioinformatics/btab516",
     "github_links": [
-      "https://github.com/pmartinezarbizu/pairwiseAdonis"
+      "https://github.com/algbio/panvc-founders"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/33537122/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34260702/"
   },
   {
-    "title": "MicrobiomeExplorer: an R package for the analysis and visualization of microbial communities.",
-    "doi": "10.1093/bioinformatics/btaa838",
+    "title": "Accurate, scalable cohort variant calls using DeepVariant and GLnexus.",
+    "doi": "10.1093/bioinformatics/btaa1081",
     "github_links": [
-      "https://github.com/zoecastillo/microbiomeExplorer"
+      "https://github.com/Illumina/GTCtoVCF"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/32960962/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33399819/"
   },
   {
-    "title": "Bactopia: a Flexible Pipeline for Complete Analysis of Bacterial Genomes.",
-    "doi": "10.1128/mSystems.00190-20",
+    "title": "vcfView: An Extensible Data Visualization and Quality Assurance Platform for Integrated Somatic Vari",
+    "doi": "10.1177/1176935120972377",
     "github_links": [
-      "https://github.com/biopython/biopython",
-      "https://github.com/kblin/ncbi-genome-download",
-      "https://github.com/samtools/samtools",
-      "https://github.com/samtools/bcftools",
-      "https://github.com/rpetit3/vcf-annotator",
-      "https://github.com/vcflib/vcflib",
-      "https://github.com/arq5x/bedtools2",
-      "https://github.com/ParBLiSS/FastANI",
-      "https://github.com/tseemann/samclip"
+      "https://github.com/BrianOSullivanGit/vcfView"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/32753501/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33239857/"
   },
   {
-    "title": "ATLAS: a Snakemake workflow for assembly, annotation, and genomic binning of metagenome sequence dat",
-    "doi": "10.1186/s12859-020-03585-4",
+    "title": "Identification and utilization of copy number information for correcting Hi-C contact map of cancer ",
+    "doi": "10.1186/s12859-020-03832-8",
     "github_links": [
-      "https://github.com/metagenome-atlas/supp_data_atlas",
-      "https://github.com/metagenome-atlas/atlas"
+      "https://github.com/AISKhalil/HiCNAtra"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/32571209/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33160308/"
   },
   {
-    "title": "MetaSanity: an integrated microbial genome evaluation and annotation pipeline.",
-    "doi": "10.1093/bioinformatics/btaa512",
+    "title": "Protocol for quantifying stem-cell-derived cardiomyocyte maturity using transcriptomic entropy score",
+    "doi": "10.1016/j.xpro.2024.103083",
     "github_links": [
-      "https://github.com/cjneely10/BioMetaDB",
-      "https://github.com/bjtully/BioData"
+      "https://github.com/elainezhlchen/entropy_star_protocol"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/32426808/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38781077/"
   },
   {
-    "title": "SPAC: a scalable and integrated enterprise platform for single-cell spatial analysis.",
-    "doi": "10.1186/s12859-025-06339-2",
+    "title": "Gene-expression memory-based prediction of cell lineages from scRNA-seq datasets.",
+    "doi": "10.1038/s41467-024-47158-y",
     "github_links": [
-      "https://github.com/FNLCR-DMAP/SCSAWorkflow"
+      "https://github.com/morris-lab/BiddyetalWorkflow"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41612174/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38553478/"
   },
   {
-    "title": "iModMix: integrative module analysis for multi-omics data.",
-    "doi": "10.1093/bioinformatics/btag030",
+    "title": "DeepCCI: a deep learning framework for identifying cell-cell interactions from single-cell RNA seque",
+    "doi": "10.1093/bioinformatics/btad596",
     "github_links": [
-      "https://github.com/biodatalab/iModMix"
+      "https://github.com/JiangBioLab/DeepCCI"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41555479/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37740953/"
   },
   {
-    "title": "Frag'n'Flow: automated workflow for large-scale quantitative proteomics in high performance computin",
-    "doi": "10.1186/s12859-025-06305-y",
+    "title": "circRNA-sponging: a pipeline for extensive analysis of circRNA expression and their role in miRNA sp",
+    "doi": "10.1093/bioadv/vbad093",
     "github_links": [
-      "https://github.com/bigbio/proteomics-sample-metadata"
+      "https://github.com/biomedbigdata/circRNA-sponging"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41486154/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37485422/"
   },
   {
-    "title": "PLAID: ultrafast single-sample gene set enrichment scoring.",
-    "doi": "10.1093/bioinformatics/btaf621",
+    "title": "Scdrake: a reproducible and scalable pipeline for scRNA-seq data analysis.",
+    "doi": "10.1093/bioadv/vbad089",
     "github_links": [
-      "https://github.com/bigomics/plaid"
+      "https://github.com/bioinfocz/scdrake"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41223139/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37465398/"
   },
   {
-    "title": "Strategies for robust, accurate, and generalizable benchmarking of drug discovery platforms.",
-    "doi": "10.1093/bioinformatics/btaf604",
+    "title": "A2TEA: Identifying trait-specific evolutionary adaptations.",
+    "doi": "10.12688/f1000research.126463.2",
     "github_links": [
-      "https://github.com/ram-compbio/CANDO"
+      "https://github.com/tgstoecker/A2TEA.Workflow"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41206130/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37224329/"
   },
   {
-    "title": "A shrinkage-based statistical method for testing group mean differences in quantitative bottom-up pr",
-    "doi": "10.1186/s12859-025-06275-1",
+    "title": "scRNASequest: an ecosystem of scRNA-seq analysis, visualization, and publishing.",
+    "doi": "10.1186/s12864-023-09332-2",
     "github_links": [
-      "https://github.com/namgillee/MDstatsDIAMS"
+      "https://github.com/snakemake-workflows/single-cell-rna-seq"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41174504/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37131143/"
   },
   {
-    "title": "ProteoNexus: an integrative database to characterize genetic architecture, estimate mediation effect",
-    "doi": "10.1093/nar/gkaf1058",
+    "title": "bakR: uncovering differential RNA synthesis and degradation kinetics transcriptome-wide with Bayesia",
+    "doi": "10.1261/rna.079451.122",
     "github_links": [
-      "https://github.com/KaishinShaw/ProteoNexus"
+      "https://github.com/simonlabcode/bam2bakR"
     ],
-    "url": "https://pubmed.ncbi.nlm.nih.gov/41160873/"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37028916/"
+  },
+  {
+    "title": "SP-DTI: subpocket-informed transformer for drug-target interaction prediction.",
+    "doi": "10.1093/bioinformatics/btaf011",
+    "github_links": [
+      "https://github.com/peizhenbai/DrugBAN"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/39798127/"
+  },
+  {
+    "title": "DTI-LM: language model powered drug-target interaction prediction.",
+    "doi": "10.1093/bioinformatics/btae533",
+    "github_links": [
+      "https://github.com/compbiolabucf/DTI-LM"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/39221997/"
+  },
+  {
+    "title": "Building shape-focused pharmacophore models for effective docking screening.",
+    "doi": "10.1186/s13321-024-00857-6",
+    "github_links": [
+      "https://github.com/jvlehtonen/overlap-toolkit"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/39123240/"
+  },
+  {
+    "title": "wavess: An R package for simulation of adaptive within-host virus sequence evolution.",
+    "doi": "10.1371/journal.pcbi.1013437",
+    "github_links": [
+      "https://github.com/kassambara/ggcorrplot"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40966297/"
+  },
+  {
+    "title": "SANS ambages: phylogenomics with abundance-filter, multi-threading, and bootstrapping on amino-acid ",
+    "doi": "10.1186/s12859-025-06204-2",
+    "github_links": [
+      "https://github.com/evolbioinf/mattools"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40898043/"
+  },
+  {
+    "title": "DeepBiome: A Phylogenetic Tree Informed Deep Neural Network for Microbiome Data Analysis.",
+    "doi": "10.1007/s12561-024-09434-9",
+    "github_links": [
+      "https://github.com/Young-won/DeepBiome",
+      "https://github.com/biocore/American-Gut"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40894332/"
+  },
+  {
+    "title": "Coordinated Meta-Storms enables comparison of million-level microbiomes.",
+    "doi": "10.1093/bioinformatics/btaf438",
+    "github_links": [
+      "https://github.com/qdu-bioinfo/Coordinated-Meta-Storms"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40758451/"
+  },
+  {
+    "title": "PhyClone: accurate Bayesian reconstruction of cancer phylogenies from bulk sequencing.",
+    "doi": "10.1093/bioinformatics/btaf344",
+    "github_links": [
+      "https://github.com/morrislab/pairtree-experiments"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40511985/"
+  },
+  {
+    "title": "Exploring Large Protein Sequence Space through Homology- and Representation-based Hierarchical Clust",
+    "doi": "10.1093/molbev/msaf136",
+    "github_links": [
+      "https://github.com/johnchen93/ProteinClusterTools"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40465845/"
+  },
+  {
+    "title": "ShiNyP: Unlocking SNP-Based Population Genetics-AI-Assisted Platform for Rapid and Interactive Visua",
+    "doi": "10.1093/molbev/msaf117",
+    "github_links": [
+      "https://github.com/Biometris/statgenGWAS"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40418736/"
+  },
+  {
+    "title": "ProTaxoVis-protein taxonomic visualisation of presence.",
+    "doi": "10.1186/s12859-025-06146-9",
+    "github_links": [
+      "https://github.com/MolecularBioinformatics/ProTaxoVis-examples",
+      "https://github.com/MolecularBioinformatics/ProTaxoVis",
+      "https://github.com/MolecularBioinformatics/taxfinder"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40389829/"
+  },
+  {
+    "title": "hCoCena: horizontal integration and analysis of transcriptomics datasets.",
+    "doi": "10.1093/bioinformatics/btac589",
+    "github_links": [
+      "https://github.com/fhaive/VOLTA"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/36018233/"
+  },
+  {
+    "title": "Manipulating base quality scores enables variant calling from bisulfite sequencing alignments using ",
+    "doi": "10.1186/s12864-022-08691-6",
+    "github_links": [
+      "https://github.com/bio15anu/revelio"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35764934/"
+  },
+  {
+    "title": "Continuous chromatin state feature annotation of the human epigenome.",
+    "doi": "10.1093/bioinformatics/btac283",
+    "github_links": [
+      "https://github.com/habibdanesh/epigenome-ssm"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35451453/"
+  },
+  {
+    "title": "Biomedical Data Commons (BMDC) prioritizes B-lymphocyte non-coding genetic variants in Type 1 Diabet",
+    "doi": "10.1371/journal.pcbi.1009382",
+    "github_links": [
+      "https://github.com/OroLabStanford/SNP_Prioritization_Pipeline"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34543288/"
+  },
+  {
+    "title": "SAILER: scalable and accurate invariant representation learning for single-cell ATAC-seq processing ",
+    "doi": "10.1093/bioinformatics/btab303",
+    "github_links": [
+      "https://github.com/uci-cbcl/SAILER"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34252968/"
+  },
+  {
+    "title": "Integrative analysis of genomic and epigenomic data reveal underlying superenhancer-mediated microRN",
+    "doi": "10.1093/hmg/ddab181",
+    "github_links": [
+      "https://github.com/kundajelab/atac_dnase_pipelines"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34230965/"
+  },
+  {
+    "title": "A new approach to decode DNA methylome and genomic variants simultaneously from double strand bisulf",
+    "doi": "10.1093/bib/bbab201",
+    "github_links": [
+      "https://github.com/dcjones/fastq-tools",
+      "https://github.com/s-andrews/BamQC"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/34058751/"
+  },
+  {
+    "title": "EARN: an ensemble machine learning algorithm to predict driver genes in metastatic breast cancer.",
+    "doi": "10.1186/s12920-021-00974-3",
+    "github_links": [
+      "https://github.com/cBioPortal/datahubstudycurationtools"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33962648/"
+  },
+  {
+    "title": "Uniform genomic data analysis in the NCI Genomic Data Commons.",
+    "doi": "10.1038/s41467-021-21254-9",
+    "github_links": [
+      "https://github.com/ucscCancer/fpfilter-tool",
+      "https://github.com/ZhenyuZ/gdc-pipeline-paper",
+      "https://github.com/NCI-GDC/gdc-workflow-overview",
+      "https://github.com/mskcc/vcf2maf"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33619257/"
+  },
+  {
+    "title": "GenomeChronicler: The Personal Genome Project UK Genomic Report Generator Pipeline.",
+    "doi": "10.3389/fgene.2020.518644",
+    "github_links": [
+      "https://github.com/PGP-UK/GenomeChronicler-Sarek-nf",
+      "https://github.com/PGP-UK/GenomeChronicler-nf",
+      "https://github.com/PGP-UK/GenomeChronicler"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33193602/"
+  },
+  {
+    "title": "ABAG-docking benchmark: a non-redundant structure benchmark dataset for antibody-antigen computation",
+    "doi": "10.1093/bib/bbae048",
+    "github_links": [
+      "https://github.com/Zhaonan99/Antibody-antigen-complex-structure-benchmark-dataset"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38385879/"
+  },
+  {
+    "title": "DeepRank-GNN-esm: a graph neural network for scoring protein-protein models using protein language m",
+    "doi": "10.1093/bioadv/vbad191",
+    "github_links": [
+      "https://github.com/DeepRank/DeepRank-GNN-esm"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38213822/"
+  },
+  {
+    "title": "Structural bioinformatics studies of bacterial outer membrane beta-barrel transporters and their Alp",
+    "doi": "10.1371/journal.pone.0290360",
+    "github_links": [
+      "https://github.com/sokrypton/ColabFold"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37607179/"
+  },
+  {
+    "title": "gExcite: a start-to-end framework for single-cell gene expression, hashing, and antibody analysis.",
+    "doi": "10.1093/bioinformatics/btad329",
+    "github_links": [
+      "https://github.com/ETH-NEXUS/gExcite_pipeline"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37220897/"
+  },
+  {
+    "title": "SARS-CoV-2 Spike Protein Post-Translational Modification Landscape and Its Impact on Protein Structu",
+    "doi": "10.34133/research.0078",
+    "github_links": [
+      "https://github.com/LTZHKUSTGZ/SARS-CoV-2-spike-protein-PTM"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/36930770/"
+  },
+  {
+    "title": "Interactive webtool for analyzing drug sensitivity and resistance associated with genetic signatures",
+    "doi": "10.1007/s00432-022-04503-2",
+    "github_links": [
+      "https://github.com/MyriamBoeschen/Drug_Response_Tool"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/36472769/"
+  },
+  {
+    "title": "Deep learning of protein sequence design of protein-protein interactions.",
+    "doi": "10.1093/bioinformatics/btac733",
+    "github_links": [
+      "https://github.com/strauchlab/iNNterfaceDesign"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/36377772/"
+  },
+  {
+    "title": "SEAseq: a portable and cloud-based chromatin occupancy analysis suite.",
+    "doi": "10.1186/s12859-022-04588-z",
+    "github_links": [
+      "https://github.com/stjude/BAM2GFF"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35193506/"
+  },
+  {
+    "title": "PyRosetta Jupyter Notebooks Teach Biomolecular Structure Prediction and Design.",
+    "doi": "10.35459/tbp.2019.000147",
+    "github_links": [
+      "https://github.com/RosettaCommons/PyRosetta.notebooks"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/35128343/"
+  },
+  {
+    "title": "The AbDesign computational pipeline for modular backbone assembly and design of binders and enzymes.",
+    "doi": "10.1002/pro.3970",
+    "github_links": [
+      "https://github.com/Fleishman-Lab/AbDesign_for_enzymes",
+      "https://github.com/rosaliel/AbDesign_for_enzymes"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33040418/"
+  },
+  {
+    "title": "Embracing Ambiguity in the Taxonomic Classification of Microbiome Sequencing Data.",
+    "doi": "10.3389/fgene.2019.01022",
+    "github_links": [
+      "https://github.com/shahnidhi/outlier_in_BLAST_hits"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/31681437/"
+  },
+  {
+    "title": "ASaiM: a Galaxy-based framework to analyze microbiota data.",
+    "doi": "10.1093/gigascience/giy057",
+    "github_links": [
+      "https://github.com/ASaiM/framework",
+      "https://github.com/asaim/group_humann2_uniref_abundances_to_GO"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/29790941/"
+  },
+  {
+    "title": "bioBakery: a meta'omic analysis environment.",
+    "doi": "10.1093/bioinformatics/btx754",
+    "github_links": [
+      "https://github.com/biobakery/homebrew-biobakery"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/29194469/"
+  },
+  {
+    "title": "Microbiome Helper: a Custom and Streamlined Workflow for Microbiome Research.",
+    "doi": "10.1128/mSystems.00127-16",
+    "github_links": [
+      "https://github.com/mlangill/microbiome_helper"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/28066818/"
+  },
+  {
+    "title": "Facilitating analysis and dissemination of proteomics data through metadata integration in MaxQuant.",
+    "doi": "10.1038/s41467-025-64089-4",
+    "github_links": [
+      "https://github.com/JurgenCox/mqtools7"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40998832/"
+  },
+  {
+    "title": "BioBricks.ai: a versioned data registry for life sciences data assets.",
+    "doi": "10.3389/frai.2025.1599412",
+    "github_links": [
+      "https://github.com/biobricks-ai/chemharmony",
+      "https://github.com/biobricks-ai/biobricks",
+      "https://github.com/biobricks-ai/hgnc",
+      "https://github.com/biobricks-ai/clinvar",
+      "https://github.com/biobricks-ai/brick-template"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40880880/"
+  },
+  {
+    "title": "Computational Tools and Resources for Long-read Metagenomic Sequencing Using Nanopore and PacBio.",
+    "doi": "10.1093/gpbjnl/qzaf075",
+    "github_links": [
+      "https://github.com/rvicedomini/strainberry",
+      "https://github.com/metagentools/MetaCoAG",
+      "https://github.com/katerinakazantseva/strainy",
+      "https://github.com/raivokolde/pheatmap",
+      "https://github.com/zhangtianyuan666/LongMetagenome",
+      "https://github.com/hitbc/deSAMBA",
+      "https://github.com/PacificBiosciences/bam2fastx",
+      "https://github.com/GaetanBenoitDev/metaMDBG"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40845163/"
+  },
+  {
+    "title": "PSCS: Unified Sharing of Single-Cell Omics Data, Analyses, and Results.",
+    "doi": "10.1021/acs.jproteome.5c00178",
+    "github_links": [
+      "https://github.com/emdann/milopy"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40748336/"
+  },
+  {
+    "title": "Collisional Cross-Section Prediction for Multiconformational Peptide Ions with IM2Deep.",
+    "doi": "10.1021/acs.analchem.5c01142",
+    "github_links": [
+      "https://github.com/rodvrees/IM2DeepTrainer"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40626784/"
+  },
+  {
+    "title": "KINAID: an orthology-based kinase-substrate prediction and analysis tool for phosphoproteomics.",
+    "doi": "10.1093/bioinformatics/btaf300",
+    "github_links": [
+      "https://github.com/Singh-Lab/kinaid"
+    ],
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40347463/"
   }
 ]

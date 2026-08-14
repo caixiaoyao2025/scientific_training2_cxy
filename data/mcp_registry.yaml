@@ -2600,227 +2600,6 @@ tools:
     - SPARQLWrapper==2.0.0
     - tzdata==2026.3
     - urllib3==2.7.0
-- name: ncbi-genome-download
-  type: cli
-  command: ncbi-genome-download {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] Linking the epidemiology of coccidioidomycosis and
-    environmental exposure through targeted genomic e (⭐0, ) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    s:
-      type: string
-      description: ', --section {refseq,genbank}'
-      source: help_parsed
-    F:
-      type: string
-      description: ', --formats FILE_FORMATS'
-      source: help_parsed
-    l:
-      type: string
-      description: ', --assembly-levels ASSEMBLY_LEVELS'
-      source: help_parsed
-    g:
-      type: string
-      description: ', --genera GENERA'
-      source: help_parsed
-    genus:
-      type: string
-      description: Deprecated alias of --genera
-      source: help_parsed
-    fuzzy_genus:
-      type: string
-      description: a fuzzy search on the organism name instead of an
-      source: help_parsed
-    S:
-      type: string
-      description: ', --strains STRAINS'
-      source: help_parsed
-    T:
-      type: string
-      description: ', --species-taxids SPECIES_TAXIDS'
-      source: help_parsed
-    t:
-      type: string
-      description: ', --taxids TAXIDS'
-      source: help_parsed
-    A:
-      type: string
-      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
-      source: help_parsed
-    fuzzy_accessions:
-      type: string
-      description: a fuzzy search on the entry accession instead of
-      source: help_parsed
-    R:
-      type: string
-      description: ', --refseq-categories REFSEQ_CATEGORIES'
-      source: help_parsed
-    refseq_category:
-      type: string
-      description: CLI flag --refseq-category
-      source: help_parsed
-    o:
-      type: string
-      description: ', --output-folder OUTPUT'
-      source: help_parsed
-    flat_output:
-      type: string
-      description: all files right into the output folder without
-      source: help_parsed
-    human_readable:
-      type: string
-      description: links in human-readable hierarchy (might fail
-      source: help_parsed
-    progress_bar:
-      type: string
-      description: a progress bar for indicating the download
-      source: help_parsed
-    u:
-      type: string
-      description: ', --uri URI     NCBI base URI to use (default:'
-      source: help_parsed
-    p:
-      type: integer
-      description: ', --parallel N    Run N downloads in parallel (default: 1)'
-      source: help_parsed
-    r:
-      type: integer
-      description: ', --retries N     Retry download N times when connection to NCBI
-        fails'
-      source: help_parsed
-    groups:
-      type: path
-      description: Positional argument groups
-      source: help_parsed
-      positional: true
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: pip_pkg
-    command: pip install https://github.com/kblin/ncbi-genome-download
-    system_commands: []
-    python_packages:
-    - appdirs==1.4.4
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.0
-    - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_j8cjvbqw/ncbi-genome-download
-    - packaging==26.3
-    - requests==2.34.2
-    - tqdm==4.70.0
-    - urllib3==2.7.0
-    declared_packages:
-    - coverage
-    - pytest
-    - pytest-cov
-    - pytest-mock
-    - requests-mock
-    missing_deps:
-    - appdirs
-    - config
-    - core
-    - errno
-    - ete3
-    - jobs
-    - ncbi_genome_download
-    - requests
-    - setuptools
-    - summary
-    - tqdm
-    venv_path: /tmp/execute_j8cjvbqw/venv
-  evidence:
-    exec_status: passed
-    exec_reason: '`/tmp/execute_j8cjvbqw/venv/bin/ncbi-genome-download --help` ->
-      exit 0'
-    exec_executable: ncbi-genome-download
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_status: repo_ok
-    inputs_source: help_parsed
-    params_schema:
-    - name: -s
-      type: string
-      description: ', --section {refseq,genbank}'
-    - name: -F
-      type: string
-      description: ', --formats FILE_FORMATS'
-    - name: -l
-      type: string
-      description: ', --assembly-levels ASSEMBLY_LEVELS'
-    - name: -g
-      type: string
-      description: ', --genera GENERA'
-    - name: --genus
-      type: string
-      description: Deprecated alias of --genera
-    - name: --fuzzy-genus
-      type: string
-      description: a fuzzy search on the organism name instead of an
-    - name: -S
-      type: string
-      description: ', --strains STRAINS'
-    - name: -T
-      type: string
-      description: ', --species-taxids SPECIES_TAXIDS'
-    - name: -t
-      type: string
-      description: ', --taxids TAXIDS'
-    - name: -A
-      type: string
-      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
-    - name: --fuzzy-accessions
-      type: string
-      description: a fuzzy search on the entry accession instead of
-    - name: -R
-      type: string
-      description: ', --refseq-categories REFSEQ_CATEGORIES'
-    - name: --refseq-category
-      type: string
-      description: CLI flag --refseq-category
-    - name: -o
-      type: string
-      description: ', --output-folder OUTPUT'
-    - name: --flat-output
-      type: string
-      description: all files right into the output folder without
-    - name: --human-readable
-      type: string
-      description: links in human-readable hierarchy (might fail
-      aliases:
-      - -H
-    - name: --progress-bar
-      type: string
-      description: a progress bar for indicating the download
-      aliases:
-      - -P
-    - name: -u
-      type: string
-      description: ', --uri URI     NCBI base URI to use (default:'
-    - name: -p
-      type: integer
-      description: ', --parallel N    Run N downloads in parallel (default: 1)'
-    - name: -r
-      type: integer
-      description: ', --retries N     Retry download N times when connection to NCBI
-        fails'
-    installed_versions:
-    - appdirs==1.4.4
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.0
-    - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_j8cjvbqw/ncbi-genome-download
-    - packaging==26.3
-    - requests==2.34.2
-    - tqdm==4.70.0
-    - urllib3==2.7.0
 - name: pheatmap
   type: cli
   command: pheatmap {{input_file}}
@@ -3140,4 +2919,784 @@ tools:
     - six==1.17.0
     - spython==0.3.14
     - typing_extensions==4.16.0
+    - urllib3==2.7.0
+- name: metaphlan
+  type: cli
+  command: metaphlan {{input_file}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] MetaPhlAn is a computational tool for profiling
+    the composition of microbial communities from metagenomic shotgun sequencing data
+    (⭐420, Python) (license: license.txt)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_type:
+      type: string
+      description: CLI flag --input_type
+      source: help_parsed
+    force:
+      type: string
+      description: profiling of the input file by removing the mapout file
+      source: help_parsed
+    db_dir:
+      type: string
+      description: CLI flag --db_dir
+      source: help_parsed
+    x:
+      type: string
+      description: ', --index INDEX'
+      source: help_parsed
+    mapout:
+      type: string
+      description: The file for saving the mapping output (old --bowtie2out option)
+      source: help_parsed
+    min_mapq_val:
+      type: string
+      description: CLI flag --min_mapq_val
+      source: help_parsed
+    no_map:
+      type: string
+      description: storing the --mapout map file
+      source: help_parsed
+    tmp_dir:
+      type: string
+      description: folder used to store temporary files
+      source: help_parsed
+    bt2_ps:
+      type: string
+      description: 2 presets
+      source: help_parsed
+    bowtie2_exe:
+      type: string
+      description: 2_EXE
+      source: help_parsed
+    bowtie2_build:
+      type: string
+      description: 2_BUILD
+      source: help_parsed
+    tax_lev:
+      type: string
+      description: CLI flag --tax_lev
+      source: help_parsed
+    min_alignment_len:
+      type: string
+      description: sam records for aligned reads with the longest subalignment
+      source: help_parsed
+    ignore_eukaryotes:
+      type: string
+      description: not profile eukaryotic organisms
+      source: help_parsed
+    ignore_bacteria:
+      type: string
+      description: not profile bacterial organisms
+      source: help_parsed
+    ignore_archaea:
+      type: string
+      description: not profile archeal organisms
+      source: help_parsed
+    ignore_ksgbs:
+      type: string
+      description: not profile known SGBs (together with --sgb option)
+      source: help_parsed
+    ignore_usgbs:
+      type: string
+      description: not profile unknown SGBs (together with --sgb option)
+      source: help_parsed
+    stat_q:
+      type: string
+      description: value for the robust average
+      source: help_parsed
+    perc_nonzero:
+      type: string
+      description: of markers with a non zero relative abundance for misidentify a
+        species
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/biobakery/MetaPhlAn
+    system_commands: []
+    python_packages:
+    - biom_format==2.1.17
+    - biopython==1.88
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - DendroPy==5.0.10
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.18
+    - kiwisolver==1.5.0
+    - matplotlib==3.11.1
+    - metaphlan @ file:///tmp/execute_bbt48_3t/MetaPhlAn
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - PhyloPhlAn==3.2.1
+    - pillow==12.3.0
+    - pyparsing==3.3.2
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - StringIO
+    - array
+    - biom
+    - consensus_markers
+    - database_controller
+    - dendropy
+    - external_exec
+    - matplotlib
+    - numpy
+    - optparse
+    - packaging
+    - pandas
+    - parallelisation
+    - phylophlan_controller
+    - pickletools
+    - pylab
+    - pyphlan
+    - pysam
+    - scipy
+    - scripts
+    - setuptools
+    - shlex
+    - stat
+    - util_fun
+    - utils
+    venv_path: /tmp/execute_bbt48_3t/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_bbt48_3t/venv/bin/metaphlan --help` -> exit 0'
+    exec_executable: metaphlan
+    verified_license: true
+    verified_license_path: license.txt
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --input_type
+      type: string
+      description: CLI flag --input_type
+    - name: --force
+      type: string
+      description: profiling of the input file by removing the mapout file
+    - name: --db_dir
+      type: string
+      description: CLI flag --db_dir
+    - name: -x
+      type: string
+      description: ', --index INDEX'
+    - name: --mapout
+      type: string
+      description: The file for saving the mapping output (old --bowtie2out option)
+    - name: --min_mapq_val
+      type: string
+      description: CLI flag --min_mapq_val
+    - name: --no_map
+      type: string
+      description: storing the --mapout map file
+    - name: --tmp_dir
+      type: string
+      description: folder used to store temporary files
+    - name: --bt2_ps
+      type: string
+      description: 2 presets
+    - name: --bowtie2_exe
+      type: string
+      description: 2_EXE
+    - name: --bowtie2_build
+      type: string
+      description: 2_BUILD
+    - name: --tax_lev
+      type: string
+      description: CLI flag --tax_lev
+    - name: --min_alignment_len
+      type: string
+      description: sam records for aligned reads with the longest subalignment
+    - name: --ignore_eukaryotes
+      type: string
+      description: not profile eukaryotic organisms
+    - name: --ignore_bacteria
+      type: string
+      description: not profile bacterial organisms
+    - name: --ignore_archaea
+      type: string
+      description: not profile archeal organisms
+    - name: --ignore_ksgbs
+      type: string
+      description: not profile known SGBs (together with --sgb option)
+    - name: --ignore_usgbs
+      type: string
+      description: not profile unknown SGBs (together with --sgb option)
+    - name: --stat_q
+      type: string
+      description: value for the robust average
+    - name: --perc_nonzero
+      type: string
+      description: of markers with a non zero relative abundance for misidentify a
+        species
+    installed_versions:
+    - biom_format==2.1.17
+    - biopython==1.88
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - DendroPy==5.0.10
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.18
+    - kiwisolver==1.5.0
+    - matplotlib==3.11.1
+    - metaphlan @ file:///tmp/execute_bbt48_3t/MetaPhlAn
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - PhyloPhlAn==3.2.1
+    - pillow==12.3.0
+    - pyparsing==3.3.2
+    - pysam==0.24.0
+    - python-dateutil==2.9.0.post0
+    - requests==2.34.2
+    - scipy==1.17.1
+    - seaborn==0.13.2
+    - six==1.17.0
+    - tqdm==4.70.0
+    - urllib3==2.7.0
+- name: gtctovcf
+  type: cli
+  command: disc_gtctovcf {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Script to convert GTC/BPM files to VCF (⭐48, Python)
+    (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: docker
+    command: docker build -t GTCtoVCF . && docker run GTCtoVCF
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps:
+    - BAlleleFreqFormat
+    - BPMReader
+    - BPMRecord
+    - CallFactory
+    - FormatFactory
+    - GencallFormat
+    - GenotypeFormat
+    - IlluminaBeadArrayFiles
+    - LocusEntry
+    - LocusEntryFactory
+    - LogRRatioFormat
+    - ReaderTemplateFactory
+    - ReferenceGenome
+    - VcfRecordFactory
+    - numpy
+    - pysam
+    - vcf
+    venv_path: ''
+  evidence:
+    exec_status: passed
+    exec_reason: '`docker run disc_gtctovcf --help` -> exit 0'
+    exec_executable: disc_gtctovcf
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: scottknottesd
+  type: cli
+  command: ScottKnottESD {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] The Scott-Knott Effect Size Difference (ESD) test
+    (⭐46, R) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/klainfo/ScottKnottESD")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_nmxr7cyy/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(ScottKnottESD)''` -> exit 0'
+    exec_executable: ScottKnottESD
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: condiga
+  type: cli
+  command: condiga {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] 🗂️🧬 Contigs directed gene annotation for accurate
+    protein sequence database construction in metaproteomics (⭐6, Python) (license:
+    LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    contigs:
+      type: path
+      description: path to the contigs file
+      source: help_parsed
+    genes:
+      type: path
+      description: path to the genes file
+      source: help_parsed
+    nthreads:
+      type: integer
+      description: number of threads to use
+      source: help_parsed
+    output:
+      type: path
+      description: path to the output folder
+      source: help_parsed
+    version:
+      type: string
+      description: the version and exit.
+      source: help_parsed
+    'ConDiGA:':
+      type: path
+      description: 'Positional argument ConDiGA:'
+      source: help_parsed
+      positional: true
+    Contigs:
+      type: path
+      description: Positional argument Contigs
+      source: help_parsed
+      positional: true
+    directed:
+      type: path
+      description: Positional argument directed
+      source: help_parsed
+      positional: true
+    gene:
+      type: path
+      description: Positional argument gene
+      source: help_parsed
+      positional: true
+    annotation:
+      type: path
+      description: Positional argument annotation
+      source: help_parsed
+      positional: true
+    for:
+      type: path
+      description: Positional argument for
+      source: help_parsed
+      positional: true
+    accurate:
+      type: path
+      description: Positional argument accurate
+      source: help_parsed
+      positional: true
+    protein:
+      type: path
+      description: Positional argument protein
+      source: help_parsed
+      positional: true
+    sequence:
+      type: path
+      description: Positional argument sequence
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/metagentools/ConDiGA
+    system_commands: []
+    python_packages:
+    - biopython==1.88
+    - click==8.4.2
+    - condiga @ file:///tmp/execute_0qp7i5d9/ConDiGA
+    - numpy==2.4.6
+    - packaging==26.3
+    - tqdm==4.70.0
+    - xlsxwriter==3.2.9
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - click
+    - setuptools
+    - xlsxwriter
+    venv_path: /tmp/execute_0qp7i5d9/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_0qp7i5d9/venv/bin/condiga --help` -> exit 0'
+    exec_executable: condiga
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --contigs
+      type: path
+      description: path to the contigs file
+      aliases:
+      - -c
+    - name: --genes
+      type: path
+      description: path to the genes file
+      aliases:
+      - -g
+    - name: --nthreads
+      type: integer
+      description: number of threads to use
+      aliases:
+      - -t
+    - name: --output
+      type: path
+      description: path to the output folder
+      aliases:
+      - -o
+    - name: --version
+      type: string
+      description: the version and exit.
+      aliases:
+      - -v
+    installed_versions:
+    - biopython==1.88
+    - click==8.4.2
+    - condiga @ file:///tmp/execute_0qp7i5d9/ConDiGA
+    - numpy==2.4.6
+    - packaging==26.3
+    - tqdm==4.70.0
+    - xlsxwriter==3.2.9
+- name: ggcorrplot
+  type: cli
+  command: ggcorrplot {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] wavess: An R package for simulation of adaptive
+    within-host virus sequence evolution. (⭐0, ) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/kassambara/ggcorrplot")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_heagk6j3/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(ggcorrplot)''` -> exit 0'
+    exec_executable: ggcorrplot
+    verified_license: false
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: statgengwas
+  type: cli
+  command: statgenGWAS {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] ShiNyP: Unlocking SNP-Based Population Genetics-AI-Assisted
+    Platform for Rapid and Interactive Visua (⭐0, ) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/Biometris/statgenGWAS")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_6v8hos4t/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(statgenGWAS)''` -> exit 0'
+    exec_executable: statgenGWAS
+    verified_license: false
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: ncbi-genome-download
+  type: cli
+  command: ncbi-genome-download {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Scripts to download genomes from the NCBI FTP servers
+    (⭐1082, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    s:
+      type: string
+      description: ', --section {refseq,genbank}'
+      source: help_parsed
+    F:
+      type: string
+      description: ', --formats FILE_FORMATS'
+      source: help_parsed
+    l:
+      type: string
+      description: ', --assembly-levels ASSEMBLY_LEVELS'
+      source: help_parsed
+    g:
+      type: string
+      description: ', --genera GENERA'
+      source: help_parsed
+    genus:
+      type: string
+      description: Deprecated alias of --genera
+      source: help_parsed
+    fuzzy_genus:
+      type: string
+      description: a fuzzy search on the organism name instead of an
+      source: help_parsed
+    S:
+      type: string
+      description: ', --strains STRAINS'
+      source: help_parsed
+    T:
+      type: string
+      description: ', --species-taxids SPECIES_TAXIDS'
+      source: help_parsed
+    t:
+      type: string
+      description: ', --taxids TAXIDS'
+      source: help_parsed
+    A:
+      type: string
+      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
+      source: help_parsed
+    fuzzy_accessions:
+      type: string
+      description: a fuzzy search on the entry accession instead of
+      source: help_parsed
+    R:
+      type: string
+      description: ', --refseq-categories REFSEQ_CATEGORIES'
+      source: help_parsed
+    refseq_category:
+      type: string
+      description: CLI flag --refseq-category
+      source: help_parsed
+    o:
+      type: string
+      description: ', --output-folder OUTPUT'
+      source: help_parsed
+    flat_output:
+      type: string
+      description: all files right into the output folder without
+      source: help_parsed
+    human_readable:
+      type: string
+      description: links in human-readable hierarchy (might fail
+      source: help_parsed
+    progress_bar:
+      type: string
+      description: a progress bar for indicating the download
+      source: help_parsed
+    u:
+      type: string
+      description: ', --uri URI     NCBI base URI to use (default:'
+      source: help_parsed
+    p:
+      type: integer
+      description: ', --parallel N    Run N downloads in parallel (default: 1)'
+      source: help_parsed
+    r:
+      type: integer
+      description: ', --retries N     Retry download N times when connection to NCBI
+        fails'
+      source: help_parsed
+    groups:
+      type: path
+      description: Positional argument groups
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/kblin/ncbi-genome-download
+    system_commands: []
+    python_packages:
+    - appdirs==1.4.4
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - idna==3.18
+    - ncbi-genome-download @ file:///tmp/execute_xm4id_us/ncbi-genome-download
+    - packaging==26.3
+    - requests==2.34.2
+    - tqdm==4.70.0
+    - urllib3==2.7.0
+    declared_packages:
+    - coverage
+    - pytest
+    - pytest-cov
+    - pytest-mock
+    - requests-mock
+    missing_deps:
+    - appdirs
+    - config
+    - core
+    - errno
+    - ete3
+    - jobs
+    - ncbi_genome_download
+    - requests
+    - setuptools
+    - summary
+    - tqdm
+    venv_path: /tmp/execute_xm4id_us/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_xm4id_us/venv/bin/ncbi-genome-download --help` ->
+      exit 0'
+    exec_executable: ncbi-genome-download
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: -s
+      type: string
+      description: ', --section {refseq,genbank}'
+    - name: -F
+      type: string
+      description: ', --formats FILE_FORMATS'
+    - name: -l
+      type: string
+      description: ', --assembly-levels ASSEMBLY_LEVELS'
+    - name: -g
+      type: string
+      description: ', --genera GENERA'
+    - name: --genus
+      type: string
+      description: Deprecated alias of --genera
+    - name: --fuzzy-genus
+      type: string
+      description: a fuzzy search on the organism name instead of an
+    - name: -S
+      type: string
+      description: ', --strains STRAINS'
+    - name: -T
+      type: string
+      description: ', --species-taxids SPECIES_TAXIDS'
+    - name: -t
+      type: string
+      description: ', --taxids TAXIDS'
+    - name: -A
+      type: string
+      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
+    - name: --fuzzy-accessions
+      type: string
+      description: a fuzzy search on the entry accession instead of
+    - name: -R
+      type: string
+      description: ', --refseq-categories REFSEQ_CATEGORIES'
+    - name: --refseq-category
+      type: string
+      description: CLI flag --refseq-category
+    - name: -o
+      type: string
+      description: ', --output-folder OUTPUT'
+    - name: --flat-output
+      type: string
+      description: all files right into the output folder without
+    - name: --human-readable
+      type: string
+      description: links in human-readable hierarchy (might fail
+      aliases:
+      - -H
+    - name: --progress-bar
+      type: string
+      description: a progress bar for indicating the download
+      aliases:
+      - -P
+    - name: -u
+      type: string
+      description: ', --uri URI     NCBI base URI to use (default:'
+    - name: -p
+      type: integer
+      description: ', --parallel N    Run N downloads in parallel (default: 1)'
+    - name: -r
+      type: integer
+      description: ', --retries N     Retry download N times when connection to NCBI
+        fails'
+    installed_versions:
+    - appdirs==1.4.4
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - idna==3.18
+    - ncbi-genome-download @ file:///tmp/execute_xm4id_us/ncbi-genome-download
+    - packaging==26.3
+    - requests==2.34.2
+    - tqdm==4.70.0
     - urllib3==2.7.0

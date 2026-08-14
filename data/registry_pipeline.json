@@ -1,0 +1,422 @@
+[
+  {
+    "name": "bioemu",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "python",
+      "-m",
+      "bioemu.sample",
+      "--sequence",
+      "MKT",
+      "--num_samples",
+      "1",
+      "--output_dir",
+      "/tmp/out",
+      "--pdb-path",
+      "/tmp/a.pdb",
+      "--xtc-path",
+      "/tmp/a.xtc"
+    ],
+    "_args": {
+      "sequence": "MKT",
+      "num_samples": 1,
+      "output_dir": "/tmp/out",
+      "pdb_path": "/tmp/a.pdb",
+      "xtc_path": "/tmp/a.xtc"
+    },
+    "_functions": [
+      "bioemu"
+    ]
+  },
+  {
+    "name": "bqtools",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "bqtools",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "bqtools"
+    ]
+  },
+  {
+    "name": "strainmake",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "strainmake",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "strainmake"
+    ]
+  },
+  {
+    "name": "kaptain",
+    "schema": "FAIL (SCHEMA_INVALID: duplicate template variable ['ONT_IN'] (command kaptain {{ONT_IN}} {{ONT_IN}} {{DB}} {{DB_LOOKUP}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
+  },
+  {
+    "name": "nanosimformer",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "nanosimformer",
+      "x"
+    ],
+    "_args": {
+      "nano_signal_simulator": "x"
+    },
+    "_functions": [
+      "nanosimformer"
+    ]
+  },
+  {
+    "name": "morphic-provenance",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "morphic-provenance",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "morphic-provenance"
+    ]
+  },
+  {
+    "name": "fmdseromonitor",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "FMDSeroMonitor",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "fmdseromonitor"
+    ]
+  },
+  {
+    "name": "dcifer",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "dcifer",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "dcifer"
+    ]
+  },
+  {
+    "name": "freqestimationmodel",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "FreqEstimationModel",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "freqestimationmodel"
+    ]
+  },
+  {
+    "name": "cooltools",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "cooltools",
+      "coverage",
+      "--output",
+      "/tmp/out.tsv",
+      "--ignore-diags",
+      "x",
+      "--store",
+      "x",
+      "--chunksize",
+      "x",
+      "--bigwig",
+      "x",
+      "--clr_weight_name",
+      "x",
+      "--nproc",
+      "x"
+    ],
+    "_args": {
+      "subcommand": "x",
+      "output": "/tmp/out.tsv",
+      "ignore_diags": "x",
+      "store": "x",
+      "chunksize": "x",
+      "bigwig": "x",
+      "clr_weight_name": "x",
+      "nproc": "x",
+      "COOL_PATH": "x"
+    },
+    "_functions": [
+      "cooltools_coverage",
+      "cooltools_dots",
+      "cooltools_eigs_cis",
+      "cooltools_eigs_trans",
+      "cooltools_expected_cis",
+      "cooltools_expected_trans",
+      "cooltools_genome",
+      "cooltools_insulation",
+      "cooltools_pileup",
+      "cooltools_random_sample",
+      "cooltools_rearrange",
+      "cooltools_saddle",
+      "cooltools_virtual4c"
+    ]
+  },
+  {
+    "name": "fastapi",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "python",
+      "-m",
+      "fastapi",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "fastapi"
+    ]
+  },
+  {
+    "name": "openfold-3",
+    "schema": "FAIL (SCHEMA_INVALID: unknown template variable ['input_file'] (command run_openfold {{subcommand}} {{input_file}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
+  },
+  {
+    "name": "bioconvert",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "bioconvert",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "bioconvert"
+    ]
+  },
+  {
+    "name": "ccdutils",
+    "schema": "FAIL (SCHEMA_INVALID: unknown template variable ['input_file'] (command process_components_cif {{input_file}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
+  },
+  {
+    "name": "sickle",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "sickle",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "sickle"
+    ]
+  },
+  {
+    "name": "rellig",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "pdberellig",
+      "cofactors",
+      "--cif",
+      "x",
+      "--ligand-type",
+      "x",
+      "--out-dir",
+      "x"
+    ],
+    "_args": {
+      "subcommand": "x",
+      "cif": "x",
+      "ligand_type": "x",
+      "out_dir": "x"
+    },
+    "_functions": [
+      "rellig_cofactors",
+      "rellig_drugs",
+      "rellig_reactants"
+    ]
+  },
+  {
+    "name": "pheatmap",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "pheatmap",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "pheatmap"
+    ]
+  },
+  {
+    "name": "cwltool",
+    "schema": "FAIL (SCHEMA_INVALID: unknown template variable ['input_file'] (command cwltool {{input_file}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
+  },
+  {
+    "name": "metaphlan",
+    "schema": "FAIL (SCHEMA_INVALID: unknown template variable ['input_file'] (command metaphlan {{input_file}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
+  },
+  {
+    "name": "gtctovcf",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "disc_gtctovcf",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "gtctovcf"
+    ]
+  },
+  {
+    "name": "scottknottesd",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 127 (stderr: command not found: ScottKnottESD))",
+    "output": "FAIL (output: exit 127 (stderr: command not found: ScottKnottESD))",
+    "_argv": [
+      "ScottKnottESD",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "scottknottesd"
+    ],
+    "_return_code": 127
+  },
+  {
+    "name": "condiga",
+    "schema": "FAIL (SCHEMA_INVALID: unknown template variable ['input_file'] (command condiga {{input_file}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
+  },
+  {
+    "name": "ggcorrplot",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 127 (stderr: command not found: ggcorrplot))",
+    "output": "FAIL (output: exit 127 (stderr: command not found: ggcorrplot))",
+    "_argv": [
+      "ggcorrplot",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "ggcorrplot"
+    ],
+    "_return_code": 127
+  },
+  {
+    "name": "statgengwas",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 127 (stderr: command not found: statgenGWAS))",
+    "output": "FAIL (output: exit 127 (stderr: command not found: statgenGWAS))",
+    "_argv": [
+      "statgenGWAS",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "statgengwas"
+    ],
+    "_return_code": 127
+  },
+  {
+    "name": "ncbi-genome-download",
+    "schema": "FAIL (SCHEMA_INVALID: unknown template variable ['input_file'] (command ncbi-genome-download {{input_file}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
+  }
+]
