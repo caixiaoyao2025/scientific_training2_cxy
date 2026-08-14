@@ -96,6 +96,25 @@ def validate_tool_schema(tool: dict) -> str:
     return ""
 
 
+def json_schema_type(meta) -> str:
+    """Map a registry input type to an OpenAI JSON-schema type.
+
+    Auto-discovery records `integer`/`float`/`path` etc.; passing those through
+    (instead of collapsing everything to `string`) lets the LLM emit real
+    numbers (num_samples: 1) instead of strings, and file paths with the right
+    intent. Unknown/`path`/`file` stay `string` (paths are strings in JSON).
+    """
+    t = (meta or {}).get("type", "string") if isinstance(meta, dict) else "string"
+    t = str(t).lower()
+    if t in ("integer", "int"):
+        return "integer"
+    if t in ("float", "double", "number"):
+        return "number"
+    if t in ("boolean", "bool"):
+        return "boolean"
+    return "string"
+
+
 def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     """Build OpenAI function schema(s) for a tool.
 
@@ -112,7 +131,7 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
             required = []
             for p in (detail.get("params") or []):
                 key = p.get("name", "").lstrip("-").replace("-", "_").lower()
-                props[key] = {"type": "string",
+                props[key] = {"type": json_schema_type(p),
                               "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
                 # ONLY an explicit `required: true` makes a param required.
                 # A flag with no required marker is OPTIONAL -- forcing every
@@ -132,7 +151,7 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     props = {}
     required = []
     for name, meta in (tool.get("inputs") or {}).items():
-        props[name] = {"type": "string",
+        props[name] = {"type": json_schema_type(meta),
                        "description": (meta or {}).get("description", "") or ""}
         # ONLY an explicit `required: true` is required. Auto-discovery cannot
         # reliably know which flags are mandatory, so defaulting to optional is
