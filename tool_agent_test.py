@@ -51,6 +51,8 @@ def load_tools(path: str) -> list[dict]:
 # and only flag real pollution: ANSI escapes, argparse choices `{a,b}` used as
 # a name, `[OPTIONS]/[ARGS]` usage text, ellipsis pseudo-tokens.
 _TEMPLATE_VAR = re.compile(r"\{\{[a-zA-Z_][a-zA-Z0-9_]*\}\}")
+# capture the variable NAME so we can cross-check it against the input schema
+_TEMPLATE_VAR_NAME = re.compile(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}")
 _POLLUTION = re.compile(r"\x1b\[|\.\.\.|\[OPTIONS\]|\[ARGS\]|\bCOMMAND\b|^\.$")
 # argparse choices leaked as a parameter key: `{init,check,...}` (not {{var}})
 _CHOICES_KEY = re.compile(r"\{[a-zA-Z0-9_,\-\s]+\}")
@@ -78,6 +80,18 @@ def validate_tool_schema(tool: dict) -> str:
             return f"SCHEMA_INVALID: input name polluted ({k!r})"
     if not cmd.strip():
         return "NO_CMD"
+    # template variable <-> input schema consistency: every {{var}} in the
+    # command must have a matching input, or the rendered argv is undefined.
+    vars_used = _TEMPLATE_VAR_NAME.findall(cmd)
+    input_names = set(inputs.keys())
+    unknown = [v for v in vars_used if v not in input_names]
+    if unknown:
+        return f"SCHEMA_INVALID: unknown template variable {sorted(set(unknown))} (command {cmd[:60]})"
+    # duplicate template variable: e.g. `kaptain {{ONT_IN}} {{ONT_IN}} ...`.
+    # repeated flags on the CLI are usually a parse artifact, not intent.
+    dupes = sorted({v for v in vars_used if vars_used.count(v) > 1})
+    if dupes:
+        return f"SCHEMA_INVALID: duplicate template variable {dupes} (command {cmd[:60]})"
     # R package / python_import without -m: not directly callable as a command
     if as_ == "python" and not (tool.get("callable_via") or "").startswith("python -m "):
         return "R_PACKAGE_OR_IMPORT"
@@ -121,7 +135,10 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     for name, meta in (tool.get("inputs") or {}).items():
         props[name] = {"type": "string",
                        "description": (meta or {}).get("description", "") or ""}
-        if (meta or {}).get("required"):
+        # an input with NO `required` field is treated as required by default
+        # (auto-discovery only marks the few genuinely-optional flags). An
+        # explicit `required: false` stays optional.
+        if (meta or {}).get("required") is not False:
             required.append(name)
     fn = {"type": "function", "function": {
         "name": tool["name"],

@@ -26,22 +26,42 @@ from typing import Any
 def _render_command(command_template: str, arguments: dict[str, Any]) -> list[str]:
     # drop empty-string / None args so `--flag ""` never renders
     filtered = {k: v for k, v in arguments.items() if v not in (None, "", False)}
-    quoted = {key: shlex.quote(str(value)) for key, value in filtered.items()}
+    # values are NOT pre-quoted: we tokenize the template, then substitute
+    # each value verbatim into its own argv slot, so spaces stay inside a
+    # single token and shell metachars are never re-interpreted.
+    values = {key: str(value) for key, value in filtered.items()}
     # templates may use either Jinja-style {{x}} or Python-style {x} placeholders
     template = re.sub(r"\{\{(\w+)\}\}", r"{\1}", command_template)
-    # build a format kwargs with defaults for missing placeholders so a missing
-    # arg doesn't crash with KeyError -- leave the placeholder as-is instead
-    import string as _string
-    try:
-        rendered = template.format(**quoted)
-    except (KeyError, ValueError, IndexError):
-        # missing param -> render with empty value for the missing placeholders
-        fmtr = _string.Formatter()
-        missing = {f for _, f, _, _ in fmtr.parse(template) if f}
-        for m in missing:
-            quoted.setdefault(m, "")
-        rendered = template.format(**quoted)
-    argv = shlex.split(rendered, posix=True)
+    # tokenize the template (shlex keeps {x} placeholders intact since they
+    # have no spaces), then drop any token that references a MISSING arg --
+    # including the flag that precedes it, so `--pdb-path {{pdb_path}}` with
+    # pdb_path unset renders to NOTHING, not a bare `--pdb-path`.
+    tokens = shlex.split(template, posix=True)
+    out: list[str] = []
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        if tok.startswith("{") and tok.endswith("}"):
+            var = tok[1:-1]
+            if var in values:
+                out.append(values[var])
+                i += 1
+            else:
+                # missing value: also drop the preceding flag token if any
+                if out and out[-1].startswith("-") and " " not in out[-1]:
+                    out.pop()
+                i += 1
+        else:
+            # flag token: peek ahead - if the next token is a missing
+            # placeholder, drop BOTH (flag + its unset value)
+            nxt = tokens[i + 1] if i + 1 < len(tokens) else None
+            if (tok.startswith("-") and nxt and nxt.startswith("{") and nxt.endswith("}")
+                    and nxt[1:-1] not in values):
+                i += 2
+            else:
+                out.append(tok)
+                i += 1
+    argv = [a for a in out if a != ""]
     if not argv:
         raise ValueError("Rendered command is empty.")
     return argv
@@ -72,6 +92,50 @@ def _coerce_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[s
         except (TypeError, ValueError):
             pass  # keep original value; the tool may still handle it
     return coerced
+
+
+_VALID_INPUT_TYPES = {"string", "str", "int", "integer", "float", "number",
+                      "bool", "boolean", "path", "file", "list", "array", "json"}
+
+
+def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple[dict[str, Any], str]:
+    """Strict argument validation (the Pydantic layer, without the dep).
+
+    Enforces: required inputs present, no unknown inputs, no pollution in the
+    input schema, and every input has a legal type. Returns (cleaned_arguments,
+    '') on success or ({}, reason) on failure so a bad tool_call is rejected
+    before any subprocess runs.
+    """
+    inputs = spec.get("inputs") or {}
+    if not isinstance(inputs, dict):
+        return {}, f"input schema is not a dict: {inputs!r}"
+    for name, meta in inputs.items():
+        if not isinstance(name, str):
+            return {}, f"input name not a string: {name!r}"
+        if name != name.strip() or " " in name or "\t" in name:
+            return {}, f"input name polluted: {name!r}"
+        t = (meta or {}).get("type", "string")
+        if t not in _VALID_INPUT_TYPES:
+            return {}, f"input {name!r}: unknown type {t!r}"
+    known = set(inputs.keys())
+    unknown = set(arguments) - known
+    if unknown:
+        return {}, f"unknown arguments: {sorted(unknown)}"
+    # an input with NO `required` field defaults to required (consistent with
+    # to_function_schemas); only `required: false` is genuinely optional.
+    missing = [k for k, m in inputs.items() if (m or {}).get("required") is not False
+               and (arguments.get(k) in (None, ""))]
+    if missing:
+        return {}, f"missing required inputs: {missing}"
+    # unknown template vars in the command would render to garbage argv
+    import re as _re
+    cmd = spec.get("command") or ""
+    used = _re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
+    unbound = sorted({v for v in used if v not in known})
+    if unbound:
+        return {}, f"command template references undeclared inputs: {unbound}"
+    cleaned = {k: v for k, v in arguments.items() if k in known}
+    return _coerce_arguments(spec, cleaned), ""
 
 
 def _run_cli(command: str, arguments: dict[str, Any], timeout: int = 600,
@@ -457,7 +521,10 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
         execution = {"type": spec.get("type", "cli"), "command": spec.get("command", "")}
     exec_type = execution.get("type", "cli")
     timeout = int(spec.get("timeout_seconds", 600))
-    arguments = _coerce_arguments(spec, arguments)
+    arguments, arg_err = validate_arguments(spec, arguments)
+    if arg_err:
+        return {"status": "validation_error", "return_code": None,
+                "stdout": "", "stderr": f"[validation] {arg_err}", "argv": []}
 
     # auto-install the tool's environment on first use (agent self-provisioning)
     installed, install_errors = _ensure_installed(spec, exec_type)

@@ -93,6 +93,16 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
 
+      - name: Registry pipeline test (schema -> render -> execute -> output)
+        continue-on-error: true   # schema/render failures must not block commit
+        env:
+          PYTHONIOENCODING: utf-8
+          REGISTRY: data/mcp_registry.yaml
+          PIPELINE_JSON: data/registry_pipeline.json
+        run: |
+          python registry_pipeline_test.py || echo "pipeline test reported failures (see data/registry_pipeline.json)"
+        timeout-minutes: 30
+
       - name: Test agent can use discovered tools (volcengine LLM)
         continue-on-error: true   # a failed agent test must NOT block committing the registry
         env:
@@ -109,7 +119,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # -f: force-add outputs that .gitignore may exclude (data/* etc.)
-          git add -f github_from_html.json tool_library.json tool_library_clean.json discovered_registry.yaml tool_verification.json tool_execution.json excluded_tools.json seen_papers.json data/mcp_registry.yaml 2>/dev/null || true
+          git add -f github_from_html.json tool_library.json tool_library_clean.json discovered_registry.yaml tool_verification.json tool_execution.json excluded_tools.json seen_papers.json data/mcp_registry.yaml data/registry_pipeline.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "auto: deep tool discovery $(date -u +%Y-%m-%d)"
           for i in 1 2 3; do
             if git pull --rebase "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" main; then
