@@ -3479,6 +3479,228 @@ tools:
     verified_license: false
     verified_status: repo_ok
     inputs_source: placeholder
+- name: openapi-generator
+  type: cli
+  command: disc_openapi-generator {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] OpenAPI Generator allows generation of API client
+    libraries (SDK generation), server stubs, documentation and configuration automatically
+    given an OpenAPI Spec (v2, v3) (⭐26670, Java) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: docker
+    command: docker build -t openapi-generator . && docker run openapi-generator
+    system_commands: []
+    python_packages: []
+    declared_packages:
+    - aenum
+    - aiohttp
+    - aiohttp-retry
+    - pem
+    - pycryptodome
+    - pydantic
+    - python-dateutil
+    - setuptools
+    - typing-extensions
+    - urllib3
+    missing_deps: []
+    venv_path: ''
+  evidence:
+    exec_status: passed
+    exec_reason: '`docker run disc_openapi-generator --help` -> exit 0'
+    exec_executable: disc_openapi-generator
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: vitap
+  type: cli
+  command: VITAP {{input_file}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] The viral taxonomic assignment pipeline (⭐45, Python)
+    (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
+  execution: null
+  subcommands:
+  - assignment
+  - upd
+  - The
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/DrKaiyangZheng/VITAP
+    system_commands: []
+    python_packages:
+    - archspec==0.2.6
+    - biopython==1.88
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - polars==1.43.2
+    - polars-runtime-32==1.43.2
+    - pyarrow==25.0.1
+    - pyrodigal==3.7.1
+    - python-dateutil==2.9.0.post0
+    - six==1.17.0
+    - tqdm==4.70.0
+    - VITAP @ file:///tmp/execute_lasawdq1/VITAP
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - concurrent
+    - pandas
+    - polars
+    - pyrodigal
+    - setuptools
+    - tqdm
+    - uniref90_accession2taxid
+    - uniref_taxa_fallback
+    venv_path: /tmp/execute_lasawdq1/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_lasawdq1/venv/bin/VITAP --help` -> exit 0'
+    exec_executable: VITAP
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+    installed_versions:
+    - archspec==0.2.6
+    - biopython==1.88
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - polars==1.43.2
+    - polars-runtime-32==1.43.2
+    - pyarrow==25.0.1
+    - pyrodigal==3.7.1
+    - python-dateutil==2.9.0.post0
+    - six==1.17.0
+    - tqdm==4.70.0
+    - VITAP @ file:///tmp/execute_lasawdq1/VITAP
+- name: midas
+  type: cli
+  command: midas {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Metagenomic Intra-Species Diversity Analysis (MIDAS)
+    (⭐44, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    version:
+      type: string
+      description: program's version number and exit
+      source: help_parsed
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/pollardlab/MIDAS
+    system_commands: []
+    python_packages:
+    - argcomplete==3.7.2
+    - argh==0.31.3
+    - biopython==1.83
+    - gffutils==0.14
+    - midasv3 @ file:///tmp/execute_f2_o47z9/MIDAS
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - pybedtools==0.12.0
+    - pyfaidx==0.9.0.4
+    - pysam==0.24.0
+    - python-dateutil==2.9.0.post0
+    - simplejson==4.1.1
+    - six==1.17.0
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - bisect
+    - gffutils
+    - midas
+    - numpy
+    - operator
+    - pandas
+    - pybedtools
+    - pysam
+    - setuptools
+    - sphinx_rtd_theme
+    venv_path: /tmp/execute_f2_o47z9/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_f2_o47z9/venv/bin/midas --help` -> exit 0'
+    exec_executable: midas
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --version
+      type: string
+      description: program's version number and exit
+      aliases:
+      - -v
+    installed_versions:
+    - argcomplete==3.7.2
+    - argh==0.31.3
+    - biopython==1.83
+    - gffutils==0.14
+    - midasv3 @ file:///tmp/execute_f2_o47z9/MIDAS
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - pybedtools==0.12.0
+    - pyfaidx==0.9.0.4
+    - pysam==0.24.0
+    - python-dateutil==2.9.0.post0
+    - simplejson==4.1.1
+    - six==1.17.0
 - name: ncbi-genome-download
   type: cli
   command: ncbi-genome-download {{input_file}}
@@ -3578,6 +3800,11 @@ tools:
       description: Positional argument groups
       source: help_parsed
       positional: true
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
   execution: null
   subcommands: []
   subcommand_details: {}
@@ -3591,7 +3818,7 @@ tools:
     - certifi==2026.7.22
     - charset-normalizer==3.5.0
     - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_xm4id_us/ncbi-genome-download
+    - ncbi-genome-download @ file:///tmp/execute_c8_v29c4/ncbi-genome-download
     - packaging==26.3
     - requests==2.34.2
     - tqdm==4.70.0
@@ -3614,10 +3841,10 @@ tools:
     - setuptools
     - summary
     - tqdm
-    venv_path: /tmp/execute_xm4id_us/venv
+    venv_path: /tmp/execute_c8_v29c4/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_xm4id_us/venv/bin/ncbi-genome-download --help` ->
+    exec_reason: '`/tmp/execute_c8_v29c4/venv/bin/ncbi-genome-download --help` ->
       exit 0'
     exec_executable: ncbi-genome-download
     verified_license: true
@@ -3686,6 +3913,7 @@ tools:
     - name: -p
       type: integer
       description: ', --parallel N    Run N downloads in parallel (default: 1)'
+      required: false
     - name: -r
       type: integer
       description: ', --retries N     Retry download N times when connection to NCBI
@@ -3695,7 +3923,7 @@ tools:
     - certifi==2026.7.22
     - charset-normalizer==3.5.0
     - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_xm4id_us/ncbi-genome-download
+    - ncbi-genome-download @ file:///tmp/execute_c8_v29c4/ncbi-genome-download
     - packaging==26.3
     - requests==2.34.2
     - tqdm==4.70.0

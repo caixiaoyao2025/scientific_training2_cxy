@@ -67,10 +67,25 @@
   },
   {
     "name": "kaptain",
-    "schema": "FAIL (SCHEMA_INVALID: duplicate template variable ['ONT_IN'] (command kaptain {{ONT_IN}} {{ONT_IN}} {{DB}} {{DB_LOOKUP}}))",
-    "render": "SKIP",
-    "execute": "SKIP",
-    "output": "SKIP"
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "kaptain",
+      "x",
+      "x",
+      "x",
+      "x"
+    ],
+    "_args": {
+      "ONT_IN": "x",
+      "DB": "x",
+      "DB_LOOKUP": "x"
+    },
+    "_functions": [
+      "kaptain"
+    ]
   },
   {
     "name": "nanosimformer",
@@ -355,8 +370,8 @@
     "name": "scottknottesd",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 127 (stderr: command not found: ScottKnottESD))",
-    "output": "FAIL (output: exit 127 (stderr: command not found: ScottKnottESD))",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
     "_argv": [
       "ScottKnottESD",
       "/tmp/sample.fa"
@@ -366,8 +381,7 @@
     },
     "_functions": [
       "scottknottesd"
-    ],
-    "_return_code": 127
+    ]
   },
   {
     "name": "condiga",
@@ -380,8 +394,8 @@
     "name": "ggcorrplot",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 127 (stderr: command not found: ggcorrplot))",
-    "output": "FAIL (output: exit 127 (stderr: command not found: ggcorrplot))",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
     "_argv": [
       "ggcorrplot",
       "/tmp/sample.fa"
@@ -391,15 +405,14 @@
     },
     "_functions": [
       "ggcorrplot"
-    ],
-    "_return_code": 127
+    ]
   },
   {
     "name": "statgengwas",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 127 (stderr: command not found: statgenGWAS))",
-    "output": "FAIL (output: exit 127 (stderr: command not found: statgenGWAS))",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
     "_argv": [
       "statgenGWAS",
       "/tmp/sample.fa"
@@ -409,8 +422,49 @@
     },
     "_functions": [
       "statgengwas"
+    ]
+  },
+  {
+    "name": "openapi-generator",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "SKIP (env not available on this machine)",
+    "output": "SKIP",
+    "_argv": [
+      "disc_openapi-generator",
+      "/tmp/sample.fa"
     ],
-    "_return_code": 127
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "openapi-generator"
+    ]
+  },
+  {
+    "name": "vitap",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 2 (stderr: usage: VITAP [-h] {assignment,upd} ...\nVITAP: error: argument command: invalid choice: '/tmp/sample.fa' (choose from 'as))",
+    "output": "FAIL (output: exit 2 (stderr: usage: VITAP [-h] {assignment,upd} ...\nVITAP: error: argument command: invalid choice: '/tmp/sample.fa' (choose from 'as))",
+    "_argv": [
+      "VITAP",
+      "/tmp/sample.fa"
+    ],
+    "_args": {
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "vitap"
+    ],
+    "_return_code": 2
+  },
+  {
+    "name": "midas",
+    "schema": "FAIL (SCHEMA_INVALID: unknown template variable ['input_file'] (command midas {{input_file}}))",
+    "render": "SKIP",
+    "execute": "SKIP",
+    "output": "SKIP"
   },
   {
     "name": "ncbi-genome-download",

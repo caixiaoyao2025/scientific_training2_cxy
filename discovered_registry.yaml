@@ -1,4 +1,93 @@
 tools:
+- name: openapi-generator
+  type: cli
+  command: disc_openapi-generator {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] OpenAPI Generator allows generation of API client
+    libraries (SDK generation), server stubs, documentation and configuration automatically
+    given an OpenAPI Spec (v2, v3) (⭐26670, Java) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: docker
+    command: docker build -t openapi-generator . && docker run openapi-generator
+    system_commands: []
+    python_packages: []
+    declared_packages:
+    - aenum
+    - aiohttp
+    - aiohttp-retry
+    - pem
+    - pycryptodome
+    - pydantic
+    - python-dateutil
+    - setuptools
+    - typing-extensions
+    - urllib3
+    missing_deps: []
+    venv_path: ''
+  _discovery_metadata:
+    github: https://github.com/OpenAPITools/openapi-generator
+    stars: 26670
+    language: Java
+    tags:
+    - enzyme
+    - openapi
+    - web_server
+    - generator
+    quality_score: 55
+    paper_doi: 10.1093/nar/gkaf1082
+    paper_title: 'Open Enzyme Database: a community-wide repository for sharing enzyme
+      data.'
+    install_method: docker
+    install_url: docker build -t openapi-generator . && docker run openapi-generator
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps:  docker lang=Python
+      license); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-14T07:43:07.909609'
+    dependencies:
+      system_commands: []
+      readme_hint: docker
+      container_files:
+      - Dockerfile
+      - docker-compose.yml
+      install_method: docker
+    exec_status: passed
+    exec_reason: '`docker run disc_openapi-generator --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: "rators\n    meta          MetaGenerator. Generator for creating\
+      \ a new template set and configuration for Codegen.  The output will be based\
+      \ on the language you specify, and includes default templates to include.\n\
+      \    validate      Validate specification\n    version       Show version information\
+      \ used in tooling\n\nSee 'openapi-generator-cli help <command>' for more information\
+      \ on a specific\ncommand.\n\n"
+    exec_params_schema: []
+    exec_installed_versions: []
+    exec_executable: disc_openapi-generator
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
 - name: ncbi-genome-download
   type: cli
   command: ncbi-genome-download {{input_file}}
@@ -98,6 +187,11 @@ tools:
       description: Positional argument groups
       source: help_parsed
       positional: true
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
   execution: null
   subcommands: []
   subcommand_details: {}
@@ -111,7 +205,7 @@ tools:
     - certifi==2026.7.22
     - charset-normalizer==3.5.0
     - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_xm4id_us/ncbi-genome-download
+    - ncbi-genome-download @ file:///tmp/execute_c8_v29c4/ncbi-genome-download
     - packaging==26.3
     - requests==2.34.2
     - tqdm==4.70.0
@@ -134,7 +228,7 @@ tools:
     - setuptools
     - summary
     - tqdm
-    venv_path: /tmp/execute_xm4id_us/venv
+    venv_path: /tmp/execute_c8_v29c4/venv
   _discovery_metadata:
     github: https://github.com/kblin/ncbi-genome-download
     stars: 1082
@@ -145,9 +239,9 @@ tools:
     - web_server
     - ncbi
     quality_score: 55
-    paper_doi: 10.1093/gigascience/giae038
-    paper_title: 'gNOMO2: a comprehensive and modular pipeline for integrated multi-omics
-      analyses of microbiomes.'
+    paper_doi: 10.1093/sysbio/syaf011
+    paper_title: 'UnFATE: A Comprehensive Probe Set and Bioinformatics Pipeline for
+      Phylogeny Reconstruction and Multi'
     install_method: pip_pkg
     install_url: pip install https://github.com/kblin/ncbi-genome-download
     verified_status: repo_ok
@@ -157,14 +251,14 @@ tools:
     verified_license_path: LICENSE
     verified_entry_scripts:
     - ncbi_genome_download/__main__.py
-    verified_checked_at: '2026-08-14T04:12:23.165196'
+    verified_checked_at: '2026-08-14T07:45:09.142854'
     dependencies:
       system_commands: []
       readme_hint: conda
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_xm4id_us/venv/bin/ncbi-genome-download --help` ->
+    exec_reason: '`/tmp/execute_c8_v29c4/venv/bin/ncbi-genome-download --help` ->
       exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "             comma-separated list of relatons. For example:\n\
@@ -235,6 +329,7 @@ tools:
     - name: -p
       type: integer
       description: ', --parallel N    Run N downloads in parallel (default: 1)'
+      required: false
     - name: -r
       type: integer
       description: ', --retries N     Retry download N times when connection to NCBI
@@ -244,7 +339,7 @@ tools:
     - certifi==2026.7.22
     - charset-normalizer==3.5.0
     - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_xm4id_us/ncbi-genome-download
+    - ncbi-genome-download @ file:///tmp/execute_c8_v29c4/ncbi-genome-download
     - packaging==26.3
     - requests==2.34.2
     - tqdm==4.70.0
@@ -253,296 +348,14 @@ tools:
     exec_retries: 0
     exec_heal_evidence: ''
     inputs_source: help_parsed
-- name: metaphlan
+- name: vitap
   type: cli
-  command: metaphlan {{input_file}}
+  command: VITAP {{input_file}}
   arg_style: positional
   callable_via: ''
   readme_examples: []
   readme_usage: ''
-  description: '[Auto-discovered] MetaPhlAn is a computational tool for profiling
-    the composition of microbial communities from metagenomic shotgun sequencing data
-    (⭐420, Python) (license: license.txt)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    input_type:
-      type: string
-      description: CLI flag --input_type
-      source: help_parsed
-    force:
-      type: string
-      description: profiling of the input file by removing the mapout file
-      source: help_parsed
-    db_dir:
-      type: string
-      description: CLI flag --db_dir
-      source: help_parsed
-    x:
-      type: string
-      description: ', --index INDEX'
-      source: help_parsed
-    mapout:
-      type: string
-      description: The file for saving the mapping output (old --bowtie2out option)
-      source: help_parsed
-    min_mapq_val:
-      type: string
-      description: CLI flag --min_mapq_val
-      source: help_parsed
-    no_map:
-      type: string
-      description: storing the --mapout map file
-      source: help_parsed
-    tmp_dir:
-      type: string
-      description: folder used to store temporary files
-      source: help_parsed
-    bt2_ps:
-      type: string
-      description: 2 presets
-      source: help_parsed
-    bowtie2_exe:
-      type: string
-      description: 2_EXE
-      source: help_parsed
-    bowtie2_build:
-      type: string
-      description: 2_BUILD
-      source: help_parsed
-    tax_lev:
-      type: string
-      description: CLI flag --tax_lev
-      source: help_parsed
-    min_alignment_len:
-      type: string
-      description: sam records for aligned reads with the longest subalignment
-      source: help_parsed
-    ignore_eukaryotes:
-      type: string
-      description: not profile eukaryotic organisms
-      source: help_parsed
-    ignore_bacteria:
-      type: string
-      description: not profile bacterial organisms
-      source: help_parsed
-    ignore_archaea:
-      type: string
-      description: not profile archeal organisms
-      source: help_parsed
-    ignore_ksgbs:
-      type: string
-      description: not profile known SGBs (together with --sgb option)
-      source: help_parsed
-    ignore_usgbs:
-      type: string
-      description: not profile unknown SGBs (together with --sgb option)
-      source: help_parsed
-    stat_q:
-      type: string
-      description: value for the robust average
-      source: help_parsed
-    perc_nonzero:
-      type: string
-      description: of markers with a non zero relative abundance for misidentify a
-        species
-      source: help_parsed
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: pip_pkg
-    command: pip install https://github.com/biobakery/MetaPhlAn
-    system_commands: []
-    python_packages:
-    - biom_format==2.1.17
-    - biopython==1.88
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.0
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cycler==0.12.1
-    - DendroPy==5.0.10
-    - fonttools==4.63.0
-    - h5py==3.16.0
-    - idna==3.18
-    - kiwisolver==1.5.0
-    - matplotlib==3.11.1
-    - metaphlan @ file:///tmp/execute_bbt48_3t/MetaPhlAn
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - PhyloPhlAn==3.2.1
-    - pillow==12.3.0
-    - pyparsing==3.3.2
-    declared_packages: []
-    missing_deps:
-    - Bio
-    - StringIO
-    - array
-    - biom
-    - consensus_markers
-    - database_controller
-    - dendropy
-    - external_exec
-    - matplotlib
-    - numpy
-    - optparse
-    - packaging
-    - pandas
-    - parallelisation
-    - phylophlan_controller
-    - pickletools
-    - pylab
-    - pyphlan
-    - pysam
-    - scipy
-    - scripts
-    - setuptools
-    - shlex
-    - stat
-    - util_fun
-    - utils
-    venv_path: /tmp/execute_bbt48_3t/venv
-  _discovery_metadata:
-    github: https://github.com/biobakery/MetaPhlAn
-    stars: 420
-    language: Python
-    tags:
-    - software
-    - metaphlan
-    quality_score: 55
-    paper_doi: 10.12688/wellcomeopenres.19155.2
-    paper_title: Recovery of metagenomic data from the Aedes aegypti microbiome using
-      a reproducible snakemake pipeli
-    install_method: pip_pkg
-    install_url: pip install https://github.com/biobakery/MetaPhlAn
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
-      license); command not installed'
-    verified_license: true
-    verified_license_path: license.txt
-    verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T04:12:50.538885'
-    dependencies:
-      system_commands: []
-      readme_hint: conda
-      container_files: []
-      install_method: pip_pkg
-    exec_status: passed
-    exec_reason: '`/tmp/execute_bbt48_3t/venv/bin/metaphlan --help` -> exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "oad of the latest MetaPhlAn database.\n  --read_min_len READ_MIN_LEN\n\
-      \                        Specify the minimum length of the reads to be considered\
-      \ when parsing the input file with 'read_fastx.py' script, default value is\
-      \ 70\n  --verbose             Makes MetaPhlAn verbose\n  -v, --version     \
-      \    Prints the current MetaPhlAn version and exit\n  -h, --help           \
-      \ show this help message and exit\n"
-    exec_params_schema:
-    - name: --input_type
-      type: string
-      description: CLI flag --input_type
-    - name: --force
-      type: string
-      description: profiling of the input file by removing the mapout file
-    - name: --db_dir
-      type: string
-      description: CLI flag --db_dir
-    - name: -x
-      type: string
-      description: ', --index INDEX'
-    - name: --mapout
-      type: string
-      description: The file for saving the mapping output (old --bowtie2out option)
-    - name: --min_mapq_val
-      type: string
-      description: CLI flag --min_mapq_val
-    - name: --no_map
-      type: string
-      description: storing the --mapout map file
-    - name: --tmp_dir
-      type: string
-      description: folder used to store temporary files
-    - name: --bt2_ps
-      type: string
-      description: 2 presets
-    - name: --bowtie2_exe
-      type: string
-      description: 2_EXE
-    - name: --bowtie2_build
-      type: string
-      description: 2_BUILD
-    - name: --tax_lev
-      type: string
-      description: CLI flag --tax_lev
-    - name: --min_alignment_len
-      type: string
-      description: sam records for aligned reads with the longest subalignment
-    - name: --ignore_eukaryotes
-      type: string
-      description: not profile eukaryotic organisms
-    - name: --ignore_bacteria
-      type: string
-      description: not profile bacterial organisms
-    - name: --ignore_archaea
-      type: string
-      description: not profile archeal organisms
-    - name: --ignore_ksgbs
-      type: string
-      description: not profile known SGBs (together with --sgb option)
-    - name: --ignore_usgbs
-      type: string
-      description: not profile unknown SGBs (together with --sgb option)
-    - name: --stat_q
-      type: string
-      description: value for the robust average
-    - name: --perc_nonzero
-      type: string
-      description: of markers with a non zero relative abundance for misidentify a
-        species
-    exec_installed_versions:
-    - biom_format==2.1.17
-    - biopython==1.88
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.0
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cycler==0.12.1
-    - DendroPy==5.0.10
-    - fonttools==4.63.0
-    - h5py==3.16.0
-    - idna==3.18
-    - kiwisolver==1.5.0
-    - matplotlib==3.11.1
-    - metaphlan @ file:///tmp/execute_bbt48_3t/MetaPhlAn
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - PhyloPhlAn==3.2.1
-    - pillow==12.3.0
-    - pyparsing==3.3.2
-    - pysam==0.24.0
-    - python-dateutil==2.9.0.post0
-    - requests==2.34.2
-    - scipy==1.17.1
-    - seaborn==0.13.2
-    - six==1.17.0
-    - tqdm==4.70.0
-    - urllib3==2.7.0
-    exec_executable: metaphlan
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: help_parsed
-- name: gtctovcf
-  type: cli
-  command: disc_gtctovcf {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] Script to convert GTC/BPM files to VCF (⭐48, Python)
+  description: '[Auto-discovered] The viral taxonomic assignment pipeline (⭐45, Python)
     (license: LICENSE)'
   output_control:
     intercept_large_output: true
@@ -552,520 +365,216 @@ tools:
       type: string
       description: Input file path inside /data.
       source: placeholder
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
   execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: docker
-    command: docker build -t GTCtoVCF . && docker run GTCtoVCF
-    system_commands: []
-    python_packages: []
-    declared_packages: []
-    missing_deps:
-    - BAlleleFreqFormat
-    - BPMReader
-    - BPMRecord
-    - CallFactory
-    - FormatFactory
-    - GencallFormat
-    - GenotypeFormat
-    - IlluminaBeadArrayFiles
-    - LocusEntry
-    - LocusEntryFactory
-    - LogRRatioFormat
-    - ReaderTemplateFactory
-    - ReferenceGenome
-    - VcfRecordFactory
-    - numpy
-    - pysam
-    - vcf
-    venv_path: ''
-  _discovery_metadata:
-    github: https://github.com/Illumina/GTCtoVCF
-    stars: 48
-    language: Python
-    tags:
-    - software
-    - gtctovcf
-    quality_score: 53.8
-    paper_doi: 10.1093/bioinformatics/btaa1081
-    paper_title: Accurate, scalable cohort variant calls using DeepVariant and GLnexus.
-    install_method: docker
-    install_url: docker build -t GTCtoVCF . && docker run GTCtoVCF
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps:  docker license); command
-      not installed'
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T04:14:50.477716'
-    dependencies:
-      system_commands: []
-      readme_hint: conda
-      container_files:
-      - Dockerfile
-      install_method: docker
-    exec_status: passed
-    exec_reason: '`docker run disc_gtctovcf --help` -> exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "names to filter from\n                        input manifest\
-      \ (optional)\n  --disable-genome-cache\n                        Disable caching\
-      \ of genome reference data\n  --include-attributes [{GT,GQ,BAF,LRR} [{GT,GQ,BAF,LRR}\
-      \ ...]]\n                        Additional attributes to include in VCF FORMAT\
-      \ output\n                        (optional)\n  --version             show program's\
-      \ version number and exit\n"
-    exec_params_schema: []
-    exec_installed_versions: []
-    exec_executable: disc_gtctovcf
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: placeholder
-- name: scottknottesd
-  type: cli
-  command: ScottKnottESD {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] The Scott-Knott Effect Size Difference (ESD) test
-    (⭐46, R) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    input_file:
-      type: string
-      description: Input file path inside /data.
-      source: placeholder
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: r_pkg
-    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/klainfo/ScottKnottESD")'
-    system_commands: []
-    python_packages: []
-    declared_packages: []
-    missing_deps: []
-    venv_path: /tmp/execute_nmxr7cyy/venv
-  _discovery_metadata:
-    github: https://github.com/klainfo/ScottKnottESD
-    stars: 46
-    language: R
-    tags:
-    - software
-    - scottknottesd
-    quality_score: 52.6
-    paper_doi: 10.3389/fgene.2022.1096797
-    paper_title: Is an SV caller compatible with sequencing data? An online recommendation
-      tool to automatically reco
-    install_method: r_pkg
-    install_url: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/klainfo/ScottKnottESD")'
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps:  lang=R license); command
-      not installed'
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T04:14:57.471774'
-    dependencies:
-      system_commands: []
-      readme_hint: ''
-      container_files: []
-      install_method: r_pkg
-    exec_status: passed
-    exec_reason: '`conda run -n base R -e ''library(ScottKnottESD)''` -> exit 0'
-    exec_install_evidence: 'ta
-
-      *** moving datasets to lazyload DB
-
-      ** inst
-
-      ** byte-compile and prepare package for lazy loading
-
-      ** help
-
-      *** installing help indices
-
-      ** building package indices
-
-      ** testing if installed package can be loaded from temporary location
-
-      ** testing if installed package can be loaded from final location
-
-      ** testing if installed package keeps a record of temporary installation path
-
-      * DONE (ScottKnottESD)
-
-      '
-    exec_run_evidence: "e R or R packages in publications.\n\nType 'demo()' for some\
-      \ demos, 'help()' for on-line help, or\n'help.start()' for an HTML browser interface\
-      \ to help.\nType 'q()' to quit R.\n\n> library(ScottKnottESD); cat('R_IMPORT_OK')\n\
-      R_IMPORT_OK> \nLoading required package: reshape2\nLoading required package:\
-      \ effsize\nLoading required package: car\nLoading required package: carData\n\
-      Loading required package: forecast\n"
-    exec_params_schema: []
-    exec_installed_versions: []
-    exec_executable: ScottKnottESD
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: placeholder
-- name: condiga
-  type: cli
-  command: condiga {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] 🗂️🧬 Contigs directed gene annotation for accurate
-    protein sequence database construction in metaproteomics (⭐6, Python) (license:
-    LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    contigs:
-      type: path
-      description: path to the contigs file
-      source: help_parsed
-    genes:
-      type: path
-      description: path to the genes file
-      source: help_parsed
-    nthreads:
-      type: integer
-      description: number of threads to use
-      source: help_parsed
-    output:
-      type: path
-      description: path to the output folder
-      source: help_parsed
-    version:
-      type: string
-      description: the version and exit.
-      source: help_parsed
-    'ConDiGA:':
-      type: path
-      description: 'Positional argument ConDiGA:'
-      source: help_parsed
-      positional: true
-    Contigs:
-      type: path
-      description: Positional argument Contigs
-      source: help_parsed
-      positional: true
-    directed:
-      type: path
-      description: Positional argument directed
-      source: help_parsed
-      positional: true
-    gene:
-      type: path
-      description: Positional argument gene
-      source: help_parsed
-      positional: true
-    annotation:
-      type: path
-      description: Positional argument annotation
-      source: help_parsed
-      positional: true
-    for:
-      type: path
-      description: Positional argument for
-      source: help_parsed
-      positional: true
-    accurate:
-      type: path
-      description: Positional argument accurate
-      source: help_parsed
-      positional: true
-    protein:
-      type: path
-      description: Positional argument protein
-      source: help_parsed
-      positional: true
-    sequence:
-      type: path
-      description: Positional argument sequence
-      source: help_parsed
-      positional: true
-  execution: null
-  subcommands: []
+  subcommands:
+  - assignment
+  - upd
+  - The
   subcommand_details: {}
   subcommand_discovery_complete: false
   install:
     method: pip_pkg
-    command: pip install https://github.com/metagentools/ConDiGA
+    command: pip install https://github.com/DrKaiyangZheng/VITAP
     system_commands: []
     python_packages:
+    - archspec==0.2.6
     - biopython==1.88
-    - click==8.4.2
-    - condiga @ file:///tmp/execute_0qp7i5d9/ConDiGA
     - numpy==2.4.6
     - packaging==26.3
+    - pandas==3.0.5
+    - polars==1.43.2
+    - polars-runtime-32==1.43.2
+    - pyarrow==25.0.1
+    - pyrodigal==3.7.1
+    - python-dateutil==2.9.0.post0
+    - six==1.17.0
     - tqdm==4.70.0
-    - xlsxwriter==3.2.9
+    - VITAP @ file:///tmp/execute_lasawdq1/VITAP
     declared_packages: []
     missing_deps:
     - Bio
-    - click
+    - concurrent
+    - pandas
+    - polars
+    - pyrodigal
     - setuptools
-    - xlsxwriter
-    venv_path: /tmp/execute_0qp7i5d9/venv
+    - tqdm
+    - uniref90_accession2taxid
+    - uniref_taxa_fallback
+    venv_path: /tmp/execute_lasawdq1/venv
   _discovery_metadata:
-    github: https://github.com/metagentools/ConDiGA
-    stars: 6
+    github: https://github.com/DrKaiyangZheng/VITAP
+    stars: 45
     language: Python
     tags:
-    - database
-    - protein
-    - sequence
-    - condiga
-    quality_score: 28.6
-    paper_doi: 10.1186/s40168-024-01775-3
-    paper_title: Contigs directed gene annotation (ConDiGA) for accurate protein sequence
-      database construction in me
+    - pipeline
+    - vitap
+    quality_score: 52.0
+    paper_doi: 10.1038/s41467-025-57500-7
+    paper_title: 'VITAP: a high precision tool for DNA and RNA viral classification
+      based on meta-omic data.'
     install_method: pip_pkg
-    install_url: pip install https://github.com/metagentools/ConDiGA
+    install_url: pip install https://github.com/DrKaiyangZheng/VITAP
     verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py, build/environment.yml
-      lang=Python license); command not installed'
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
+      license); command not installed'
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T04:16:01.589670'
+    verified_checked_at: '2026-08-14T07:46:22.847566'
     dependencies:
       system_commands: []
       readme_hint: conda
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_0qp7i5d9/venv/bin/condiga --help` -> exit 0'
+    exec_reason: '`/tmp/execute_lasawdq1/venv/bin/VITAP --help` -> exit 0'
     exec_install_evidence: ''
-    exec_run_evidence: "                                 minimum mapping length threshold\
-      \ cut-off\n                                  [default: 0.5; 0<=x<=1]\n  -t,\
-      \ --nthreads INTEGER          number of threads to use  [default: 8]\n  -o,\
-      \ --output PATH               path to the output folder  [required]\n  -v, --version\
-      \                   Show the version and exit.\n  --help                   \
-      \       Show this message and exit.\n"
+    exec_run_evidence: "nt    VITAP taxonomic assignment pipeline.\n  upd        \
+      \   Update program of VITAP.\n                The VITAP will update database\
+      \ based on ICTV VMR (or other formated source) and UniRef90 database.\n\nPlease\
+      \ cite: Zheng, K. et al. VITAP: a high precision tool for DNA and RNA viral\
+      \ classification based on meta-omic data. Nat Commun 16, 2226 (2025).\nFor command-specific\
+      \ help, run: VITAP <command> -h\n"
+    exec_params_schema: []
+    exec_installed_versions:
+    - archspec==0.2.6
+    - biopython==1.88
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - polars==1.43.2
+    - polars-runtime-32==1.43.2
+    - pyarrow==25.0.1
+    - pyrodigal==3.7.1
+    - python-dateutil==2.9.0.post0
+    - six==1.17.0
+    - tqdm==4.70.0
+    - VITAP @ file:///tmp/execute_lasawdq1/VITAP
+    exec_executable: VITAP
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: placeholder
+- name: midas
+  type: cli
+  command: midas {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Metagenomic Intra-Species Diversity Analysis (MIDAS)
+    (⭐44, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    version:
+      type: string
+      description: program's version number and exit
+      source: help_parsed
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/pollardlab/MIDAS
+    system_commands: []
+    python_packages:
+    - argcomplete==3.7.2
+    - argh==0.31.3
+    - biopython==1.83
+    - gffutils==0.14
+    - midasv3 @ file:///tmp/execute_f2_o47z9/MIDAS
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - pybedtools==0.12.0
+    - pyfaidx==0.9.0.4
+    - pysam==0.24.0
+    - python-dateutil==2.9.0.post0
+    - simplejson==4.1.1
+    - six==1.17.0
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - bisect
+    - gffutils
+    - midas
+    - numpy
+    - operator
+    - pandas
+    - pybedtools
+    - pysam
+    - setuptools
+    - sphinx_rtd_theme
+    venv_path: /tmp/execute_f2_o47z9/venv
+  _discovery_metadata:
+    github: https://github.com/pollardlab/MIDAS
+    stars: 44
+    language: Python
+    tags:
+    - software
+    - midas
+    quality_score: 51.4
+    paper_doi: 10.1093/bioinformatics/btac713
+    paper_title: 'MIDAS2: Metagenomic Intra-species Diversity Analysis System.'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/pollardlab/MIDAS
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: midas/__main__.py; deps: setup.cfg,
+      setup.py lang=Python license); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts:
+    - midas/__main__.py
+    verified_checked_at: '2026-08-14T07:46:28.073309'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_f2_o47z9/venv/bin/midas --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: "\n    annotate_pangenome  Decorate pangenome with annotated\
+      \ genomes.\n    enhance_pangenome   Enhance pangenome for specified species\n\
+      \    prune_centroids     Prune centroids for specified genomes/species\n\noptions:\n\
+      \  -h, --help            show this help message and exit\n  -v, --version  \
+      \       show program's version number and exit\n\nFor more information, see\
+      \ https://midas2.readthedocs.io/en/latest/#\n"
     exec_params_schema:
-    - name: --contigs
-      type: path
-      description: path to the contigs file
-      aliases:
-      - -c
-    - name: --genes
-      type: path
-      description: path to the genes file
-      aliases:
-      - -g
-    - name: --nthreads
-      type: integer
-      description: number of threads to use
-      aliases:
-      - -t
-    - name: --output
-      type: path
-      description: path to the output folder
-      aliases:
-      - -o
     - name: --version
       type: string
-      description: the version and exit.
+      description: program's version number and exit
       aliases:
       - -v
     exec_installed_versions:
-    - biopython==1.88
-    - click==8.4.2
-    - condiga @ file:///tmp/execute_0qp7i5d9/ConDiGA
+    - argcomplete==3.7.2
+    - argh==0.31.3
+    - biopython==1.83
+    - gffutils==0.14
+    - midasv3 @ file:///tmp/execute_f2_o47z9/MIDAS
     - numpy==2.4.6
     - packaging==26.3
-    - tqdm==4.70.0
-    - xlsxwriter==3.2.9
-    exec_executable: condiga
+    - pandas==3.0.5
+    - pybedtools==0.12.0
+    - pyfaidx==0.9.0.4
+    - pysam==0.24.0
+    - python-dateutil==2.9.0.post0
+    - simplejson==4.1.1
+    - six==1.17.0
+    exec_executable: midas
     exec_retries: 0
     exec_heal_evidence: ''
     inputs_source: help_parsed
-- name: ggcorrplot
-  type: cli
-  command: ggcorrplot {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] wavess: An R package for simulation of adaptive
-    within-host virus sequence evolution. (⭐0, ) (NO license - research use only)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    input_file:
-      type: string
-      description: Input file path inside /data.
-      source: placeholder
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: r_pkg
-    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/kassambara/ggcorrplot")'
-    system_commands: []
-    python_packages: []
-    declared_packages: []
-    missing_deps: []
-    venv_path: /tmp/execute_heagk6j3/venv
-  _discovery_metadata:
-    github: https://github.com/kassambara/ggcorrplot
-    stars: 0
-    language: ''
-    tags:
-    - software
-    - ggcorrplot
-    - simulation
-    - sequence
-    - evolution
-    quality_score: 5.0
-    paper_doi: 10.1371/journal.pcbi.1013437
-    paper_title: 'wavess: An R package for simulation of adaptive within-host virus
-      sequence evolution.'
-    install_method: r_pkg
-    install_url: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/kassambara/ggcorrplot")'
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps:  lang=R no-license);
-      command not installed'
-    verified_license: false
-    verified_license_path: ''
-    verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T04:18:14.680153'
-    dependencies:
-      system_commands: []
-      readme_hint: ''
-      container_files: []
-      install_method: r_pkg
-    exec_status: passed
-    exec_reason: '`conda run -n base R -e ''library(ggcorrplot)''` -> exit 0'
-    exec_install_evidence: 'inst
-
-      ** byte-compile and prepare package for lazy loading
-
-      ** help
-
-      *** installing help indices
-
-      *** copying figures
-
-      ** building package indices
-
-      ** installing vignettes
-
-      ** testing if installed package can be loaded from temporary location
-
-      ** testing if installed package can be loaded from final location
-
-      ** testing if installed package keeps a record of temporary installation path
-
-      * DONE (ggcorrplot)
-
-      '
-    exec_run_evidence: " details.\n\nR is a collaborative project with many contributors.\n\
-      Type 'contributors()' for more information and\n'citation()' on how to cite\
-      \ R or R packages in publications.\n\nType 'demo()' for some demos, 'help()'\
-      \ for on-line help, or\n'help.start()' for an HTML browser interface to help.\n\
-      Type 'q()' to quit R.\n\n> library(ggcorrplot); cat('R_IMPORT_OK')\nR_IMPORT_OK>\
-      \ \nLoading required package: ggplot2\n"
-    exec_params_schema: []
-    exec_installed_versions: []
-    exec_executable: ggcorrplot
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: placeholder
-- name: statgengwas
-  type: cli
-  command: statgenGWAS {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] ShiNyP: Unlocking SNP-Based Population Genetics-AI-Assisted
-    Platform for Rapid and Interactive Visua (⭐0, ) (NO license - research use only)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    input_file:
-      type: string
-      description: Input file path inside /data.
-      source: placeholder
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: r_pkg
-    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/Biometris/statgenGWAS")'
-    system_commands: []
-    python_packages: []
-    declared_packages: []
-    missing_deps: []
-    venv_path: /tmp/execute_6v8hos4t/venv
-  _discovery_metadata:
-    github: https://github.com/Biometris/statgenGWAS
-    stars: 0
-    language: ''
-    tags:
-    - statgengwas
-    - web_server
-    quality_score: 5.0
-    paper_doi: 10.1093/molbev/msaf117
-    paper_title: 'ShiNyP: Unlocking SNP-Based Population Genetics-AI-Assisted Platform
-      for Rapid and Interactive Visua'
-    install_method: r_pkg
-    install_url: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/Biometris/statgenGWAS")'
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps:  lang=R no-license);
-      command not installed'
-    verified_license: false
-    verified_license_path: ''
-    verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T04:18:44.939008'
-    dependencies:
-      system_commands: []
-      readme_hint: ''
-      container_files: []
-      install_method: r_pkg
-    exec_status: passed
-    exec_reason: '`conda run -n base R -e ''library(statgenGWAS)''` -> exit 0'
-    exec_install_evidence: '* installing help indices
-
-      *** copying figures
-
-      ** building package indices
-
-      ** installing vignettes
-
-      ** testing if installed package can be loaded from temporary location
-
-      ** checking absolute paths in shared objects and dynamic libraries
-
-      ** testing if installed package can be loaded from final location
-
-      ** testing if installed package keeps a record of temporary installation path
-
-      * DONE (statgenGWAS)
-
-      '
-    exec_run_evidence: "' or 'licence()' for distribution details.\n\nR is a collaborative\
-      \ project with many contributors.\nType 'contributors()' for more information\
-      \ and\n'citation()' on how to cite R or R packages in publications.\n\nType\
-      \ 'demo()' for some demos, 'help()' for on-line help, or\n'help.start()' for\
-      \ an HTML browser interface to help.\nType 'q()' to quit R.\n\n> library(statgenGWAS);\
-      \ cat('R_IMPORT_OK')\nR_IMPORT_OK> \n"
-    exec_params_schema: []
-    exec_installed_versions: []
-    exec_executable: statgenGWAS
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: placeholder
