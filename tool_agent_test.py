@@ -37,6 +37,7 @@ API_KEY = (os.environ.get("WESTLAKE_API_KEY") or os.environ.get("OPENAI_API_KEY"
            or os.environ.get("DEEPSEEK_API_KEY") or "")
 REGISTRY = os.environ.get("REGISTRY", "data/mcp_registry.yaml")
 MAX_TURNS = 6
+MAX_SAME_TOOL_ATTEMPTS = 3  # anti-tool-roulette: cap retries per tool per task
 
 
 def load_tools(path: str) -> list[dict]:
@@ -87,11 +88,6 @@ def validate_tool_schema(tool: dict) -> str:
     unknown = [v for v in vars_used if v not in input_names]
     if unknown:
         return f"SCHEMA_INVALID: unknown template variable {sorted(set(unknown))} (command {cmd[:60]})"
-    # duplicate template variable: e.g. `kaptain {{ONT_IN}} {{ONT_IN}} ...`.
-    # repeated flags on the CLI are usually a parse artifact, not intent.
-    dupes = sorted({v for v in vars_used if vars_used.count(v) > 1})
-    if dupes:
-        return f"SCHEMA_INVALID: duplicate template variable {dupes} (command {cmd[:60]})"
     # R package / python_import without -m: not directly callable as a command
     if as_ == "python" and not (tool.get("callable_via") or "").startswith("python -m "):
         return "R_PACKAGE_OR_IMPORT"
@@ -277,6 +273,7 @@ def main() -> int:
     print(f"\n== {len(tasks)} concrete per-tool tasks ==")
     stats = {"selected": 0, "started": 0, "succeeded": 0, "output_valid": 0}
     per_tool = {}
+    tool_attempts = {}  # anti-tool-roulette: cap tries per tool per task
     for label, user_prompt, expect_sub, out_path in tasks:
         print(f"\n=== task: {label} ===")
         if os.path.exists(out_path):
@@ -305,7 +302,14 @@ def main() -> int:
                     tool_name, sub = fnmap[fn_name]
                     if tool_name not in spec_map:
                         result = f"unknown tool {tool_name}"
+                    elif tool_attempts[tool_name] >= MAX_SAME_TOOL_ATTEMPTS:
+                        # anti-tool-roulette: same tool kept failing -> tell the
+                        # agent to STOP retrying it and fix the task differently.
+                        result = (f"[tool {tool_name} already tried {tool_attempts[tool_name]} times "
+                                  f"and kept failing. STOP calling {tool_name}. Fix the argument "
+                                  f"values or use a different tool/approach.]")
                     else:
+                        tool_attempts[tool_name] += 1
                         tool_spec = dict(spec_map[tool_name])
                         if sub:
                             tool_spec["_active_subcommand"] = sub

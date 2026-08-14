@@ -169,6 +169,57 @@ def _detect_arg_style(help_output: str) -> str:
     return "named"
 
 
+def _probe_cli(report: dict, exe: str, env: dict | None = None) -> dict | None:
+    """Run `exe --help` and fill the report with arg_style / params / subcommands.
+
+    Unlike the inline smoke code, this ALWAYS does subcommand discovery (probe
+    each subcommand's own --help) so every install path -- cargo/go/npm/pip --
+    produces the same rich schema. Returns the report on success, else None.
+    """
+    try:
+        rc, out, err = _run([exe, "--help"], RUN_TIMEOUT, env=env)
+    except Exception:
+        return None
+    combined = (out or err) if rc == 0 else None
+    if not combined or not combined.strip():
+        return None
+    report["status"] = "passed"
+    report["reason"] = f"`{exe} --help` -> exit {rc}"
+    report["run_ok"] = True
+    report["run_evidence"] = combined[-400:]
+    report["params_schema"] = _parse_help_params(combined)
+    report["arg_style"] = _detect_arg_style(combined)
+    report["positional_args"] = _parse_positional_args(combined)
+    report["subcommands"] = _parse_subcommands(combined)
+    if report["arg_style"] == "subcommand" and report["subcommands"]:
+        subs = {}
+        probed = 0
+        ok = 0
+        for sub in report["subcommands"]:
+            probed += 1
+            try:
+                rc_s, out_s, err_s = _run([exe, sub, "--help"], RUN_TIMEOUT, env=env)
+            except Exception:
+                rc_s, out_s, err_s = 1, "", ""
+            if rc_s == 0 and (out_s.strip() or err_s.strip()):
+                ok += 1
+                flags = _parse_help_params(out_s or err_s)
+                pos = _parse_positional_args(out_s or err_s, skip_first=True)
+                merged = list(flags)
+                for p in pos:
+                    if p.get("positional"):
+                        p["positional"] = True
+                        merged.append(p)
+                subs[sub] = {
+                    "params": merged,
+                    "usage": _extract_usage(out_s or err_s),
+                }
+        report["subcommand_discovery_complete"] = (probed > 0 and ok == probed)
+        if subs:
+            report["subcommand_details"] = subs
+    return report
+
+
 def _extract_readme_examples(repo_dir: str, pkg: str, max_examples: int = 3) -> list[str]:
     """Extract concrete invocation examples from the README.
 
@@ -475,13 +526,18 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
             elif metavar and metavar.lower() in ("float", "double"):
                 ptype = "float"
             # keep only the human description, drop argparse noise like
-            # [required], [default: x], [choices: a|b]
+            # [required], [default: x], [choices: a|b] -- but remember whether
+            # a default was given: a flag with a default is OPTIONAL.
+            has_default = bool(re.search(r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)",
+                                         desc, re.IGNORECASE))
             desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$", "", desc).strip()
             entry = {
                 "name": name,
                 "type": ptype,
                 "description": desc or f"CLI flag {name}",
             }
+            if has_default:
+                entry["required"] = False
             if aliases:
                 entry["aliases"] = aliases
             params.append(entry)
@@ -1106,13 +1162,8 @@ def execute_test(repo_url: str, install_method: str = "",
             for cand in exe_cand:
                 exe = os.path.join(nbin, cand) if os.path.isdir(nbin) else ""
                 if os.path.exists(exe):
-                    rc_s, out_s, err_s = _run([exe, "--help"], RUN_TIMEOUT)
-                    if rc_s == 0 and (out_s.strip() or err_s.strip()):
-                        report["status"] = "passed"
-                        report["reason"] = f"`{exe} --help` -> exit 0"
-                        report["run_ok"] = True
-                        report["run_evidence"] = (out_s + err_s)[-400:]
-                        report["executable"] = cand
+                    report["executable"] = cand
+                    if _probe_cli(report, exe, env=env):
                         return report
             report["status"] = "failed"
             report["reason"] = "npm install ok but no runnable binary smoke passed"
@@ -1140,16 +1191,12 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["reason"] = f"cargo build failed (exit {rc_c}): {(out_c + err_c)[-200:]}"
                 return report
             report["install_ok"] = True
-            # smoke via the built binary in target/release
+            # smoke via the built binary in target/release (with subcommand
+            # discovery, like every other install path)
             built = os.path.join(repo_dir, "target", "release", name)
             if os.path.exists(built):
-                rc_s, out_s, err_s = _run([built, "--help"], RUN_TIMEOUT)
-                if rc_s == 0 and (out_s.strip() or err_s.strip()):
-                    report["status"] = "passed"
-                    report["reason"] = f"`{built} --help` -> exit 0"
-                    report["run_ok"] = True
-                    report["run_evidence"] = (out_s + err_s)[-400:]
-                    report["executable"] = os.path.basename(built)
+                report["executable"] = os.path.basename(built)
+                if _probe_cli(report, built, env=env):
                     return report
             report["status"] = "failed"
             report["reason"] = "cargo build ok but no runnable binary smoke passed"
@@ -1168,13 +1215,8 @@ def execute_test(repo_url: str, install_method: str = "",
             report["install_ok"] = True
             built = os.path.join(workdir, safe_name + "_go")
             if os.path.exists(built):
-                rc_s, out_s, err_s = _run([built, "--help"], RUN_TIMEOUT)
-                if rc_s == 0 and (out_s.strip() or err_s.strip()):
-                    report["status"] = "passed"
-                    report["reason"] = f"`{built} --help` -> exit 0"
-                    report["run_ok"] = True
-                    report["run_evidence"] = (out_s + err_s)[-400:]
-                    report["executable"] = os.path.basename(built)
+                report["executable"] = os.path.basename(built)
+                if _probe_cli(report, built, env=env):
                     return report
             report["status"] = "failed"
             report["reason"] = "go build ok but no runnable binary smoke passed"

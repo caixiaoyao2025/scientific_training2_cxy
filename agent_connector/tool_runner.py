@@ -597,4 +597,18 @@ def format_result(result: dict[str, Any]) -> str:
     if stderr.strip():
         preview = (preview + "\n[stderr]\n" + stderr) if preview else "[stderr]\n" + stderr
     status = result.get("status", "ok")
-    return f"[tool status: {status}, exit code: {result.get('return_code')}]\n{preview}".strip()
+    msg = f"[tool status: {status}, exit code: {result.get('return_code')}]\n{preview}".strip()
+    # structured hints so the agent FIXES parameters instead of tool-hopping:
+    # validation errors -> which inputs are wrong; command not found -> tell it
+    # the tool environment is broken so it should not keep retrying that tool.
+    if status == "validation_error":
+        msg += "\n[error_type: invalid_arguments] Fix the argument names/values " \
+               "per the tool's schema (required/type), then retry THIS tool."
+    elif status == "command_error" and result.get("return_code") == 127:
+        msg += ("\n[error_type: tool_not_installed] The tool executable is missing "
+                "and could not be auto-installed. Do NOT retry this tool; choose "
+                "another tool or report it as unavailable.")
+    elif status == "command_error" and result.get("return_code") is None:
+        msg += "\n[error_type: timeout] The tool timed out. Do NOT retry with the " \
+               "same arguments."
+    return msg
