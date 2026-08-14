@@ -82,6 +82,14 @@ def _check_registry_contract(entry: dict) -> str:
     md = entry.get("_discovery_metadata") or {}
     if md.get("inputs_source") == "placeholder":
         return "placeholder inputs (never --help-parsed); schema is a guess, not a contract"
+    # subcommand contract: must have complete details so to_function_schemas
+    # can emit leaf functions (bqtools_encode/decode/info). A subcommand tool
+    # without details would only yield a bare `{{subcommand}}` call.
+    if entry.get("arg_style") == "subcommand":
+        if not entry.get("subcommand_discovery_complete"):
+            return "subcommand discovery incomplete (subcommand_discovery_complete=false)"
+        if not entry.get("subcommand_details"):
+            return "subcommand_details empty; cannot emit leaf functions"
     cmd = entry.get("command") or ""
     inputs = entry.get("inputs") or {}
     used = re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
