@@ -126,10 +126,17 @@ def _parse_subcommands(help_output: str) -> list[str]:
         return []
     cmds = []
     for line in m.group(1).splitlines():
-        line = line.strip()
-        if not line:
+        line = line.rstrip()
+        if not line.strip():
             continue
-        name = line.split()[0] if line.split() else ""
+        # a command entry is "name<2+ spaces>description" (click/argparse
+        # column layout). Continuation sentences like "The VITAP will update
+        # database..." have single spaces between words and must NOT become
+        # subcommands (vitap previously parsed "The" as a subcommand).
+        mm = re.match(r"^\s*(\S+)\s{2,}\S", line)
+        if not mm:
+            continue
+        name = mm.group(1)
         if name and name not in cmds and not name.startswith("-"):
             cmds.append(name)
     return cmds[:20]
@@ -147,11 +154,12 @@ def _detect_arg_style(help_output: str) -> str:
     if not help_output:
         return "python"
     low = help_output.lower()
-    # subcommand CLI: help lists "Commands:" AND usage has a COMMAND token
+    # subcommand CLI: help lists "Commands:" with real entries. The old
+    # requirement that the usage line contain a COMMAND token was too strict
+    # (vitap's usage is `VITAP <command>` lowercase-wrapped and was missed,
+    # so subcommand_details were never probed).
     has_commands = re.search(r"\bcommands?\s*:", low) is not None
-    usage = re.search(r"usage:\s*(.+)", help_output, re.IGNORECASE)
-    usage_line = usage.group(1) if usage else ""
-    if has_commands and re.search(r"\bCOMMAND\b", usage_line, re.IGNORECASE):
+    if has_commands and _parse_subcommands(help_output):
         return "subcommand"
     # positional: usage tokens after the binary that are real args (not
     # options, not [..], not pseudo tokens like options:/COMMAND)
@@ -481,68 +489,112 @@ def _is_probable_subcommand(tok: str) -> bool:
     return True
 
 
+def _is_flag_line(line: str) -> bool:
+    """A new flag definition line starts with a flag token."""
+    return bool(re.match(r"^\s*-\w", line))
+
+
+def _join_wrapped_help(help_output: str) -> list[str]:
+    """Merge wrapped description continuation lines into their parent line.
+
+    argparse/click wrap long descriptions onto following lines with deep
+    indentation:
+        -s, --section {refseq,genbank}
+                                  Select database section (default: refseq)
+    Without joining, the flag parses fine but its description is lost (or,
+    worse, the wrap point lands mid-flag and the regex mis-parses).
+    """
+    joined: list[str] = []
+    for raw in help_output.splitlines():
+        stripped = raw.strip()
+        if not stripped:
+            joined.append("")
+            continue
+        indent = len(raw) - len(raw.lstrip())
+        is_new_item = _is_flag_line(stripped) or re.match(
+            r"^[a-zA-Z][\w -]*:\s*$", stripped) or stripped.lower().startswith(
+            ("usage:", "options:", "commands:", "positional"))
+        if (joined and joined[-1] and indent >= 8 and not is_new_item):
+            # continuation of the previous item's description. Join with 2+
+            # spaces so the flags-part/description split below still finds
+            # the column gap at the join point.
+            joined[-1] += "  " + stripped
+        else:
+            joined.append(stripped)
+    return joined
+
+
 def _parse_help_params(help_output: str) -> list[dict[str, str]]:
     """Extract CLI parameters from a --help / usage string.
 
-    Handles common formats (argparse, typer, click, optparse):
+    Handles common formats (argparse, typer, click, optparse), including:
       --reference PATH   Reference genome
       -r, --reference PATH
-      <input_file>       Input FASTA
-    Returns a list of {name, type, description}.
+      -s SECTION, --section {refseq,genbank}   short flag with its OWN metavar
+      -v, --verbose      Verbose output (boolean, takes no value)
+      descriptions wrapped onto continuation lines
+
+    Returns a list of {name, type, description, required, takes_value, aliases}.
+    `required` inference at the source:
+      - explicit [default: ...]  -> required False
+      - boolean flag (no metavar) -> required False
+      - everything else           -> required True (the command template
+        renders every flag, so the agent must supply a value)
     """
     if not help_output:
         return []
     help_output = re.sub(r"\x1b\[[0-9;]*m", "", help_output)  # strip ANSI
     params: list[dict[str, str]] = []
     seen: set[str] = set()
-    for line in help_output.splitlines():
-        line = line.strip()
-        if not line:
+    for line in _join_wrapped_help(help_output):
+        if not _is_flag_line(line):
             continue
-        m = re.match(r'^\s*(-[a-zA-Z],?\s+)?(--[\w][\w-]*|-[\w])\s+([A-Z_]+|\{[^}]+\}|<[^>]+>)?\s*(.*)$',
-                     line, re.IGNORECASE)
-        if not m:
-            continue
-        short_flag, flag, metavar, desc = m.group(1), m.group(2), m.group(3) or "", m.group(4) or ""
-        # if both a short and long flag are present, use the long name as the key
-        if short_flag and flag.startswith("--"):
-            name = flag
-            aliases = [short_flag.strip().rstrip(",")]
+        # split flags-part from description at the first 2+ space column gap
+        gap = re.search(r"\s{2,}", line)
+        if gap:
+            flags_part, desc = line[:gap.start()].strip(), line[gap.end():].strip()
         else:
-            name = flag
-            aliases = []
-        # skip the standard help flag itself; it's not a real tool parameter
+            flags_part, desc = line.strip(), ""
+        flags = re.findall(r"(?<![\w-])(-{1,2}[\w][\w-]*)", flags_part)
+        if not flags:
+            continue
+        metavars = [t for t in re.split(r"\s+", flags_part)
+                    if t and not t.startswith("-") and t not in (",",)]
+        metavar = metavars[-1] if metavars else ""
+        # prefer the long flag as the canonical name
+        long_flags = [f for f in flags if f.startswith("--")]
+        name = long_flags[0] if long_flags else flags[0]
+        aliases = [f for f in flags if f != name]
         if name in ("--help", "-h"):
             continue
-        # only flags (--x or short) make sense as named params
-        if (name.startswith("--") or (name.startswith("-") and not name.startswith("--"))) \
-                and name not in seen:
-            seen.add(name)
-            ptype = "string"
-            if metavar and metavar.lower() in ("path", "file", "dir", "directory", "infile", "outfile"):
-                ptype = "path"
-            elif metavar and metavar.lower() in ("int", "integer", "n", "count", "number"):
-                ptype = "integer"
-            elif metavar and metavar.lower() in ("float", "double"):
-                ptype = "float"
-            # keep only the human description, drop argparse noise like
-            # [required], [default: x], [choices: a|b] -- but remember whether
-            # a default was given: a flag with a default is OPTIONAL.
-            has_default = bool(re.search(r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)",
-                                         desc, re.IGNORECASE))
-            desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$", "", desc).strip()
-            entry = {
-                "name": name,
-                "type": ptype,
-                "description": desc or f"CLI flag {name}",
-            }
-            if has_default:
-                entry["required"] = False
-            if aliases:
-                entry["aliases"] = aliases
-            params.append(entry)
-        elif flag.startswith("--"):
+        if name in seen:
             continue
+        seen.add(name)
+        takes_value = bool(metavar)
+        ptype = "string"
+        mv = metavar.strip("<>").lower()
+        if not metavar:
+            ptype = "boolean"
+        elif mv in ("path", "file", "dir", "directory", "infile", "outfile"):
+            ptype = "path"
+        elif mv in ("int", "integer", "n", "count", "number"):
+            ptype = "integer"
+        elif mv in ("float", "double"):
+            ptype = "float"
+        has_default = bool(re.search(r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)",
+                                     desc, re.IGNORECASE))
+        desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$",
+                      "", desc).strip()
+        entry: dict[str, str] = {
+            "name": name,
+            "type": ptype,
+            "description": desc or f"CLI flag {name}",
+            "required": False if (has_default or not metavar) else True,
+            "takes_value": takes_value,
+        }
+        if aliases:
+            entry["aliases"] = aliases
+        params.append(entry)
     return params[:20]
 
 
@@ -1363,9 +1415,14 @@ def execute_test(repo_url: str, install_method: str = "",
 
         if exe_path:
             report["executable"] = os.path.basename(exe_path)
-            if _try([exe_path, sample]):
-                return report
+            # --help FIRST: on success the schema fields (params/arg_style/
+            # subcommands) are parsed from real help output. If the sample
+            # run went first and happened to exit 0 (many CLIs only warn on
+            # unknown args), those fields would be parsed from arbitrary
+            # run output -- garbage schema with status=passed.
             if _try([exe_path, "--help"]):
+                return report
+            if _try([exe_path, sample]):
                 return report
         elif cands:
             # no installed binary matched -> try entry scripts (.py/.sh) or the

@@ -244,7 +244,11 @@ def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
             "type": "string",
             "description": meta.get("description", "") or "",
         }
-        required.append(name)
+        # ONLY an explicit required: true is required -- matches
+        # to_function_schemas in tool_agent_test.py (forcing every param
+        # required hands the LLM a fake schema).
+        if (meta or {}).get("required") is True:
+            required.append(name)
     # surface the install / environment contract so the caller knows what to
     # set up before invoking the tool (see discovery_to_registry.py 'install')
     install = tool.get("install") or {}
@@ -264,6 +268,32 @@ def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
     return {"type": "function", "function": fn}
 
 
+def expand_subcommand_leaves(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Expand subcommand CLIs into one entry per subcommand.
+
+    Same contract as tool_agent_test.to_function_schemas: the agent sees
+    bqtools_encode(input, output) instead of a bare bqtools() with no params.
+    """
+    expanded: list[dict[str, Any]] = []
+    for tool in tools:
+        if tool.get("arg_style") == "subcommand" and tool.get("subcommand_details"):
+            for sub, detail in (tool.get("subcommand_details") or {}).items():
+                leaf = dict(tool)
+                leaf["name"] = f"{tool['name']}_{sub.replace('-', '_')}"
+                leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
+                leaf_inputs = {}
+                for p in (detail.get("params") or []):
+                    key = p.get("name", "").lstrip("-").replace("-", "_").lower()
+                    leaf_inputs[key] = {"type": p.get("type", "string"),
+                                        "description": p.get("description", "") or f"Argument {p.get('name')}",
+                                        "required": bool(p.get("required", False))}
+                leaf["inputs"] = leaf_inputs
+                expanded.append(leaf)
+        else:
+            expanded.append(tool)
+    return expanded
+
+
 def generate_tools_manifest(tools: list[dict[str, Any]], out_path: str = "tools_manifest.json") -> str:
     """Wiring style 'manifest': write a `tools=[...]` list (OpenAI function
     calling / LangChain compatible) and return the output path.
@@ -273,7 +303,7 @@ def generate_tools_manifest(tools: list[dict[str, Any]], out_path: str = "tools_
           tools_list = json.load(f)
       llm_kwargs = {"tools": tools_list, "tool_choice": "auto"}
     """
-    manifest = [_tool_to_function_schema(t) for t in tools]
+    manifest = [_tool_to_function_schema(t) for t in expand_subcommand_leaves(tools)]
     Path(out_path).write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -289,7 +319,7 @@ def generate_config_fragment(tools: list[dict[str, Any]], out_path: str = "tools
     agent's own config schema.
     """
     entries: dict[str, Any] = {}
-    for tool in tools:
+    for tool in expand_subcommand_leaves(tools):
         inputs = {
             name: {"type": meta.get("type", "string"), "description": meta.get("description", "")}
             for name, meta in (tool.get("inputs") or {}).items()
@@ -322,7 +352,7 @@ def generate_prompt_block(tools: list[dict[str, Any]]) -> str:
     """
     lines = ["## Available tools", "Call a tool exactly as: "
              '<tool name="TOOL_NAME" args=\'{"param": "value"}\'/>', ""]
-    for tool in tools:
+    for tool in expand_subcommand_leaves(tools):
         lines.append(f"### {tool['name']}")
         if tool.get("description"):
             lines.append(f"Description: {tool['description']}")

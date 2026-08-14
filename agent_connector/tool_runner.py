@@ -44,7 +44,14 @@ def _render_command(command_template: str, arguments: dict[str, Any]) -> list[st
         if tok.startswith("{") and tok.endswith("}"):
             var = tok[1:-1]
             if var in values:
-                out.append(values[var])
+                # boolean store-flag: the flag itself IS the value's
+                # rendering (`--verbose True` would make argparse fail with
+                # "unrecognized arguments"). True -> keep the bare flag
+                # (already appended); False was filtered out above.
+                if filtered.get(var) is True:
+                    pass
+                else:
+                    out.append(values[var])
                 i += 1
             else:
                 # missing value: also drop the preceding flag token if any

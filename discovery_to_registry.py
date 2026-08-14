@@ -14,7 +14,10 @@ def _infer_python_entry(readme_examples: list, pkg: str) -> str:
         m = re.search(r"from\s+([\w.]+)\s+import\s+([\w]+)", ex)
         if m:
             mod, name = m.group(1), m.group(2)
-            if mod.split(".")[0] == pkg and name[:1].isupper() or mod.split(".")[0] == pkg:
+            # NOTE: repo name != python module name in general; this is a
+            # best-effort heuristic, execution evidence (callable_via) wins
+            # over this guess at the call site.
+            if mod.split(".")[0] == pkg.replace("-", "_"):
                 return f"{mod}:{name}"
     return ""
 
@@ -37,18 +40,54 @@ def _missing_system_commands(external: list) -> list:
     return out
 
 
+def normalize_repo_url(url) -> str:
+    """Canonical join key for tool_library.source.github ==
+    tool_verification.repo_url == tool_execution.repo_url.
+
+    Strips whitespace/quotes, trailing slashes and .git so all of
+      https://github.com/foo/bar
+      https://github.com/foo/bar/
+      https://github.com/foo/bar.git
+    join to the same record.
+    """
+    if not isinstance(url, str):
+        return ""
+    url = url.strip().strip("\"'")
+    url = url.rstrip("/")
+    if url.endswith(".git"):
+        url = url[:-4]
+    return url
+
+
 def load_tool_library(filename="tool_library_clean.json"):
     with open(filename, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def load_verification(filename="tool_verification.json"):
-    """Return {github_url -> verify result dict}. Absent file -> {}."""
+    """Return {normalized github_url -> verify result dict}. Absent file -> {}."""
     if not os.path.exists(filename):
         return {}
     with open(filename, "r", encoding="utf-8") as f:
         results = json.load(f)
-    return {r.get("repo_url", ""): r for r in results if r.get("repo_url")}
+    return {normalize_repo_url(r.get("repo_url", "")): r
+            for r in results if r.get("repo_url")}
+
+
+def _param_flag(p: dict) -> str:
+    """Return the CLI flag string for a parsed --help param: the explicit
+    `flag` field when present, else the param name itself when it looks like
+    a flag (-x / --xxx). '' for non-flag (positional) params.
+
+    The execute_test help parser emits params with only `name` (e.g. '-s',
+    '--genus') and no `flag` field -- treating those as non-flags caused the
+    command builder to fabricate {{input_file}} while the inputs builder used
+    the parsed params (contract mismatch -> every tool rejected).
+    """
+    if p.get("flag"):
+        return p["flag"]
+    name = str(p.get("name", ""))
+    return name if name.startswith("-") else ""
 
 
 def guess_install_method(tool):
@@ -90,6 +129,25 @@ def _check_registry_contract(entry: dict) -> str:
             return "subcommand discovery incomplete (subcommand_discovery_complete=false)"
         if not entry.get("subcommand_details"):
             return "subcommand_details empty; cannot emit leaf functions"
+        # validate each subcommand's params: a leaf function with unnamed or
+        # unrenderable params would emit a broken schema downstream.
+        # NOTE: execute_test/_probe_cli writes the key `params` (matching
+        # tool_runner._render_subcommand and generator leaf expansion).
+        for sub, details in entry["subcommand_details"].items():
+            details = details or {}
+            params = details.get("params") or details.get("params_schema") or []
+            for p in params:
+                if not p.get("name"):
+                    return f"subcommand '{sub}' has a parameter without a name"
+            cmd = details.get("command") or ""
+            used_sub = set(re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd))
+            declared_sub = {p["name"].lstrip("-").replace("-", "_")
+                            for p in params if p.get("name")}
+            declared_sub |= set((details.get("inputs") or {}).keys())
+            missing_sub = sorted(used_sub - declared_sub)
+            if missing_sub:
+                return (f"subcommand '{sub}' command references undeclared "
+                        f"inputs: {missing_sub}")
     cmd = entry.get("command") or ""
     inputs = entry.get("inputs") or {}
     used = re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
@@ -113,9 +171,10 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
     for p in parsed:
         name = p.get("name", "")
         key = name.lstrip("-").replace("-", "_")
-        plain = name.lower()
-        if any(o in plain for o in ("--output", "--out", "--outdir",
-                                    "--out-dir", "-o ", "--output-html")):
+        plain = name.lower().strip()
+        # exact `-o` / `-O` match or --out*/--output* prefix. The old
+        # substring check `"-o " in "-o"` never matched a bare `-o`.
+        if plain == "-o" or plain.startswith(("--output", "--out")):
             outputs[key] = {
                 "type": "file",
                 "description": (p.get("description") or f"Output written by {name}"),
@@ -152,8 +211,9 @@ def tool_to_registry_entry(tool, verification=None):
     paper_doi = tool.get("source", {}).get("paper_doi", "")
     paper_title = tool.get("source", {}).get("paper_title", "")
 
-    v = (verification or {}).get(github_url) or {}
-    e = load_execution().get(github_url) or {}
+    join_key = normalize_repo_url(github_url)
+    v = (verification or {}).get(join_key) or {}
+    e = load_execution().get(join_key) or {}
 
     install_method, install_url = guess_install_method(tool)
     command_template = guess_command(tool)
@@ -170,6 +230,10 @@ def tool_to_registry_entry(tool, verification=None):
     positional = e.get("positional_args") or []
     arg_style = e.get("arg_style") or ""
     callable_via = e.get("callable_via") or ""
+    # SINGLE SOURCE OF TRUTH: command template AND inputs below must both be
+    # derived from this same parsed schema, never inferred independently.
+    parsed = e.get("params_schema") or []
+    schema_pending_reason = ""
     base_cmd = exec_exe or verified_cmd or ""
     # python tools with a `python -m <module>` entry point -> use that
     if arg_style == "python" and callable_via.startswith("python -m "):
@@ -179,11 +243,11 @@ def tool_to_registry_entry(tool, verification=None):
         if arg_style == "python" and callable_via.startswith("python -m "):
             # python -m tools: if README showed flags (--sequence/--num_samples),
             # render them as --flag {{value}}; else generic input_file
-            flag_params = [p for p in (e.get("params_schema") or []) if p.get("flag")]
+            flag_params = [p for p in parsed if _param_flag(p)]
             if flag_params:
                 parts = []
                 for p in flag_params:
-                    flag = p.get("flag", "--" + p["name"].replace("_", "-"))
+                    flag = _param_flag(p)
                     # placeholder must match the INPUT key (flag stripped)
                     key = p["name"].lstrip("-").replace("-", "_")
                     parts.append(f"{flag} {{{{ {key} }}}}")
@@ -196,7 +260,14 @@ def tool_to_registry_entry(tool, verification=None):
             # positional CLI: pgv-blast <seq1> <seq2> ... -o <outdir>
             # template fills each positional arg by its name
             ph = " ".join(f"{{{{{p['name']}}}}}" for p in positional)
-            command_template = f"{base_cmd} {ph}" if ph else f"{base_cmd} {{{{input_file}}}}"
+            if ph:
+                command_template = f"{base_cmd} {ph}"
+            else:
+                # no positional args parsed either -> nothing grounded to
+                # render; do NOT fabricate {{input_file}}
+                schema_pending_reason = ("positional CLI but no positional args "
+                                         "parsed from --help")
+                command_template = ""
         elif arg_style == "subcommand":
             # subcommand CLI: bqtools <subcommand> [args...]. The command is just
             # `<cmd> {{subcommand}}`; each subcommand's OWN params live in
@@ -206,23 +277,40 @@ def tool_to_registry_entry(tool, verification=None):
             # take different args and a merged template is a fake contract.
             command_template = f"{base_cmd} {{{{subcommand}}}}"
         else:
-            # named CLI: if --help gave real flags, build the template from them
-            # (e.g. `macrel contigs --output {{output}}`). ONLY fall back to a
-            # generic `{{input_file}}` when there are NO parsed params at all --
-            # otherwise the command references an input that isn't in `inputs`.
-            flag_params = [p for p in (e.get("params_schema") or []) if p.get("flag")]
+            # named CLI: build the template from the SAME parsed params that
+            # build `inputs` below (e.g. `macrel --output {{output}}`).
+            # NEVER fabricate a {{input_file}} the inputs don't declare --
+            # that self-contradictory entry is exactly what the contract
+            # check rejects. No usable params -> PENDING, not a fake command.
+            flag_params = [p for p in parsed if _param_flag(p)]
             if flag_params:
                 parts = []
                 for p in flag_params:
-                    flag = p.get("flag", "--" + p["name"].replace("_", "-"))
+                    flag = _param_flag(p)
                     # placeholder must match the INPUT key (flag stripped), not
                     # the raw flag name -- `--output` -> `{{output}}`
                     key = p["name"].lstrip("-").replace("-", "_")
                     parts.append(f"{flag} {{{{ {key} }}}}")
                 tmpl = " ".join(parts).replace("{{ ", "{{").replace(" }}", "}}")
                 command_template = f"{base_cmd} {tmpl}"
+            elif parsed or positional:
+                # --help gave params but none renderable as flags/positionals:
+                # schema exists but is unusable for a command template.
+                schema_pending_reason = ("help output parsed but no usable "
+                                         "flags/positionals to build a command "
+                                         "template")
+                command_template = ""
             else:
-                command_template = f"{base_cmd} {{{{input_file}}}}"
+                # no --help evidence at all: any command would be a guess
+                schema_pending_reason = ("no --help params parsed; command/"
+                                         "inputs would be a guess")
+                command_template = ""
+
+    if not base_cmd and not schema_pending_reason:
+        # no verified executable AND no probed command: the guessed
+        # `name {{input_file}}` template from guess_command() is pure
+        # fabrication -> pending, not active
+        schema_pending_reason = "no verified executable or command to invoke"
 
     # inputs schema: prefer params parsed from the tool's real --help output
     # (execute_test.py step 3.6). Fall back to a placeholder, tagged with source
@@ -251,11 +339,13 @@ def tool_to_registry_entry(tool, verification=None):
         }
         inputs_src = "help_parsed"
     else:
-        # NO --help evidence: do NOT fabricate `input_file`. The contract check
-        # in convert_to_registry rejects placeholder-input entries, so this
-        # stays empty and the tool never reaches the active registry.
+        # NO --help evidence: do NOT fabricate `input_file`. The entry is
+        # routed to pending_tools.json by the pending gate in
+        # convert_to_registry (third state: not active, not excluded).
         inputs = {}
         inputs_src = "placeholder"
+        if not schema_pending_reason:
+            schema_pending_reason = "no --help schema parsed (inputs would be a guess)"
     # positional args (usage: cmd file1 file2 -o out) - mark them clearly
     for pa in positional:
         key = pa["name"].lstrip("<>[]").replace("-", "_")
@@ -319,7 +409,10 @@ def tool_to_registry_entry(tool, verification=None):
         # commands the tool expects on PATH (environment grounding).
         "install": {
             "method": install_method,
-            "command": install_url or install_cmd,
+            "command": (v.get("install_cmd")
+                        or e.get("install_cmd")
+                        or install_url
+                        or ""),
             "system_commands": _missing_system_commands(v.get("external_commands", [])),
             "python_packages": e.get("installed_versions", [])[:20],
             "declared_packages": v.get("declared_packages", []),
@@ -361,6 +454,7 @@ def tool_to_registry_entry(tool, verification=None):
             "exec_retries": e.get("exec_retries", 0),
             "exec_heal_evidence": e.get("heal_evidence", ""),
             "inputs_source": inputs_src,
+            "pending_reason": schema_pending_reason,
         }
     }
 
@@ -368,12 +462,13 @@ def tool_to_registry_entry(tool, verification=None):
 
 
 def load_execution(filename="tool_execution.json"):
-    """Return {github_url -> execution result dict}. Absent file -> {}."""
+    """Return {normalized github_url -> execution result dict}. Absent file -> {}."""
     if not os.path.exists(filename):
         return {}
     with open(filename, "r", encoding="utf-8") as f:
         results = json.load(f)
-    return {r.get("repo_url", ""): r for r in results if r.get("repo_url")}
+    return {normalize_repo_url(r.get("repo_url", "")): r
+            for r in results if r.get("repo_url")}
 
 
 def convert_to_registry(tools, output_file="discovered_registry.yaml",
@@ -395,12 +490,25 @@ def convert_to_registry(tools, output_file="discovered_registry.yaml",
     execution = load_execution()
     registry = {"tools": []}
     excluded = []
+    pending = []
 
     for tool in tools:
         github_url = tool.get("source", {}).get("github", "")
-        v = verification.get(github_url) or {}
-        e = execution.get(github_url) or {}
+        join_key = normalize_repo_url(github_url)
+        v = verification.get(join_key) or {}
+        e = execution.get(join_key) or {}
         status = v.get("status", "unverified")
+
+        # JOIN DIAGNOSTIC: a verified tool with NO execution record is almost
+        # always a tool_library github <-> tool_execution repo_url join miss
+        # (not a tool defect). Without this print it surfaces later as a bare
+        # "placeholder inputs" contract-reject and the real cause is invisible.
+        if status in min_status and not e and execution:
+            sample = list(execution.keys())[:3]
+            print(f"  [execution-miss] tool={tool.get('name', 'unknown')} "
+                  f"github={github_url!r} -> no tool_execution.json record "
+                  f"(checked normalized key {join_key!r}; "
+                  f"{len(execution)} execution records exist, e.g. {sample})")
 
         if status not in min_status:
             excluded.append({
@@ -428,6 +536,25 @@ def convert_to_registry(tools, output_file="discovered_registry.yaml",
             continue
 
         entry = tool_to_registry_entry(tool, verification)
+
+        # ---- PENDING-SCHEMA GATE (third state) ----
+        # Tool verified + executed, but its schema could not be grounded in
+        # --help/README evidence. NOT active (would be a fake contract), NOT
+        # excluded (repo is fine -- only the schema is unresolved). Preserved
+        # in pending_tools.json for a later LLM/manual schema pass.
+        pending_reason = (entry.get("_discovery_metadata") or {}).get("pending_reason", "")
+        if pending_reason:
+            pending.append({
+                "name": tool.get("name", "unknown"),
+                "github": github_url,
+                "status": "pending_schema",
+                "reason": pending_reason,
+                "install_cmd": v.get("install_cmd", ""),
+                "has_license": v.get("has_license", False),
+                "paper_title": tool.get("source", {}).get("paper_title", ""),
+            })
+            print(f"  [pending-schema] {entry.get('name')}: {pending_reason[:70]}")
+            continue
 
         # ---- REGISTRY CONTRACT CHECK (hard gate at generation time) ----
         # An entry must not enter the active registry if its contract is
@@ -457,16 +584,25 @@ def convert_to_registry(tools, output_file="discovered_registry.yaml",
     with open(excluded_file, "w", encoding="utf-8") as f:
         json.dump(excluded, f, ensure_ascii=False, indent=2)
 
+    with open("pending_tools.json", "w", encoding="utf-8") as f:
+        json.dump(pending, f, ensure_ascii=False, indent=2)
+
     print(f"Converted {len(registry['tools'])} tools to {output_file}")
+    print(f"Pending {len(pending)} tools (schema unresolved) -> pending_tools.json")
     print(f"Excluded {len(excluded)} unverified tools -> {excluded_file}")
     for e in excluded[:10]:
         print(f"  - {e['name']}: {e['reason'][:70]}")
 
     high_quality = [t for t in registry["tools"] if
-                    t.get("_discovery_metadata", {}).get("quality_score", 0) >= 40]
+                     t.get("_discovery_metadata", {}).get("quality_score", 0) >= 40]
     print(f"High quality tools (score>=40): {len(high_quality)}")
     for t in high_quality[:5]:
         print(f"  - {t['name']}: {t.get('description', '')[:60]}...")
+
+    # real outcome counts (NOT len(tools) of the input library)
+    return {"active": len(registry["tools"]),
+            "pending": len(pending),
+            "excluded": len(excluded)}
 
 
 if __name__ == "__main__":

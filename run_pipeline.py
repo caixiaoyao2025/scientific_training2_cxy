@@ -173,10 +173,11 @@ def step4_to_registry():
     from discovery_to_registry import load_tool_library, convert_to_registry
 
     tools = load_tool_library()
-    convert_to_registry(tools, "discovered_registry.yaml",
-                        verification_file="tool_verification.json",
-                        require_passed=True)
-    print(f"Registry generated with {len(tools)} tools")
+    stats = convert_to_registry(tools, "discovered_registry.yaml",
+                                verification_file="tool_verification.json",
+                                require_passed=True)
+    print(f"Registry generated: {stats.get('active', 0)} active, "
+          f"{stats.get('pending', 0)} pending, {stats.get('excluded', 0)} excluded")
 
 def step3_5_verify():
     print("\n" + "=" * 60)
