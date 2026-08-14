@@ -508,14 +508,16 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
         if val in (None, "", False):
             continue
         if p.get("positional"):
-            # positional arg: just the value in order, no flag
-            argv.append(shlex.quote(str(val)))
+            # positional arg: just the value in order, no flag. Values are NOT
+            # shlex-quoted -- this argv goes straight to subprocess (no shell),
+            # so quoting would inject literal quotes into the path.
+            argv.append(str(val))
         elif name.startswith("--"):
             argv.append(name)
-            argv.append(shlex.quote(str(val)))
+            argv.append(str(val))
         else:
             argv.append(name)
-            argv.append(shlex.quote(str(val)))
+            argv.append(str(val))
     return argv
 
 
