@@ -127,10 +127,14 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
                and (arguments.get(k) in (None, ""))]
     if missing:
         return {}, f"missing required inputs: {missing}"
-    # unknown template vars in the command would render to garbage argv
+    # unknown template vars in the command would render to garbage argv.
+    # EXCEPT subcommand CLIs: `{{subcommand}}` is injected by the dispatcher
+    # (fnmap -> _active_subcommand), it is NOT a user-supplied input.
     import re as _re
     cmd = spec.get("command") or ""
     used = _re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
+    if spec.get("arg_style") == "subcommand":
+        used = [v for v in used if v != "subcommand"]
     unbound = sorted({v for v in used if v not in known})
     if unbound:
         return {}, f"command template references undeclared inputs: {unbound}"

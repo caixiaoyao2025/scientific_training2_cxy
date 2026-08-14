@@ -70,6 +70,44 @@ def guess_command(tool):
     return f"{name.lower()} {{{{input_file}}}}"
 
 
+def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
+    """Best-effort output contract from parsed params.
+
+    Flags whose metavar/name looks like an output (--output, --out, -o,
+    --output-html, --outdir) become declared outputs so the agent knows the
+    tool writes a file there. Empty dict when nothing looks like an output.
+    """
+    outputs = {}
+    for p in parsed:
+        name = p.get("name", "")
+        key = name.lstrip("-").replace("-", "_")
+        plain = name.lower()
+        if any(o in plain for o in ("--output", "--out", "--outdir",
+                                    "--out-dir", "-o ", "--output-html")):
+            outputs[key] = {
+                "type": "file",
+                "description": (p.get("description") or f"Output written by {name}"),
+                "source": "help_parsed",
+            }
+    # positional args with an OUTPUT-ish name (usage: ... OUTPUT)
+    for pa in positional:
+        n = pa.get("name", "").upper()
+        if "OUT" in n and "OUTPUT" not in outputs:
+            outputs[pa["name"].lstrip("<>[]").replace("-", "_")] = {
+                "type": "file",
+                "description": (pa.get("description") or f"Output written as {pa['name']}"),
+                "source": "help_parsed",
+            }
+    if outputs:
+        return outputs
+    # no explicit output flag found: a CLI that just prints to stdout.
+    # Mark it as console output (not a file), so the agent won't hunt for a
+    # file that can never exist.
+    return {"stdout": {"type": "text",
+                       "description": "Tool result printed to stdout.",
+                       "source": "inferred"}}
+
+
 def tool_to_registry_entry(tool, verification=None):
     name = tool.get("name", "unknown")
     clean_name = re.sub(r'[^a-zA-Z0-9_.-]', '_', name).strip('_').lower()
@@ -200,16 +238,12 @@ def tool_to_registry_entry(tool, verification=None):
             }
         }
         inputs_src = "placeholder"
-    # subcommand CLIs: add the subcommand selector input (e.g. encode|decode|info)
-    if arg_style == "subcommand":
-        sub_names = e.get("subcommands", [])
-        inputs["subcommand"] = {
-            "type": "string",
-            "description": ("Which subcommand to run: " + (" | ".join(sub_names) if sub_names
-                            else "see subcommands field")),
-            "source": "help_parsed",
-            "required": True,
-        }
+    # NOTE: subcommand CLIs do NOT get a `subcommand` input here. The registry
+    # keeps subcommands/subcommand_details so to_function_schemas can expand
+    # each subcommand into its own LEAF function (bqtools_encode), and the
+    # executor dispatches via fnmap -> _active_subcommand. Exposing a required
+    # `subcommand` parameter would force the agent to pass it AND make
+    # validate_arguments demand it -- breaking every leaf call.
 
     # license status is surfaced to end users in the description (the MCP
     # registry / tool list drops _discovery_metadata, so this is the only
@@ -236,6 +270,10 @@ def tool_to_registry_entry(tool, verification=None):
             "max_preview_lines": 50,
         },
         "inputs": inputs,
+        # output contract: tells agents what the tool produces and where, so
+        # they know what "success" looks like (output file exists). Auto-disco
+        # can't always know the exact path, so this is best-effort + honest.
+        "outputs": _infer_outputs(parsed, positional, arg_style),
         # python-API tools: expose an execution entry_point (module:Class) so
         # run_tool_spec's python runner can invoke it: `from m import C; C(**args)`
         "execution": (

@@ -114,8 +114,10 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
                 key = p.get("name", "").lstrip("-").replace("-", "_").lower()
                 props[key] = {"type": "string",
                               "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
-                # only truly-required params go in `required` (not everything)
-                if p.get("required"):
+                # unified required semantics: no `required` field -> required by
+                # default (same as the non-subcommand branch); only an explicit
+                # `required: false` (e.g. a flag with a default) stays optional.
+                if (p.get("required")) is not False:
                     required.append(key)
             fname = f"{tool['name']}_{sub.replace('-', '_')}"
             out.append({"type": "function", "function": {
@@ -147,6 +149,27 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
         fn["function"]["arg_style"] = tool["arg_style"]
     fnmap[tool["name"]] = (tool["name"], "")
     return [fn], fnmap
+
+
+def _task_output_kind(tool: dict, sub: str = "") -> str:
+    """Decide what a successful task must produce, from the tool's schema.
+
+    Returns 'file' | 'directory' | 'stdout'. Uses the registry's `outputs`
+    contract when present; a declared file/dir output param is the target, and
+    tools with no output param are stdout-only (exit 0 + output is the bar).
+    """
+    outs = (tool.get("outputs") or {}).get(sub, {}) if sub else (tool.get("outputs") or {})
+    if not isinstance(outs, dict):
+        outs = {}
+    for name, meta in outs.items():
+        if name == "stdout":
+            continue
+        t = (meta or {}).get("type", "")
+        if t == "directory":
+            return "directory"
+        if t in ("file", "path"):
+            return "file"
+    return "stdout"
 
 
 def ensure_repo() -> None:
@@ -237,6 +260,27 @@ def main() -> int:
         print("no function-callable tools in registry; nothing to test")
         return 0
 
+    # P0: prove the schemas actually sent to the LLM are what we expect BEFORE
+    # spending API calls. If a subcommand tool didn't produce its leaf functions
+    # (bqtools_encode etc.) that is a pipeline bug, not an agent failure.
+    print(f"\n== {len(schemas)} function schemas sent to the LLM ==")
+    for s in schemas:
+        fn = s["function"]
+        print(f"  {fn['name']:30} params={list(fn['parameters'].get('properties', {}).keys())} "
+              f"required={fn['parameters'].get('required')}")
+    sub_broken = []
+    for t in callable_tools:
+        if t.get("arg_style") == "subcommand" and t.get("subcommand_details"):
+            for sub in (t.get("subcommand_details") or {}):
+                leaf = f"{t['name']}_{sub.replace('-', '_')}"
+                if leaf not in fnmap:
+                    sub_broken.append(leaf)
+    if sub_broken:
+        print(f"[ERROR] subcommand tools produced NO leaf function for: {sub_broken}")
+        print("        -> registry/subcommand_details is broken; refusing to run LLM")
+        return 1
+    print("  (all subcommand leaves present in schema)")
+
     # sample input for tools that take a file path
     sample = os.path.join(tempfile.gettempdir(), "agent_test_sample.fasta")
     with open(sample, "w", encoding="utf-8") as f:
@@ -253,36 +297,49 @@ def main() -> int:
     for t in callable_tools:
         name = t["name"]
         as_ = t.get("arg_style") or "cli"
-        out = os.path.join(outdir, f"{name}_out")
-        if as_ == "subcommand" and t.get("subcommands"):
-            sub = t["subcommands"][0]
-            # task for the first subcommand: input file + explicit output path
-            label = f"{name}: {sub} on sample -> {os.path.basename(out)}"
-            prompt = (f"Call {name}_{sub} (or the {name} tool's {sub} subcommand) to "
-                      f"process the input file {sample}. Write the output to {out}. "
-                      "Pass the arguments the tool's schema requires (input file and "
-                      "output path). After running, the output file should exist.")
-            tasks.append((label, prompt, sub, out))
+        if as_ == "subcommand" and t.get("subcommand_details"):
+            # one task PER leaf subcommand function (bqtools_encode / _decode /
+            # _info ...), not just the first. Each task is bound to its exact
+            # function name so the test can distinguish WRONG_FUNCTION.
+            for sub, detail in (t.get("subcommand_details") or {}).items():
+                expected_fn = f"{name}_{sub.replace('-', '_')}"
+                out = os.path.join(outdir, f"{name}_{sub}_out")
+                out_kind = _task_output_kind(t, sub)
+                label = f"{name}: {sub} on sample -> {os.path.basename(out)}"
+                prompt = (f"Call the function {expected_fn} (NOT {name} directly) to "
+                          f"process the input file {sample}. Write the output to {out}. "
+                          "Pass the arguments the function's schema requires (input "
+                          "file and output path). After running, the output file must exist.")
+                tasks.append((label, prompt, expected_fn, out, out_kind))
         else:
+            expected_fn = name
+            out = os.path.join(outdir, f"{name}_out")
+            out_kind = _task_output_kind(t)
             label = f"{name}: process sample -> {os.path.basename(out)}"
             prompt = (f"Call the {name} tool to process the input file {sample}. "
                       "Pass the arguments its schema requires. If it has an output "
                       "parameter, write to " + out + ". Aim for exit code 0.")
-            tasks.append((label, prompt, "", out))
+            tasks.append((label, prompt, expected_fn, out, out_kind))
 
     print(f"\n== {len(tasks)} concrete per-tool tasks ==")
-    stats = {"selected": 0, "started": 0, "succeeded": 0, "output_valid": 0}
+    stats = {"selected": 0, "wrong_function": 0, "started": 0,
+             "process_ok": 0, "output_valid": 0, "succeeded": 0}
     per_tool = {}
-    tool_attempts = {}  # anti-tool-roulette: cap tries per tool per task
-    for label, user_prompt, expect_sub, out_path in tasks:
+    for label, user_prompt, expected_fn, out_path, out_kind in tasks:
         print(f"\n=== task: {label} ===")
         if os.path.exists(out_path):
             os.remove(out_path)
         messages = [{"role": "user", "content": user_prompt}]
         final = None
         selected = False
+        wrong_function = False
         started = False
-        succeeded = False
+        # per-task isolation: the retry cap resets for EVERY task, so a tool
+        # burned in task A doesn't block the same tool in task B.
+        tool_attempts = {}
+        target_exited_0 = False   # the TARGET function exited 0 (process-level)
+        target_ran = False        # the TARGET function was actually called
+        raw_log = []              # full (fn, argv, rc, stdout, stderr) per call
         for turn in range(MAX_TURNS):
             resp = client.chat.completions.create(
                 model=MODEL, messages=messages, tools=schemas, tool_choice="auto")
@@ -300,6 +357,19 @@ def main() -> int:
                     result = f"unknown tool {fn_name}"
                 else:
                     tool_name, sub = fnmap[fn_name]
+                    if fn_name != expected_fn:
+                        # P0: calling ANY other tool must NOT count as success,
+                        # and it's a test failure the agent should not repeat.
+                        wrong_function = True
+                        if tool_name not in spec_map:
+                            result = f"unknown tool {tool_name}"
+                        else:
+                            result = (f"[error_type: wrong_function] This task requires the "
+                                      f"function `{expected_fn}`. You called `{fn_name}`, which "
+                                      f"is the WRONG tool for this task. Do not call it again.")
+                        print(f"          result: {result[:120]}")
+                        messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+                        continue
                     if tool_name not in spec_map:
                         result = f"unknown tool {tool_name}"
                     elif tool_attempts[tool_name] >= MAX_SAME_TOOL_ATTEMPTS:
@@ -315,53 +385,96 @@ def main() -> int:
                             tool_spec["_active_subcommand"] = sub
                         raw = run_tool_spec(tool_spec, args)
                         result = format_result(raw)
+                        target_ran = True
+                        # full raw capture (P1: never truncate the real error)
+                        raw_log.append({
+                            "fn": fn_name, "args": args,
+                            "argv": raw.get("argv"), "return_code": raw.get("return_code"),
+                            "status": raw.get("status"),
+                            "stdout": (raw.get("stdout") or "")[-2000:],
+                            "stderr": (raw.get("stderr") or "")[-2000:],
+                        })
                         if raw.get("argv"):
                             print(f"          argv: {raw['argv']}")
                             print(f"          exit: {raw.get('return_code')}")
+                        # P0: process success is ONLY the target function exiting 0
+                        if raw.get("return_code") == 0 and raw.get("status") == "ok":
+                            target_exited_0 = True
+                        if raw.get("return_code") not in (127,):
+                            started = True
                     low = result.lower()
-                    started = started or ("command not found" not in low and "exit code: 127" not in low)
-                    if "exit code: 0" in low or "status: ok" in low:
-                        succeeded = True
                 print(f"          result: {result[:150]}")
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
-        output_exists = succeeded and os.path.exists(out_path)
-        output_size = os.path.getsize(out_path) if output_exists else 0
-        # output is "valid" only if it's a real artifact: non-empty and not a
-        # suspicious tiny/empty shell (e.g. an error message written to the
-        # output path, or a 0/1-byte placeholder).
-        output_valid = output_exists and output_size > 4
-        output_suspicious = output_exists and output_size <= 4
-        if succeeded and output_valid:
+
+        # ---- output validation by the task's declared output contract ----
+        # P1: exit 0 (process) and TASK_SUCCEEDED (output produced) are separate.
+        # An output DIRECTORY is valid only if it's a dir with contents.
+        if target_exited_0:
+            process_ok = True
+            if out_kind == "directory":
+                output_ok = (os.path.isdir(out_path)
+                             and bool(os.listdir(out_path)))
+            elif out_kind == "file":
+                output_ok = (os.path.isfile(out_path)
+                             and os.path.getsize(out_path) > 4)
+            else:  # stdout-only tool: exit 0 + some output is the bar
+                last = raw_log[-1] if raw_log else {}
+                output_ok = bool((last.get("stdout") or "").strip()
+                                 or (last.get("stderr") or "").strip())
+        else:
+            process_ok = False
+            output_ok = False
+
+        if target_exited_0 and output_ok:
             status = "TASK_SUCCEEDED"
-        elif succeeded and output_exists and output_suspicious:
+        elif target_exited_0:
             status = "OUTPUT_INVALID"
-        elif succeeded:
-            status = "EXECUTED_NO_OUTPUT"
+        elif target_ran:
+            status = "PROCESS_FAILED"
+        elif wrong_function:
+            status = "WRONG_FUNCTION"
         elif started:
             status = "TOOL_STARTED"
         elif selected:
             status = "TOOL_SELECTED"
         else:
             status = "NOT_SELECTED"
-        per_tool[label.split(":")[0]] = {
-            "selected": selected, "started": started, "succeeded": succeeded,
-            "output_valid": output_valid, "output_size": output_size, "status": status,
+        per_tool[label] = {
+            "expected_fn": expected_fn,
+            "selected": selected, "wrong_function": wrong_function,
+            "target_ran": target_ran, "target_exited_0": target_exited_0,
+            "process_ok": process_ok, "output_ok": output_ok,
+            "output_kind": out_kind, "status": status,
+            "calls": raw_log,
         }
         if selected: stats["selected"] += 1
+        if wrong_function: stats["wrong_function"] += 1
         if started: stats["started"] += 1
-        if succeeded: stats["succeeded"] += 1
-        if output_valid: stats["output_valid"] += 1
+        if process_ok: stats["process_ok"] += 1
+        if output_ok: stats["output_valid"] += 1
+        if status == "TASK_SUCCEEDED": stats["succeeded"] += 1
         print(f"  => {status}")
 
     print(f"\n== agent tool-usage summary ==")
     n = len(tasks)
-    print(f"  tools tested:            {n}")
-    print(f"  tool selected:           {stats['selected']}/{n}")
-    print(f"  tool started (ran):      {stats['started']}/{n}")
-    print(f"  tool exited 0:           {stats['succeeded']}/{n}")
-    print(f"  output file valid:       {stats['output_valid']}/{n}")
-    print("  (OUTPUT_INVALID/EXECUTED_NO_OUTPUT are NOT successes)")
-    # honest: only output_valid is a real end-to-end success
+    print(f"  tasks:                 {n}")
+    print(f"  tool selected:         {stats['selected']}/{n}")
+    print(f"  wrong function:        {stats['wrong_function']}/{n}")
+    print(f"  tool started (ran):    {stats['started']}/{n}")
+    print(f"  target exit 0:         {stats['process_ok']}/{n}")
+    print(f"  output valid:          {stats['output_valid']}/{n}")
+    print(f"  TASK_SUCCEEDED:        {stats['succeeded']}/{n}")
+    print("  (success = TARGET function exit 0 + valid output; any other tool")
+    print("   exiting 0 is recorded as WRONG_FUNCTION, NOT success)")
+    # persist the FULL per-call detail (argv/stdout/stderr, untruncated) so a
+    # failure is debuggable instead of being cut at 150 chars in the console.
+    out_json = os.environ.get("AGENT_TEST_JSON", "")
+    if out_json:
+        import json as _json
+        with open(out_json, "w", encoding="utf-8") as f:
+            _json.dump({"schemas": [s["function"]["name"] for s in schemas],
+                        "tasks": per_tool}, f, ensure_ascii=False, indent=2)
+        print(f"full detail -> {out_json}")
     return 0
 
 
