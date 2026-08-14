@@ -912,3 +912,2232 @@ tools:
     verified_license_path: LICENSE
     verified_status: repo_ok
     inputs_source: placeholder
+- name: cooltools
+  type: cli
+  command: cooltools {{subcommand}} {{output}} {{ignore_diags}} {{store}} {{chunksize}}
+    {{bigwig}} {{clr_weight_name}} {{nproc}} {{COOL_PATH}}
+  arg_style: subcommand
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] The tools for your .cool''s (⭐168, Jupyter Notebook)
+    (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    verbose:
+      type: string
+      description: logging
+      source: help_parsed
+    debug:
+      type: string
+      description: mortem debugging
+      source: help_parsed
+    version:
+      type: string
+      description: the version and exit.
+      source: help_parsed
+    output:
+      type: string
+      description: '[coverage] Specify output file name to store the coverage in a'
+      source: subcommand_help
+    ignore_diags:
+      type: integer
+      description: '[coverage] The number of diagonals to ignore. By default,'
+      source: subcommand_help
+    store:
+      type: string
+      description: '[coverage] columns with coverage (cov_cis_raw,'
+      source: subcommand_help
+    chunksize:
+      type: integer
+      description: '[coverage] Split the contact matrix pixel records into equally'
+      source: subcommand_help
+    bigwig:
+      type: string
+      description: '[coverage] save output as bigWig files for cis and total'
+      source: subcommand_help
+    clr_weight_name:
+      type: string
+      description: '[coverage] Name of the weight column. Specify to calculate'
+      source: subcommand_help
+    nproc:
+      type: integer
+      description: '[coverage] Number of processes to split the work between.'
+      source: subcommand_help
+    COOL_PATH:
+      type: path
+      description: '[coverage] Positional argument COOL_PATH'
+      source: subcommand_help
+    max_loci_separation:
+      type: integer
+      description: '[dots] Limit loci separation for dot-calling, i.e.,'
+      source: subcommand_help
+    max_nans_tolerated:
+      type: integer
+      description: '[dots] Maximum number of NaNs tolerated in a'
+      source: subcommand_help
+    tile_size:
+      type: integer
+      description: '[dots] Tile size for the Hi-C heatmap tiling.'
+      source: subcommand_help
+    num_lambda_bins:
+      type: integer
+      description: '[dots] Number of log-spaced bins to divide your'
+      source: subcommand_help
+    fdr:
+      type: float
+      description: '[dots] False discovery rate (FDR) to control in the'
+      source: subcommand_help
+    clustering_radius:
+      type: integer
+      description: '[dots] Radius for clustering dots that have been'
+      source: subcommand_help
+    EXPECTED_PATH:
+      type: path
+      description: '[dots] Positional argument EXPECTED_PATH'
+      source: subcommand_help
+    phasing_track:
+      type: string
+      description: '[eigs-cis] Phasing track for orienting and ranking'
+      source: subcommand_help
+    n_eigs:
+      type: integer
+      description: '[eigs-cis] Number of eigenvectors to compute.'
+      source: subcommand_help
+    out_prefix:
+      type: string
+      description: '[eigs-cis] Save compartment track as a BED-like file.'
+      source: subcommand_help
+    smooth:
+      type: string
+      description: '[expected-cis] set, cis-expected is smoothed and result stored'
+      source: subcommand_help
+    aggregate_smoothed:
+      type: string
+      description: '[expected-cis] set, cis-expected is averaged over all regions'
+      source: subcommand_help
+    smooth_sigma:
+      type: float
+      description: '[expected-cis] Control smoothing with the standard deviation of'
+      source: subcommand_help
+    window_pixels:
+      type: string
+      description: '[insulation] set, the window sizes must          be provided in
+        units'
+      source: subcommand_help
+    min_frac_valid_pixels:
+      type: float
+      description: '[insulation] The minimal fraction of valid pixels in a'
+      source: subcommand_help
+    min_dist_bad_bin:
+      type: integer
+      description: '[insulation] The minimal allowed distance to a bad bin.'
+      source: subcommand_help
+    threshold:
+      type: string
+      description: '[insulation] Rule used to threshold the histogram of'
+      source: subcommand_help
+    append_raw_scores:
+      type: string
+      description: '[insulation] columns with raw scores (sum_counts,'
+      source: subcommand_help
+    IN_PATH:
+      type: path
+      description: '[insulation] Positional argument IN_PATH'
+      source: subcommand_help
+    WINDOW:
+      type: path
+      description: '[insulation] Positional argument WINDOW'
+      source: subcommand_help
+    expected:
+      type: string
+      description: '[pileup] Path to the expected table. If provided,'
+      source: subcommand_help
+    flank:
+      type: integer
+      description: '[pileup] Size of flanks.'
+      source: subcommand_help
+    features_format:
+      type: string
+      description: '[pileup] [auto|bed|bedpe]'
+      source: subcommand_help
+    out:
+      type: string
+      description: '[pileup] Save output pileup as NPZ/HDF5 file.'
+      source: subcommand_help
+    out_format:
+      type: string
+      description: '[pileup] [npz|hdf5]         Type of output.'
+      source: subcommand_help
+    store_snips:
+      type: string
+      description: '[pileup] indicating whether snips should be'
+      source: subcommand_help
+    aggregate:
+      type: string
+      description: '[pileup] [none|mean|median|std|min|max]'
+      source: subcommand_help
+    FEATURES_PATH:
+      type: path
+      description: '[pileup] Positional argument FEATURES_PATH'
+      source: subcommand_help
+    count:
+      type: integer
+      description: '[random-sample] The target number of contacts in the sample. The'
+      source: subcommand_help
+    cis_count:
+      type: integer
+      description: '[random-sample] The target number of cis contacts in the sample.
+        The'
+      source: subcommand_help
+    frac:
+      type: float
+      description: '[random-sample] The target sample size as a fraction of contacts
+        in the'
+      source: subcommand_help
+    exact:
+      type: string
+      description: '[random-sample] specified, use exact sampling that guarantees
+        the'
+      source: subcommand_help
+    OUT_PATH:
+      type: path
+      description: '[random-sample] Positional argument OUT_PATH'
+      source: subcommand_help
+    orientation_col:
+      type: string
+      description: '[rearrange] can specify the new chromosome     names and whether'
+      source: subcommand_help
+    view:
+      type: string
+      description: '[rearrange] Path to a BED-like file which defines which regions'
+      source: subcommand_help
+    new_chrom_col:
+      type: string
+      description: '[rearrange] --orientation-col you can'
+      source: subcommand_help
+    assembly:
+      type: string
+      description: '[rearrange] The name of the assembly for the new cooler. If'
+      source: subcommand_help
+    mode:
+      type: string
+      description: '[rearrange] [w|a]            (w)rite or (a)ppend to the output
+        file (default: w)'
+      source: subcommand_help
+    contact_type:
+      type: string
+      description: '[saddle] [cis|trans]  Type of the contacts to aggregate  [default:'
+      source: subcommand_help
+    min_dist:
+      type: integer
+      description: '[saddle] Minimal distance between bins to consider,'
+      source: subcommand_help
+    max_dist:
+      type: integer
+      description: '[saddle] Maximal distance between bins to consider,'
+      source: subcommand_help
+    n_bins:
+      type: integer
+      description: '[saddle] Number of bins for digitizing track values.'
+      source: subcommand_help
+    vrange:
+      type: string
+      description: '[saddle] ...       Low and high values used for binning genome-'
+      source: subcommand_help
+    qrange:
+      type: string
+      description: '[saddle] ...       Low and high values used for quantile bins'
+      source: subcommand_help
+    strength:
+      type: string
+      description: '[saddle] / --no-strength      Compute and save compartment ''saddle'
+      source: subcommand_help
+    fig:
+      type: string
+      description: '[saddle] [png|jpg|svg|pdf|ps|eps]  Generate a figure and save
+        to a file of the'
+      source: subcommand_help
+    scale:
+      type: string
+      description: '[saddle] [linear|log]            Value scale for the heatmap'
+      source: subcommand_help
+    cmap:
+      type: string
+      description: '[saddle] Name of matplotlib colormap  [default:'
+      source: subcommand_help
+    vmin:
+      type: float
+      description: '[saddle] Low value of the saddleplot colorbar. Note:'
+      source: subcommand_help
+    vmax:
+      type: float
+      description: '[saddle] High value of the saddleplot colorbar'
+      source: subcommand_help
+    hist_color:
+      type: string
+      description: '[saddle] Face color of histogram bar chart'
+      source: subcommand_help
+    TRACK_PATH:
+      type: path
+      description: '[saddle] Positional argument TRACK_PATH'
+      source: subcommand_help
+    VIEWPOINT:
+      type: path
+      description: '[virtual4c] Positional argument VIEWPOINT'
+      source: subcommand_help
+    subcommand:
+      type: string
+      description: 'Which subcommand to run: coverage | dots | eigs-cis | eigs-trans
+        | expected-cis | expected-trans | genome | insulation | pileup | random-sample
+        | rearrange | saddle | virtual4c'
+      source: help_parsed
+      required: true
+  execution: null
+  subcommands:
+  - coverage
+  - dots
+  - eigs-cis
+  - eigs-trans
+  - expected-cis
+  - expected-trans
+  - genome
+  - insulation
+  - pileup
+  - random-sample
+  - rearrange
+  - saddle
+  - virtual4c
+  subcommand_details:
+    coverage:
+      params:
+      - name: --output
+        type: string
+        description: Specify output file name to store the coverage in a
+        aliases:
+        - -o
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By default,
+      - name: --store
+        type: string
+        description: columns with coverage (cov_cis_raw,
+      - name: --chunksize
+        type: integer
+        description: Split the contact matrix pixel records into equally
+      - name: --bigwig
+        type: string
+        description: save output as bigWig files for cis and total
+      - name: --clr_weight_name
+        type: string
+        description: Name of the weight column. Specify to calculate
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work between.
+        aliases:
+        - -p
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      usage: cooltools coverage [OPTIONS] COOL_PATH
+    dots:
+      params:
+      - name: --clr-weight-name
+        type: string
+        description: Use cooler balancing weight with this name.
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work
+        aliases:
+        - -p
+      - name: --max-loci-separation
+        type: integer
+        description: Limit loci separation for dot-calling, i.e.,
+      - name: --max-nans-tolerated
+        type: integer
+        description: Maximum number of NaNs tolerated in a
+      - name: --tile-size
+        type: integer
+        description: Tile size for the Hi-C heatmap tiling.
+      - name: --num-lambda-bins
+        type: integer
+        description: Number of log-spaced bins to divide your
+      - name: --fdr
+        type: float
+        description: False discovery rate (FDR) to control in the
+      - name: --clustering-radius
+        type: integer
+        description: Radius for clustering dots that have been
+      - name: --verbose
+        type: string
+        description: verbose output
+        aliases:
+        - -v
+      - name: --output
+        type: string
+        description: Specify output file name to store called dots
+        aliases:
+        - -o
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      - name: EXPECTED_PATH
+        type: path
+        description: Positional argument EXPECTED_PATH
+        positional: true
+        position: 3
+      usage: cooltools dots [OPTIONS] COOL_PATH EXPECTED_PATH
+    eigs-cis:
+      params:
+      - name: --phasing-track
+        type: string
+        description: Phasing track for orienting and ranking
+      - name: --n-eigs
+        type: integer
+        description: Number of eigenvectors to compute.
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Using raw
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By default,
+      - name: --verbose
+        type: string
+        description: verbose output
+        aliases:
+        - -v
+      - name: --out-prefix
+        type: string
+        description: Save compartment track as a BED-like file.
+        aliases:
+        - -o
+      - name: --bigwig
+        type: string
+        description: save compartment track (E1) as a bigWig
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      usage: cooltools eigs-cis [OPTIONS] COOL_PATH
+    eigs-trans:
+      params:
+      - name: --phasing-track
+        type: string
+        description: Phasing track for orienting and ranking
+      - name: --n-eigs
+        type: integer
+        description: Number of eigenvectors to compute.
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Using raw
+      - name: --verbose
+        type: string
+        description: verbose output
+        aliases:
+        - -v
+      - name: --out-prefix
+        type: string
+        description: Save compartment track as a BED-like file.
+        aliases:
+        - -o
+      - name: --bigwig
+        type: string
+        description: save compartment track (E1) as a bigWig
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      usage: cooltools eigs-trans [OPTIONS] COOL_PATH
+    expected-cis:
+      params:
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work
+        aliases:
+        - -p
+      - name: --chunksize
+        type: integer
+        description: Control the number of pixels handled by each worker
+        aliases:
+        - -c
+      - name: --output
+        type: string
+        description: Specify output file name to store the expected in a
+        aliases:
+        - -o
+      - name: --smooth
+        type: string
+        description: set, cis-expected is smoothed and result stored
+      - name: --aggregate-smoothed
+        type: string
+        description: set, cis-expected is averaged over all regions
+      - name: --smooth-sigma
+        type: float
+        description: Control smoothing with the standard deviation of
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name stored in
+      - name: --ignore-diags
+        type: integer
+        description: Number of diagonals to neglect for cis contact type
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      usage: cooltools expected-cis [OPTIONS] COOL_PATH
+    expected-trans:
+      params:
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work
+        aliases:
+        - -p
+      - name: --chunksize
+        type: integer
+        description: Control the number of pixels handled by each worker
+        aliases:
+        - -c
+      - name: --output
+        type: string
+        description: Specify output file name to store the expected in a
+        aliases:
+        - -o
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name stored in
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      usage: cooltools expected-trans [OPTIONS] COOL_PATH
+    genome:
+      params: []
+      usage: cooltools genome [OPTIONS] COMMAND [ARGS]...
+    insulation:
+      params:
+      - name: --window-pixels
+        type: string
+        description: set, the window sizes must          be provided in units
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work
+        aliases:
+        - -p
+      - name: --output
+        type: string
+        description: Specify output file name to store the
+        aliases:
+        - -o
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Provide
+      - name: --min-frac-valid-pixels
+        type: float
+        description: The minimal fraction of valid pixels in a
+      - name: --min-dist-bad-bin
+        type: integer
+        description: The minimal allowed distance to a bad bin.
+      - name: --threshold
+        type: string
+        description: Rule used to threshold the histogram of
+      - name: --append-raw-scores
+        type: string
+        description: columns with raw scores (sum_counts,
+      - name: --chunksize
+        type: integer
+        description: CLI flag --chunksize
+      - name: --verbose
+        type: string
+        description: real-time progress.
+      - name: --bigwig
+        type: string
+        description: save insulation tracks as a bigWig files
+      - name: IN_PATH
+        type: path
+        description: Positional argument IN_PATH
+        positional: true
+        position: 2
+      - name: WINDOW
+        type: path
+        description: Positional argument WINDOW
+        positional: true
+        position: 3
+      usage: cooltools insulation [OPTIONS] IN_PATH WINDOW
+    pileup:
+      params:
+      - name: --expected
+        type: string
+        description: Path to the expected table. If provided,
+      - name: --flank
+        type: integer
+        description: Size of flanks.
+      - name: --features-format
+        type: string
+        description: '[auto|bed|bedpe]'
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name.
+      - name: --out
+        type: string
+        description: Save output pileup as NPZ/HDF5 file.
+        aliases:
+        - -o
+      - name: --out-format
+        type: string
+        description: '[npz|hdf5]         Type of output.'
+      - name: --store-snips
+        type: string
+        description: indicating whether snips should be
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work
+        aliases:
+        - -p
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By
+      - name: --aggregate
+        type: string
+        description: '[none|mean|median|std|min|max]'
+      - name: --verbose
+        type: string
+        description: verbose output
+        aliases:
+        - -v
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      - name: FEATURES_PATH
+        type: path
+        description: Positional argument FEATURES_PATH
+        positional: true
+        position: 3
+      usage: cooltools pileup [OPTIONS] COOL_PATH FEATURES_PATH
+    random-sample:
+      params:
+      - name: --count
+        type: integer
+        description: The target number of contacts in the sample. The
+        aliases:
+        - -c
+      - name: --cis-count
+        type: integer
+        description: The target number of cis contacts in the sample. The
+      - name: --frac
+        type: float
+        description: The target sample size as a fraction of contacts in the
+        aliases:
+        - -f
+      - name: --exact
+        type: string
+        description: specified, use exact sampling that guarantees the
+      - name: --nproc
+        type: integer
+        description: 'Number of processes to split the work between.[default:'
+        aliases:
+        - -p
+      - name: --chunksize
+        type: integer
+        description: The number of pixels loaded and processed per step of
+      - name: IN_PATH
+        type: path
+        description: Positional argument IN_PATH
+        positional: true
+        position: 2
+      - name: OUT_PATH
+        type: path
+        description: Positional argument OUT_PATH
+        positional: true
+        position: 3
+      usage: cooltools random-sample [OPTIONS] IN_PATH OUT_PATH
+    rearrange:
+      params:
+      - name: --orientation-col
+        type: string
+        description: can specify the new chromosome     names and whether
+      - name: --view
+        type: string
+        description: Path to a BED-like file which defines which regions
+      - name: --new-chrom-col
+        type: string
+        description: --orientation-col you can
+      - name: --assembly
+        type: string
+        description: The name of the assembly for the new cooler. If
+      - name: --chunksize
+        type: integer
+        description: The number of pixels loaded and processed per step
+      - name: --mode
+        type: string
+        description: '[w|a]            (w)rite or (a)ppend to the output file (default:
+          w)'
+      - name: IN_PATH
+        type: path
+        description: Positional argument IN_PATH
+        positional: true
+        position: 2
+      - name: OUT_PATH
+        type: path
+        description: Positional argument OUT_PATH
+        positional: true
+        position: 3
+      usage: cooltools rearrange [OPTIONS] IN_PATH OUT_PATH
+    saddle:
+      params:
+      - name: --contact-type
+        type: string
+        description: '[cis|trans]  Type of the contacts to aggregate  [default:'
+        aliases:
+        - -t
+      - name: --min-dist
+        type: integer
+        description: Minimal distance between bins to consider,
+      - name: --max-dist
+        type: integer
+        description: Maximal distance between bins to consider,
+      - name: --n-bins
+        type: integer
+        description: Number of bins for digitizing track values.
+        aliases:
+        - -n
+      - name: --vrange
+        type: string
+        description: '...       Low and high values used for binning genome-'
+      - name: --qrange
+        type: string
+        description: '...       Low and high values used for quantile bins'
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name.
+      - name: --strength
+        type: string
+        description: / --no-strength      Compute and save compartment 'saddle
+      - name: --out-prefix
+        type: string
+        description: Dump 'saddledata', 'binedges' and 'hist'
+        aliases:
+        - -o
+      - name: --fig
+        type: string
+        description: '[png|jpg|svg|pdf|ps|eps]  Generate a figure and save to a file
+          of the'
+      - name: --scale
+        type: string
+        description: '[linear|log]            Value scale for the heatmap'
+      - name: --cmap
+        type: string
+        description: 'Name of matplotlib colormap  [default:'
+      - name: --vmin
+        type: float
+        description: 'Low value of the saddleplot colorbar. Note:'
+      - name: --vmax
+        type: float
+        description: High value of the saddleplot colorbar
+      - name: --hist-color
+        type: string
+        description: Face color of histogram bar chart
+      - name: --verbose
+        type: string
+        description: verbose output
+        aliases:
+        - -v
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      - name: TRACK_PATH
+        type: path
+        description: Positional argument TRACK_PATH
+        positional: true
+        position: 3
+      - name: EXPECTED_PATH
+        type: path
+        description: Positional argument EXPECTED_PATH
+        positional: true
+        position: 4
+      usage: cooltools saddle [OPTIONS] COOL_PATH TRACK_PATH EXPECTED_PATH
+    virtual4c:
+      params:
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Provide empty
+      - name: --out-prefix
+        type: string
+        description: Save virtual 4C track as a BED-like file. Contact
+        aliases:
+        - -o
+      - name: --bigwig
+        type: string
+        description: save virtual 4C track as a bigWig file with the
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work between.
+        aliases:
+        - -p
+      - name: COOL_PATH
+        type: path
+        description: Positional argument COOL_PATH
+        positional: true
+        position: 2
+      - name: VIEWPOINT
+        type: path
+        description: Positional argument VIEWPOINT
+        positional: true
+        position: 3
+      usage: cooltools virtual4c [OPTIONS] COOL_PATH VIEWPOINT
+  subcommand_discovery_complete: true
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/open2c/cooltools
+    system_commands: []
+    python_packages:
+    - asciitree==0.3.3
+    - bioframe==0.8.0
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cooler==0.10.4
+    - cooltools @ file:///tmp/execute_gmr2sz81/cooltools
+    - cycler==0.12.1
+    - Cython==3.2.9
+    - cytoolz==1.1.0
+    - dill==0.4.1
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.18
+    - ImageIO==2.37.4
+    - joblib==1.5.3
+    - kiwisolver==1.5.0
+    - lazy-loader==0.5
+    - llvmlite==0.49.0
+    declared_packages:
+    - bioframe
+    - click
+    - cooler
+    - cython
+    - docutils
+    - ipython
+    - joblib
+    - matplotlib
+    - multiprocess
+    - nbsphinx
+    - numba
+    - numpy
+    - pandas
+    - pygments
+    - pytest
+    - pytest-cov
+    - pytest-flake8
+    - recommonmark
+    - scikit-image
+    - scikit-learn
+    - scipy
+    - sphinx
+    - sphinx-click
+    - sphinx-rtd-theme
+    missing_deps:
+    - api
+    - astropy
+    - checks
+    - cli
+    - common
+    - cooltools
+    - coverage
+    - dask
+    - h5py
+    - importlib
+    - ipdb
+    - lib
+    - operator
+    - pdb
+    - pybigtools
+    - requests
+    - sandbox
+    - setuptools
+    - skimage
+    - sklearn
+    - toolz
+    - unittest
+    - util
+    venv_path: /tmp/execute_gmr2sz81/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_gmr2sz81/venv/bin/cooltools --help` -> exit 0'
+    exec_executable: cooltools
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --verbose
+      type: string
+      description: logging
+      aliases:
+      - -v
+    - name: --debug
+      type: string
+      description: mortem debugging
+      aliases:
+      - -d
+    - name: --version
+      type: string
+      description: the version and exit.
+      aliases:
+      - -V
+    installed_versions:
+    - asciitree==0.3.3
+    - bioframe==0.8.0
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cooler==0.10.4
+    - cooltools @ file:///tmp/execute_gmr2sz81/cooltools
+    - cycler==0.12.1
+    - Cython==3.2.9
+    - cytoolz==1.1.0
+    - dill==0.4.1
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.18
+    - ImageIO==2.37.4
+    - joblib==1.5.3
+    - kiwisolver==1.5.0
+    - lazy-loader==0.5
+    - llvmlite==0.49.0
+    - matplotlib==3.11.1
+    - multiprocess==0.70.19
+    - narwhals==2.24.0
+    - networkx==3.6.1
+    - numba==0.67.0
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - pillow==12.3.0
+    - pyfaidx==0.9.0.4
+    - pyparsing==3.3.2
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - requests==2.34.2
+    - scikit-image==0.26.0
+    - scikit-learn==1.9.0
+    - scipy==1.17.1
+    - simplejson==4.1.1
+    - six==1.17.0
+    - threadpoolctl==3.6.0
+    - tifffile==2026.3.3
+    - toolz==1.1.0
+    - urllib3==2.7.0
+- name: fastapi
+  type: python
+  command: python -m fastapi {{input_file}}
+  arg_style: python
+  callable_via: python -m fastapi
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] FastAPI framework, high performance, easy to learn,
+    fast to code, ready for production (⭐101579, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install fastapi  # source: https://github.com/fastapi/fastapi'
+    system_commands: []
+    python_packages:
+    - annotated-doc==0.0.5
+    - annotated-types==0.8.0
+    - anyio==4.14.2
+    - fastapi @ file:///tmp/execute_1g_x0g21/fastapi
+    - idna==3.18
+    - packaging==26.3
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - starlette==1.6.0
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    declared_packages: []
+    missing_deps:
+    - dependencies
+    - fastapi
+    - internal
+    - pydantic
+    - routers
+    venv_path: /tmp/execute_1g_x0g21/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`python -m fastapi` entry point'
+    exec_executable: fastapi
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+    installed_versions:
+    - annotated-doc==0.0.5
+    - annotated-types==0.8.0
+    - anyio==4.14.2
+    - fastapi @ file:///tmp/execute_1g_x0g21/fastapi
+    - idna==3.18
+    - packaging==26.3
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - starlette==1.6.0
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+- name: openfold-3
+  type: cli
+  command: run_openfold {{subcommand}} {{input_file}}
+  arg_style: subcommand
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] A fully open source biomolecular structure prediction
+    model based on AlphaFold3 (⭐817, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    seed:
+      type: integer
+      description: '[train] Initial seed for all processes'
+      source: subcommand_help
+    subcommand:
+      type: string
+      description: 'Which subcommand to run: align-msa-server | predict | train'
+      source: help_parsed
+      required: true
+  execution: null
+  subcommands:
+  - align-msa-server
+  - predict
+  - train
+  subcommand_details:
+    align-msa-server:
+      params: []
+      usage: run_openfold align-msa-server [OPTIONS]
+    predict:
+      params: []
+      usage: run_openfold predict [OPTIONS]
+    train:
+      params:
+      - name: --seed
+        type: integer
+        description: Initial seed for all processes
+      usage: run_openfold train [OPTIONS]
+  subcommand_discovery_complete: true
+  install:
+    method: pip_pkg
+    command: 'pip install openfold3  # source: https://github.com/aqlaboratory/openfold-3'
+    system_commands: []
+    python_packages:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-types==0.8.0
+    - attrs==26.1.0
+    - awscli==1.46.0
+    - awscrt==0.36.2
+    - biotite==1.6.0
+    - biotraj==1.2.2
+    - boto3==1.43.71
+    - botocore==1.43.71
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - colorama==0.4.6
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    - docutils==0.19
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - awscrt
+    - biotite
+    - boto3
+    - botocore
+    - contextvars
+    - deepspeed
+    - func_timeout
+    - gemmi
+    - importlib
+    - lightning_fabric
+    - lightning_utilities
+    - ml_collections
+    - numpy
+    - openfold3
+    - packaging
+    - pydantic
+    - pytorch_lightning
+    - rdkit
+    - resource
+    - torch
+    - torchmetrics
+    - tqdm
+    - triton
+    - wandb
+    - yaml
+    venv_path: /tmp/execute_fyhs3la5/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_fyhs3la5/venv/bin/run_openfold --help` -> exit 0'
+    exec_executable: run_openfold
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: subcommand_help
+    installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-types==0.8.0
+    - attrs==26.1.0
+    - awscli==1.46.0
+    - awscrt==0.36.2
+    - biotite==1.6.0
+    - biotraj==1.2.2
+    - boto3==1.43.71
+    - botocore==1.43.71
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - colorama==0.4.6
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    - docutils==0.19
+    - filelock==3.32.3
+    - frozenlist==1.8.0
+    - fsspec==2026.7.0
+    - func_timeout==4.3.5
+    - gemmi==0.7.5
+    - idna==3.18
+    - ijson==3.5.1
+    - Jinja2==3.1.6
+    - jmespath==1.1.0
+    - kalign-python==3.6.0
+    - lightning-utilities==0.15.3
+    - lmdb==2.3.0
+    - MarkupSafe==3.0.3
+    - memory-profiler==0.61.0
+    - ml_collections==1.1.0
+    - mpmath==1.3.0
+    - msgpack==1.2.1
+    - multidict==6.7.1
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - nvidia-cublas==13.1.1.3
+    - nvidia-cuda-cupti==13.0.85
+    - nvidia-cuda-nvrtc==13.0.88
+    - nvidia-cuda-runtime==13.0.96
+    - nvidia-cudnn-cu13==9.20.0.48
+    - nvidia-cufft==12.0.0.61
+    - nvidia-cufile==1.15.1.6
+    - nvidia-curand==10.4.0.35
+    - nvidia-cusolver==12.0.4.66
+    - nvidia-cusparse==12.6.3.3
+    - nvidia-cusparselt-cu13==0.8.1
+    - nvidia-nccl-cu13==2.29.7
+    - nvidia-nvjitlink==13.3.33
+    - nvidia-nvshmem-cu13==3.4.5
+    - nvidia-nvtx==13.0.85
+    - openfold3 @ file:///tmp/execute_fyhs3la5/openfold-3
+    - opentelemetry-api==1.44.0
+    - packaging==26.3
+    - pandas==3.0.5
+    - pdbeccdutils==1.0.4
+    - pillow==12.3.0
+    - platformdirs==4.11.3
+    - propcache==0.5.2
+    - protobuf==7.35.1
+    - psutil==7.2.2
+    - pyasn1==0.6.4
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - python-dateutil==2.9.0.post0
+    - pytorch-lightning==2.6.5
+    - PyYAML==6.0.3
+    - rdkit==2025.9.6
+    - requests==2.34.2
+    - rsa==4.7.2
+    - s3transfer==0.19.2
+    - scipy==1.17.1
+    - sentry-sdk==2.68.0
+    - six==1.17.0
+    - sympy==1.14.0
+    - torch==2.13.0
+- name: bioconvert
+  type: cli
+  command: bioconvert {{input_file}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Bioconvert is a collaborative project to facilitate
+    the interconversion of life science data from one format to another. (⭐393, Python)
+    (license: COPYING)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install bioconvert  # source: https://github.com/bioconvert/bioconvert'
+    system_commands: []
+    python_packages:
+    - alabaster==1.0.0
+    - asciitree==0.3.3
+    - babel==2.18.0
+    - bioconvert @ file:///tmp/execute_biqoa9s_/bioconvert
+    - biopython==1.88
+    - biosniff==1.0.0
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - colorama==0.4.6
+    - colorlog==6.12.0
+    - contourpy==1.3.3
+    - cooler==0.10.4
+    - cycler==0.12.1
+    - Cython==3.2.9
+    - cytoolz==1.1.0
+    - deepTools==3.5.6
+    - deeptoolsintervals==0.1.9
+    - Deprecated==1.3.1
+    - dill==0.4.1
+    declared_packages:
+    - biopython
+    - biosniff
+    - click
+    - colorlog
+    - cython
+    - deeptools
+    - easydev
+    - hic2cool
+    - hiclift
+    - mappy
+    - matplotlib
+    - networkx
+    - openpyxl
+    - pandas
+    - pod5
+    - psutil
+    - py2bit
+    - pybigwig
+    - pyexcel
+    - pyexcel-ods3
+    - pyexcel-xls
+    - pyexcel-xlsx
+    - pysam
+    - pyyaml
+    - rich-click
+    - statsmodels
+    - tqdm
+    - xlrd
+    missing_deps:
+    - Bio
+    - bioconvert
+    - importlib
+    - inspect
+    - pkgutil
+    - pygraphviz
+    - select
+    venv_path: /tmp/execute_biqoa9s_/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_biqoa9s_/venv/bin/bioconvert --help` -> exit 0'
+    exec_executable: bioconvert
+    verified_license: true
+    verified_license_path: COPYING
+    verified_status: repo_ok
+    inputs_source: placeholder
+    installed_versions:
+    - alabaster==1.0.0
+    - asciitree==0.3.3
+    - babel==2.18.0
+    - bioconvert @ file:///tmp/execute_biqoa9s_/bioconvert
+    - biopython==1.88
+    - biosniff==1.0.0
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - colorama==0.4.6
+    - colorlog==6.12.0
+    - contourpy==1.3.3
+    - cooler==0.10.4
+    - cycler==0.12.1
+    - Cython==3.2.9
+    - cytoolz==1.1.0
+    - deepTools==3.5.6
+    - deeptoolsintervals==0.1.9
+    - Deprecated==1.3.1
+    - dill==0.4.1
+    - docutils==0.22.4
+    - easydev==0.14.0
+    - et_xmlfile==2.0.0
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - hic2cool==0.8.3
+    - HiCLift==1.0
+    - idna==3.18
+    - imagesize==2.0.0
+    - iso8601==2.1.0
+    - Jinja2==3.1.6
+    - kiwisolver==1.5.0
+    - lib_pod5==0.3.44
+    - line_profiler==5.0.2
+    - lml==0.2.0
+    - lxml==6.1.1
+    - mappy==2.31
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mdurl==0.1.2
+    - more-itertools==11.1.0
+    - multiprocess==0.70.19
+    - narwhals==2.24.0
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - numpydoc==1.10.0
+    - openpyxl==3.1.5
+    - packaging==26.3
+    - pandas==3.0.5
+    - patsy==1.0.2
+    - pexpect==4.9.0
+    - pillow==12.3.0
+    - platformdirs==4.11.3
+    - plotly==6.9.0
+    - pod5==0.3.44
+    - polars==1.43.2
+    - polars-runtime-32==1.43.2
+    - psutil==7.2.2
+    - ptyprocess==0.7.0
+    - py2bit==1.0.1
+    - pyarrow==22.0.0
+    - pyBigWig==0.3.25
+    - pyexcel==0.7.6
+    - pyexcel-ezodf==0.3.4
+    - pyexcel-io==0.6.8
+    - pyexcel-ods3==0.6.1
+    - pyexcel-xls==0.7.1
+    - pyexcel-xlsx==0.6.1
+    - pyfaidx==0.9.0.4
+    - Pygments==2.20.0
+    - pyparsing==3.3.2
+    - pysam==0.24.0
+    - python-dateutil==2.9.0.post0
+    - pytz==2026.3.post1
+    - PyYAML==6.0.3
+    - requests==2.34.2
+    - rich==15.0.0
+    - rich-click==1.9.8
+    - roman-numerals==4.1.0
+- name: ccdutils
+  type: cli
+  command: process_components_cif {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] A set of python tools to deal with PDB chemical
+    components definitions for small molecules, taken from the wwPDB Chemical Component
+    Dictionary, uses RDKit (⭐83, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    i:
+      type: string
+      description: ', --input-cif INPUT_CIF'
+      source: help_parsed
+    g:
+      type: string
+      description: ', --general-templates GENERAL_TEMPLATES'
+      source: help_parsed
+    p:
+      type: string
+      description: ', --pubchem-templates PUBCHEM_TEMPLATES'
+      source: help_parsed
+    o:
+      type: string
+      description: ', --output-dir OUTPUT_DIR'
+      source: help_parsed
+    debug:
+      type: string
+      description: on debug message logging output
+      source: help_parsed
+    ccd:
+      type: string
+      description: is going to process CCD mmCIF files.
+      source: help_parsed
+    prd:
+      type: string
+      description: is going to process PRD mmCIF files.
+      source: help_parsed
+    OUTPUT_DIR:
+      type: path
+      description: Positional argument OUTPUT_DIR
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install pdbeccdutils  # source: https://github.com/PDBeurope/ccdutils'
+    system_commands: []
+    python_packages:
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - gemmi==0.7.5
+    - idna==3.18
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pdbeccdutils @ file:///tmp/execute_s6y3dhie/ccdutils
+    - pillow==12.3.0
+    - rdkit==2026.3.5
+    - requests==2.34.2
+    - scipy==1.17.1
+    - urllib3==2.7.0
+    declared_packages: []
+    missing_deps:
+    - PIL
+    - gemmi
+    - importlib
+    - networkx
+    - numpy
+    - pdbeccdutils
+    - rdkit
+    - requests
+    - scipy
+    - setuptools
+    - urllib3
+    - xml
+    venv_path: /tmp/execute_s6y3dhie/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_s6y3dhie/venv/bin/process_components_cif --help` ->
+      exit 0'
+    exec_executable: process_components_cif
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: -i
+      type: string
+      description: ', --input-cif INPUT_CIF'
+    - name: -g
+      type: string
+      description: ', --general-templates GENERAL_TEMPLATES'
+    - name: -p
+      type: string
+      description: ', --pubchem-templates PUBCHEM_TEMPLATES'
+    - name: -o
+      type: string
+      description: ', --output-dir OUTPUT_DIR'
+    - name: --debug
+      type: string
+      description: on debug message logging output
+    - name: --ccd
+      type: string
+      description: is going to process CCD mmCIF files.
+    - name: --prd
+      type: string
+      description: is going to process PRD mmCIF files.
+    installed_versions:
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - gemmi==0.7.5
+    - idna==3.18
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pdbeccdutils @ file:///tmp/execute_s6y3dhie/ccdutils
+    - pillow==12.3.0
+    - rdkit==2026.3.5
+    - requests==2.34.2
+    - scipy==1.17.1
+    - urllib3==2.7.0
+- name: sickle
+  type: cli
+  command: sickle {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Windowed Adaptive Trimming for fastq files using
+    quality (⭐26, C) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: make
+    command: make -C https://github.com/ucdavis-bioinformatics/sickle && ./sickle
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_pgiw_2ez/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_pgiw_2ez/sickle/sickle --help` -> exit 0'
+    exec_executable: sickle
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: rellig
+  type: cli
+  command: pdberellig {{subcommand}} {{cif}} {{ligand_type}} {{out_dir}}
+  arg_style: subcommand
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Identifies relevant ligands in the PDB (⭐9, Python)
+    (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    cif:
+      type: string
+      description: '[cofactors] path to input cif file'
+      source: subcommand_help
+    ligand_type:
+      type: string
+      description: '[cofactors] [ccd|prd|clc]  type of ligand in the PDB'
+      source: subcommand_help
+    out_dir:
+      type: string
+      description: '[cofactors] path to output directory'
+      source: subcommand_help
+    chebi_structure_file:
+      type: string
+      description: '[reactants] Path to the ChEBI structures file. If'
+      source: subcommand_help
+    update_chebi:
+      type: string
+      description: '[reactants] to update ChEBI structures file'
+      source: subcommand_help
+    minimal_ligand_size:
+      type: integer
+      description: '[reactants] Minimum ligand size.'
+      source: subcommand_help
+    subcommand:
+      type: string
+      description: 'Which subcommand to run: cofactors | drugs | reactants'
+      source: help_parsed
+      required: true
+  execution: null
+  subcommands:
+  - cofactors
+  - drugs
+  - reactants
+  subcommand_details:
+    cofactors:
+      params:
+      - name: --cif
+        type: string
+        description: path to input cif file
+      - name: --ligand-type
+        type: string
+        description: '[ccd|prd|clc]  type of ligand in the PDB'
+      - name: --out-dir
+        type: string
+        description: path to output directory
+      usage: pdberellig cofactors [OPTIONS]
+    drugs:
+      params:
+      - name: --cif
+        type: string
+        description: path to input cif file
+      - name: --out-dir
+        type: string
+        description: path to output directory
+      - name: --ligand-type
+        type: string
+        description: '[ccd|prd|clc]  type of ligand in the PDB'
+      usage: pdberellig drugs [OPTIONS]
+    reactants:
+      params:
+      - name: --cif
+        type: string
+        description: path to input cif file
+      - name: --ligand-type
+        type: string
+        description: '[ccd|prd|clc]    type of ligand in the PDB'
+      - name: --chebi-structure-file
+        type: string
+        description: Path to the ChEBI structures file. If
+      - name: --out-dir
+        type: string
+        description: path to output directory
+      - name: --update-chebi
+        type: string
+        description: to update ChEBI structures file
+      - name: --minimal-ligand-size
+        type: integer
+        description: Minimum ligand size.
+      usage: pdberellig reactants [OPTIONS]
+  subcommand_discovery_complete: true
+  install:
+    method: pip_pkg
+    command: 'pip install pdberellig  # source: https://github.com/PDBeurope/rellig'
+    system_commands: []
+    python_packages:
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - gemmi==0.7.5
+    - idna==3.18
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==2.3.3
+    - pdbeccdutils==1.0.4
+    - pdberellig @ file:///tmp/execute_ico7vm22/rellig
+    - pillow==12.3.0
+    - pyparsing==3.3.2
+    - python-dateutil==2.9.0.post0
+    - pytz==2026.3.post1
+    - rdflib==7.6.0
+    - rdkit==2026.3.5
+    - requests==2.34.2
+    - scipy==1.17.1
+    - six==1.17.0
+    declared_packages: []
+    missing_deps:
+    - SPARQLWrapper
+    - click
+    - concurrent
+    - gemmi
+    - importlib
+    - pandas
+    - pdbeccdutils
+    - pdberellig
+    - rdkit
+    - requests
+    - setuptools
+    - urllib3
+    venv_path: /tmp/execute_ico7vm22/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_ico7vm22/venv/bin/pdberellig --help` -> exit 0'
+    exec_executable: pdberellig
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: subcommand_help
+    installed_versions:
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - click==8.4.2
+    - gemmi==0.7.5
+    - idna==3.18
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==2.3.3
+    - pdbeccdutils==1.0.4
+    - pdberellig @ file:///tmp/execute_ico7vm22/rellig
+    - pillow==12.3.0
+    - pyparsing==3.3.2
+    - python-dateutil==2.9.0.post0
+    - pytz==2026.3.post1
+    - rdflib==7.6.0
+    - rdkit==2026.3.5
+    - requests==2.34.2
+    - scipy==1.17.1
+    - six==1.17.0
+    - SPARQLWrapper==2.0.0
+    - tzdata==2026.3
+    - urllib3==2.7.0
+- name: ncbi-genome-download
+  type: cli
+  command: ncbi-genome-download {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Linking the epidemiology of coccidioidomycosis and
+    environmental exposure through targeted genomic e (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    s:
+      type: string
+      description: ', --section {refseq,genbank}'
+      source: help_parsed
+    F:
+      type: string
+      description: ', --formats FILE_FORMATS'
+      source: help_parsed
+    l:
+      type: string
+      description: ', --assembly-levels ASSEMBLY_LEVELS'
+      source: help_parsed
+    g:
+      type: string
+      description: ', --genera GENERA'
+      source: help_parsed
+    genus:
+      type: string
+      description: Deprecated alias of --genera
+      source: help_parsed
+    fuzzy_genus:
+      type: string
+      description: a fuzzy search on the organism name instead of an
+      source: help_parsed
+    S:
+      type: string
+      description: ', --strains STRAINS'
+      source: help_parsed
+    T:
+      type: string
+      description: ', --species-taxids SPECIES_TAXIDS'
+      source: help_parsed
+    t:
+      type: string
+      description: ', --taxids TAXIDS'
+      source: help_parsed
+    A:
+      type: string
+      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
+      source: help_parsed
+    fuzzy_accessions:
+      type: string
+      description: a fuzzy search on the entry accession instead of
+      source: help_parsed
+    R:
+      type: string
+      description: ', --refseq-categories REFSEQ_CATEGORIES'
+      source: help_parsed
+    refseq_category:
+      type: string
+      description: CLI flag --refseq-category
+      source: help_parsed
+    o:
+      type: string
+      description: ', --output-folder OUTPUT'
+      source: help_parsed
+    flat_output:
+      type: string
+      description: all files right into the output folder without
+      source: help_parsed
+    human_readable:
+      type: string
+      description: links in human-readable hierarchy (might fail
+      source: help_parsed
+    progress_bar:
+      type: string
+      description: a progress bar for indicating the download
+      source: help_parsed
+    u:
+      type: string
+      description: ', --uri URI     NCBI base URI to use (default:'
+      source: help_parsed
+    p:
+      type: integer
+      description: ', --parallel N    Run N downloads in parallel (default: 1)'
+      source: help_parsed
+    r:
+      type: integer
+      description: ', --retries N     Retry download N times when connection to NCBI
+        fails'
+      source: help_parsed
+    groups:
+      type: path
+      description: Positional argument groups
+      source: help_parsed
+      positional: true
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/kblin/ncbi-genome-download
+    system_commands: []
+    python_packages:
+    - appdirs==1.4.4
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - idna==3.18
+    - ncbi-genome-download @ file:///tmp/execute_j8cjvbqw/ncbi-genome-download
+    - packaging==26.3
+    - requests==2.34.2
+    - tqdm==4.70.0
+    - urllib3==2.7.0
+    declared_packages:
+    - coverage
+    - pytest
+    - pytest-cov
+    - pytest-mock
+    - requests-mock
+    missing_deps:
+    - appdirs
+    - config
+    - core
+    - errno
+    - ete3
+    - jobs
+    - ncbi_genome_download
+    - requests
+    - setuptools
+    - summary
+    - tqdm
+    venv_path: /tmp/execute_j8cjvbqw/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_j8cjvbqw/venv/bin/ncbi-genome-download --help` ->
+      exit 0'
+    exec_executable: ncbi-genome-download
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: -s
+      type: string
+      description: ', --section {refseq,genbank}'
+    - name: -F
+      type: string
+      description: ', --formats FILE_FORMATS'
+    - name: -l
+      type: string
+      description: ', --assembly-levels ASSEMBLY_LEVELS'
+    - name: -g
+      type: string
+      description: ', --genera GENERA'
+    - name: --genus
+      type: string
+      description: Deprecated alias of --genera
+    - name: --fuzzy-genus
+      type: string
+      description: a fuzzy search on the organism name instead of an
+    - name: -S
+      type: string
+      description: ', --strains STRAINS'
+    - name: -T
+      type: string
+      description: ', --species-taxids SPECIES_TAXIDS'
+    - name: -t
+      type: string
+      description: ', --taxids TAXIDS'
+    - name: -A
+      type: string
+      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
+    - name: --fuzzy-accessions
+      type: string
+      description: a fuzzy search on the entry accession instead of
+    - name: -R
+      type: string
+      description: ', --refseq-categories REFSEQ_CATEGORIES'
+    - name: --refseq-category
+      type: string
+      description: CLI flag --refseq-category
+    - name: -o
+      type: string
+      description: ', --output-folder OUTPUT'
+    - name: --flat-output
+      type: string
+      description: all files right into the output folder without
+    - name: --human-readable
+      type: string
+      description: links in human-readable hierarchy (might fail
+      aliases:
+      - -H
+    - name: --progress-bar
+      type: string
+      description: a progress bar for indicating the download
+      aliases:
+      - -P
+    - name: -u
+      type: string
+      description: ', --uri URI     NCBI base URI to use (default:'
+    - name: -p
+      type: integer
+      description: ', --parallel N    Run N downloads in parallel (default: 1)'
+    - name: -r
+      type: integer
+      description: ', --retries N     Retry download N times when connection to NCBI
+        fails'
+    installed_versions:
+    - appdirs==1.4.4
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - idna==3.18
+    - ncbi-genome-download @ file:///tmp/execute_j8cjvbqw/ncbi-genome-download
+    - packaging==26.3
+    - requests==2.34.2
+    - tqdm==4.70.0
+    - urllib3==2.7.0
+- name: pheatmap
+  type: cli
+  command: pheatmap {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Clonal spread of Mycobacterium monacense strains
+    among patients with extrapulmonary mycobacteriosis. (⭐0, ) (NO license - research
+    use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_file:
+      type: string
+      description: Input file path inside /data.
+      source: placeholder
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: r_pkg
+    command: R -e 'install.packages("remotes"); remotes::install_local("https://github.com/raivokolde/pheatmap")'
+    system_commands: []
+    python_packages: []
+    declared_packages: []
+    missing_deps: []
+    venv_path: /tmp/execute_18lg2rq7/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`conda run -n base R -e ''library(pheatmap)''` -> exit 0'
+    exec_executable: pheatmap
+    verified_license: false
+    verified_status: repo_ok
+    inputs_source: placeholder
+- name: cwltool
+  type: cli
+  command: cwltool {{input_file}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Software pipelines for RNA-Seq, ChIP-Seq and germline
+    variant calling analyses in common workflow la (⭐0, ) (license: LICENSE.txt)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    basedir:
+      type: string
+      description: CLI flag --basedir
+      source: help_parsed
+    outdir:
+      type: string
+      description: Output directory. The default is the current
+      source: help_parsed
+    parallel:
+      type: string
+      description: jobs in parallel.
+      source: help_parsed
+    parallel_max:
+      type: string
+      description: CLI flag --parallel-max
+      source: help_parsed
+    skip_schemas:
+      type: string
+      description: loading of schemas
+      source: help_parsed
+    enable_dev:
+      type: string
+      description: loading and running unofficial development
+      source: help_parsed
+    enable_ext:
+      type: string
+      description: loading and running `cwltool:` extensions to
+      source: help_parsed
+    on_error:
+      type: string
+      description: CLI flag --on-error
+      source: help_parsed
+    relax_path_checks:
+      type: string
+      description: requirements on path names to permit spaces and
+      source: help_parsed
+    overrides:
+      type: string
+      description: CLI flag --overrides
+      source: help_parsed
+    mpi_config_file:
+      type: string
+      description: CLI flag --mpi-config-file
+      source: help_parsed
+    strict:
+      type: string
+      description: validation (unrecognized or out of place fields
+      source: help_parsed
+    non_strict:
+      type: string
+      description: validation (ignore unrecognized fields)
+      source: help_parsed
+    no_doc_cache:
+      type: string
+      description: disk cache for documents loaded over HTTP
+      source: help_parsed
+    doc_cache:
+      type: string
+      description: disk cache for documents loaded over HTTP
+      source: help_parsed
+    enable_color:
+      type: string
+      description: logging color (default enabled)
+      source: help_parsed
+    disable_color:
+      type: string
+      description: colored logging (default false)
+      source: help_parsed
+    compute_checksum:
+      type: string
+      description: checksum of contents while collecting outputs
+      source: help_parsed
+    print_rdf:
+      type: string
+      description: corresponding RDF graph for workflow and exit
+      source: help_parsed
+    print_dot:
+      type: string
+      description: workflow visualization in graphviz format and
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/common-workflow-language/cwltool
+    system_commands: []
+    python_packages:
+    - argcomplete==3.7.2
+    - CacheControl==0.14.4
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - coloredlogs==15.0.1
+    - cwl-upgrader==1.2.15
+    - cwl-utils==0.42
+    - cwltool @ file:///tmp/execute_kr3qc615/cwltool
+    - filelock==3.32.3
+    - humanfriendly==10.0
+    - idna==3.18
+    - lxml==6.1.1
+    - markdown-it-py==4.2.0
+    - mdurl==0.1.2
+    - mistune==3.2.1
+    - msgpack==1.2.1
+    - mypy_extensions==1.1.0
+    - networkx==3.6.1
+    - packaging==26.3
+    - prov==1.5.1
+    declared_packages:
+    - argcomplete
+    - coloredlogs
+    - cwl-utils
+    - mypy-extensions
+    - prov
+    - psutil
+    - pydot
+    - pygments
+    - pyparsing
+    - rdflib
+    - requests
+    - rich-argparse
+    - ruamel.yaml
+    - schema-salad
+    - sphinx
+    - sphinx-autoapi
+    - sphinx-autodoc-typehints
+    - sphinx-rtd-theme
+    - sphinxcontrib-autoprogram
+    - spython
+    - typing-extensions
+    - urllib3
+    - zipp
+    missing_deps:
+    - argparser
+    - array
+    - builder
+    - cachecontrol
+    - checker
+    - command_line_tool
+    - context
+    - cuda
+    - cwlprov
+    - cwlrdf
+    - cwltool
+    - cwlviewer
+    - docker
+    - docker_id
+    - errors
+    - executors
+    - fcntl
+    - flatten
+    - galaxy
+    - importlib
+    - inspect
+    - job
+    - load_tool
+    - locale
+    - loghandler
+    - mmap
+    - mpi
+    - mutation
+    - mypyc
+    - pack
+    venv_path: /tmp/execute_kr3qc615/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_kr3qc615/venv/bin/cwltool --help` -> exit 0'
+    exec_executable: cwltool
+    verified_license: true
+    verified_license_path: LICENSE.txt
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --basedir
+      type: string
+      description: CLI flag --basedir
+    - name: --outdir
+      type: string
+      description: Output directory. The default is the current
+    - name: --parallel
+      type: string
+      description: jobs in parallel.
+    - name: --parallel-max
+      type: string
+      description: CLI flag --parallel-max
+    - name: --skip-schemas
+      type: string
+      description: loading of schemas
+    - name: --enable-dev
+      type: string
+      description: loading and running unofficial development
+    - name: --enable-ext
+      type: string
+      description: loading and running `cwltool:` extensions to
+    - name: --on-error
+      type: string
+      description: CLI flag --on-error
+    - name: --relax-path-checks
+      type: string
+      description: requirements on path names to permit spaces and
+    - name: --overrides
+      type: string
+      description: CLI flag --overrides
+    - name: --mpi-config-file
+      type: string
+      description: CLI flag --mpi-config-file
+    - name: --strict
+      type: string
+      description: validation (unrecognized or out of place fields
+    - name: --non-strict
+      type: string
+      description: validation (ignore unrecognized fields)
+    - name: --no-doc-cache
+      type: string
+      description: disk cache for documents loaded over HTTP
+    - name: --doc-cache
+      type: string
+      description: disk cache for documents loaded over HTTP
+    - name: --enable-color
+      type: string
+      description: logging color (default enabled)
+    - name: --disable-color
+      type: string
+      description: colored logging (default false)
+    - name: --compute-checksum
+      type: string
+      description: checksum of contents while collecting outputs
+    - name: --print-rdf
+      type: string
+      description: corresponding RDF graph for workflow and exit
+    - name: --print-dot
+      type: string
+      description: workflow visualization in graphviz format and
+    installed_versions:
+    - argcomplete==3.7.2
+    - CacheControl==0.14.4
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.0
+    - coloredlogs==15.0.1
+    - cwl-upgrader==1.2.15
+    - cwl-utils==0.42
+    - cwltool @ file:///tmp/execute_kr3qc615/cwltool
+    - filelock==3.32.3
+    - humanfriendly==10.0
+    - idna==3.18
+    - lxml==6.1.1
+    - markdown-it-py==4.2.0
+    - mdurl==0.1.2
+    - mistune==3.2.1
+    - msgpack==1.2.1
+    - mypy_extensions==1.1.0
+    - networkx==3.6.1
+    - packaging==26.3
+    - prov==1.5.1
+    - psutil==7.2.2
+    - pydot==4.0.1
+    - Pygments==2.20.0
+    - pyparsing==3.3.2
+    - python-dateutil==2.9.0.post0
+    - rdflib==7.6.0
+    - requests==2.34.2
+    - rich==15.0.0
+    - rich-argparse==1.8.0
+    - ruamel.yaml==0.19.1
+    - schema-salad==8.10.20260810193251
+    - six==1.17.0
+    - spython==0.3.14
+    - typing_extensions==4.16.0
+    - urllib3==2.7.0
