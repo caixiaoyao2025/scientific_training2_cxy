@@ -46,8 +46,19 @@ def load_tools(path: str) -> list[dict]:
     return [t for t in tools if isinstance(t, dict) and t.get("name")]
 
 
-# tokens that indicate a broken/mis-parsed schema (Usage text leaked as params)
-_POLLUTION = re.compile(r"[{}\[\]]|\x1b\[|\.\.\.|\[OPTIONS\]|\[ARGS\]|COMMAND|^\.$")
+# tokens that indicate a broken/mis-parsed schema. `{{var}}` template
+# variables are LEGAL (command placeholders) -- we strip them before checking,
+# and only flag real pollution: ANSI escapes, argparse choices `{a,b}` used as
+# a name, `[OPTIONS]/[ARGS]` usage text, ellipsis pseudo-tokens.
+_TEMPLATE_VAR = re.compile(r"\{\{[a-zA-Z_][a-zA-Z0-9_]*\}\}")
+_POLLUTION = re.compile(r"\x1b\[|\.\.\.|\[OPTIONS\]|\[ARGS\]|\bCOMMAND\b|^\.$")
+# argparse choices leaked as a parameter key: `{init,check,...}` (not {{var}})
+_CHOICES_KEY = re.compile(r"\{[a-zA-Z0-9_,\-\s]+\}")
+
+
+def _clean_template(command: str) -> str:
+    """Replace legal {{var}} placeholders so they don't look like pollution."""
+    return _TEMPLATE_VAR.sub("PLACEHOLDER", command)
 
 
 def validate_tool_schema(tool: dict) -> str:
@@ -57,12 +68,13 @@ def validate_tool_schema(tool: dict) -> str:
     cmd = tool.get("command") or ""
     as_ = tool.get("arg_style") or "cli"
     inputs = tool.get("inputs") or {}
-    # broken command template (pollution in command)
-    if _POLLUTION.search(cmd):
+    # broken command template: check after masking legal {{var}} placeholders
+    if _POLLUTION.search(_clean_template(cmd)):
         return f"SCHEMA_INVALID: command polluted ({cmd[:40]})"
-    # broken input names (pollution as parameter keys)
+    # broken input names: {{var}} is never a legal input KEY; choices `{a,b}`
+    # as a key is pollution from argparse subparsers
     for k in inputs.keys():
-        if _POLLUTION.search(k):
+        if _POLLUTION.search(k) or _TEMPLATE_VAR.search(k) or _CHOICES_KEY.search(k):
             return f"SCHEMA_INVALID: input name polluted ({k!r})"
     if not cmd.strip():
         return "NO_CMD"
