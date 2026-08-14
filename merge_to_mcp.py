@@ -52,7 +52,23 @@ def merge_registries():
     # (e.g. newly parsed --help params, install contract, verification results).
     fresh = [t for t in cleaned if t["name"] not in existing_names]
     updated = [t for t in cleaned if t["name"] in existing_names]
-    user_reg["tools"] = [t for t in existing if t.get("name", "") not in {u["name"] for u in updated}]
+    updated_names = {u["name"] for u in updated}
+    # STALE-ENTRY DROP: an entry that was NOT re-run this round AND whose inputs
+    # are a GUESS (`inputs_source: placeholder`) is a zombie -- it was never
+    # --help-parsed, so its schema (e.g. bqtools `bqtools {{input_file}}`) is
+    # not a real contract. Keep it only if it has real help-parsed evidence.
+    kept_existing = []
+    dropped = []
+    for t in existing:
+        name = t.get("name", "")
+        if name in updated_names:
+            continue  # refreshed this run
+        ev = t.get("evidence") or {}
+        if ev.get("inputs_source") == "placeholder":
+            dropped.append(name)
+        else:
+            kept_existing.append(t)
+    user_reg["tools"] = kept_existing
     user_reg["tools"].extend(fresh)
     user_reg["tools"].extend(updated)
 
@@ -61,6 +77,8 @@ def merge_registries():
         yaml.dump(user_reg, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
     print(f"Merged {len(fresh)} new + {len(updated)} updated tools into {USER_REGISTRY}")
+    if dropped:
+        print(f"  dropped {len(dropped)} stale placeholder-input entries: {dropped}")
     print(f"Total user tools: {len(user_reg['tools'])}")
 
 if __name__ == "__main__":

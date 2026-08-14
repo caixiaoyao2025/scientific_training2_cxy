@@ -242,6 +242,17 @@ def main() -> int:
             skipped.append(t["name"])
             print(f"[skip] {t['name']}: {vres}")
             continue
+        # PLACEHOLDER schemas: `inputs_source: placeholder` means the inputs were
+        # GUESSED (default `input_file`), never parsed from the tool's --help.
+        # Such an entry has no real parameter contract (bqtools is stuck as
+        # `bqtools {{input_file}}` because its paper wasn't rediscovered) and
+        # must not reach the LLM -- the agent would only flail on it.
+        ev = t.get("evidence") or {}
+        if ev.get("inputs_source") == "placeholder":
+            skipped.append(t["name"])
+            print(f"[skip] {t['name']}: placeholder inputs (never --help-parsed; "
+                  f"schema is a guess, not a contract)")
+            continue
         # heavy ML deps: installing torch on-demand is too slow/unreliable
         decl = (t.get("install") or {}).get("declared_packages") or []
         if any(h in " ".join(decl).lower() for h in heavy):
@@ -372,14 +383,14 @@ def main() -> int:
                         continue
                     if tool_name not in spec_map:
                         result = f"unknown tool {tool_name}"
-                    elif tool_attempts[tool_name] >= MAX_SAME_TOOL_ATTEMPTS:
+                    elif tool_attempts.get(tool_name, 0) >= MAX_SAME_TOOL_ATTEMPTS:
                         # anti-tool-roulette: same tool kept failing -> tell the
                         # agent to STOP retrying it and fix the task differently.
-                        result = (f"[tool {tool_name} already tried {tool_attempts[tool_name]} times "
+                        result = (f"[tool {tool_name} already tried {tool_attempts.get(tool_name, 0)} times "
                                   f"and kept failing. STOP calling {tool_name}. Fix the argument "
                                   f"values or use a different tool/approach.]")
                     else:
-                        tool_attempts[tool_name] += 1
+                        tool_attempts[tool_name] = tool_attempts.get(tool_name, 0) + 1
                         tool_spec = dict(spec_map[tool_name])
                         if sub:
                             tool_spec["_active_subcommand"] = sub
