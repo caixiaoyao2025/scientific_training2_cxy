@@ -70,6 +70,30 @@ def guess_command(tool):
     return f"{name.lower()} {{{{input_file}}}}"
 
 
+def _check_registry_contract(entry: dict) -> str:
+    """Return '' if the entry's schema contract is self-consistent, else a reason.
+
+    Rules:
+      - `inputs_source: placeholder` -> the inputs were GUESSED (default
+        `input_file`), never parsed from the tool's --help -> not a contract.
+      - every `{{var}}` in `command` must exist in `inputs` -> a command that
+        references an undeclared input would render garbage argv.
+    """
+    md = entry.get("_discovery_metadata") or {}
+    if md.get("inputs_source") == "placeholder":
+        return "placeholder inputs (never --help-parsed); schema is a guess, not a contract"
+    cmd = entry.get("command") or ""
+    inputs = entry.get("inputs") or {}
+    used = re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
+    if entry.get("arg_style") == "subcommand":
+        # `{{subcommand}}` is injected by the dispatcher (fnmap), not an input
+        used = [v for v in used if v != "subcommand"]
+    missing = sorted({v for v in used if v not in inputs})
+    if missing:
+        return f"command references undeclared inputs: {missing} (command {cmd[:60]})"
+    return ""
+
+
 def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
     """Best-effort output contract from parsed params.
 
@@ -152,7 +176,9 @@ def tool_to_registry_entry(tool, verification=None):
                 parts = []
                 for p in flag_params:
                     flag = p.get("flag", "--" + p["name"].replace("_", "-"))
-                    parts.append(f"{flag} {{{{ {p['name']} }}}}")
+                    # placeholder must match the INPUT key (flag stripped)
+                    key = p["name"].lstrip("-").replace("-", "_")
+                    parts.append(f"{flag} {{{{ {key} }}}}")
                 # fix the double-brace placeholders: {{ name }} -> {{name}}
                 tmpl = " ".join(parts).replace("{{ ", "{{").replace(" }}", "}}")
                 command_template = f"{base_cmd} {tmpl}"
@@ -164,22 +190,31 @@ def tool_to_registry_entry(tool, verification=None):
             ph = " ".join(f"{{{{{p['name']}}}}}" for p in positional)
             command_template = f"{base_cmd} {ph}" if ph else f"{base_cmd} {{{{input_file}}}}"
         elif arg_style == "subcommand":
-            # subcommand CLI: bqtools <subcommand> [args...]
-            # use the first subcommand's params if available, else generic
-            subs = e.get("subcommand_details") or {}
-            if subs:
-                first = next(iter(subs.values()))
-                params = first.get("params") or []
-                if params:
-                    ph = " ".join(f"{{{{{p['name'].lstrip('-').replace('-','_')}}}}}" for p in params)
-                    command_template = f"{base_cmd} {{{{subcommand}}}} {ph}" if ph \
-                        else f"{base_cmd} {{{{subcommand}}}} {{{{input_file}}}}"
-                else:
-                    command_template = f"{base_cmd} {{{{subcommand}}}} {{{{input_file}}}}"
-            else:
-                command_template = f"{base_cmd} {{{{subcommand}}}} {{{{input_file}}}}"
+            # subcommand CLI: bqtools <subcommand> [args...]. The command is just
+            # `<cmd> {{subcommand}}`; each subcommand's OWN params live in
+            # `subcommand_details` and are expanded by to_function_schemas into
+            # leaf functions (bqtools_encode). Do NOT hoist the first
+            # subcommand's params into the base command -- encode/decode/info
+            # take different args and a merged template is a fake contract.
+            command_template = f"{base_cmd} {{{{subcommand}}}}"
         else:
-            command_template = f"{base_cmd} {{{{input_file}}}}"
+            # named CLI: if --help gave real flags, build the template from them
+            # (e.g. `macrel contigs --output {{output}}`). ONLY fall back to a
+            # generic `{{input_file}}` when there are NO parsed params at all --
+            # otherwise the command references an input that isn't in `inputs`.
+            flag_params = [p for p in (e.get("params_schema") or []) if p.get("flag")]
+            if flag_params:
+                parts = []
+                for p in flag_params:
+                    flag = p.get("flag", "--" + p["name"].replace("_", "-"))
+                    # placeholder must match the INPUT key (flag stripped), not
+                    # the raw flag name -- `--output` -> `{{output}}`
+                    key = p["name"].lstrip("-").replace("-", "_")
+                    parts.append(f"{flag} {{{{ {key} }}}}")
+                tmpl = " ".join(parts).replace("{{ ", "{{").replace(" }}", "}}")
+                command_template = f"{base_cmd} {tmpl}"
+            else:
+                command_template = f"{base_cmd} {{{{input_file}}}}"
 
     # inputs schema: prefer params parsed from the tool's real --help output
     # (execute_test.py step 3.6). Fall back to a placeholder, tagged with source
@@ -187,39 +222,32 @@ def tool_to_registry_entry(tool, verification=None):
     parsed = e.get("params_schema") or []
     positional = e.get("positional_args") or []
     arg_style = e.get("arg_style") or ""
-    # for subcommand CLIs, collect each subcommand's declared params (from its
-    # --help) so the agent knows what each subcommand takes
-    sub_params = {}
     if arg_style == "subcommand":
-        for sub, detail in (e.get("subcommand_details") or {}).items():
-            for p in (detail.get("params") or []):
-                key = p.get("name", "").lstrip("-").replace("-", "_")
-                sub_params.setdefault(key, {"subcommand": sub, "type": p.get("type", "string"),
-                                            "description": p.get("description", "") or f"Argument {p.get('name')} for {sub}"})
-    if parsed:
+        # subcommand tools have NO top-level inputs: each subcommand's params
+        # live in subcommand_details and become leaf-function parameters via
+        # to_function_schemas. A fake top-level `input_file` would break the
+        # contract check (command `{{subcommand}}` references no inputs, and
+        # validate_arguments would demand an arg the leaf call never sets).
+        inputs = {}
+        inputs_src = "subcommand"
+    elif parsed:
         inputs = {
             p["name"].lstrip("-").replace("-", "_"): {
                 "type": p.get("type", "string"),
                 "description": p.get("description", ""),
+                "required": True if p.get("required") is True else False,
                 "source": "help_parsed",
             }
             for p in parsed
+            if p.get("name")
         }
         inputs_src = "help_parsed"
-    elif sub_params:
-        # subcommand params take priority over placeholder
-        inputs = {}
-        inputs_src = "subcommand_help"
     else:
+        # NO --help evidence: do NOT fabricate `input_file`. The contract check
+        # in convert_to_registry rejects placeholder-input entries, so this
+        # stays empty and the tool never reaches the active registry.
         inputs = {}
         inputs_src = "placeholder"
-    # merge subcommand params into inputs (for the selected subcommand usage)
-    for key, meta in sub_params.items():
-        inputs.setdefault(key, {
-            "type": meta["type"],
-            "description": f"[{meta['subcommand']}] {meta['description']}",
-            "source": "subcommand_help",
-        })
     # positional args (usage: cmd file1 file2 -o out) - mark them clearly
     for pa in positional:
         key = pa["name"].lstrip("<>[]").replace("-", "_")
@@ -229,15 +257,6 @@ def tool_to_registry_entry(tool, verification=None):
             "source": "help_parsed",
             "positional": True,
         })
-    if not inputs:
-        inputs = {
-            "input_file": {
-                "type": "string",
-                "description": "Input file path inside /data.",
-                "source": "placeholder",
-            }
-        }
-        inputs_src = "placeholder"
     # NOTE: subcommand CLIs do NOT get a `subcommand` input here. The registry
     # keeps subcommands/subcommand_details so to_function_schemas can expand
     # each subcommand into its own LEAF function (bqtools_encode), and the
@@ -401,6 +420,27 @@ def convert_to_registry(tools, output_file="discovered_registry.yaml",
             continue
 
         entry = tool_to_registry_entry(tool, verification)
+
+        # ---- REGISTRY CONTRACT CHECK (hard gate at generation time) ----
+        # An entry must not enter the active registry if its contract is
+        # self-contradictory: placeholder inputs (schema is a guess) or a
+        # command template that references an input not declared in `inputs`.
+        # Checking here (not in tool_agent_test) keeps bad entries OUT of the
+        # active registry entirely, so preflight/agent never see them.
+        contract_err = _check_registry_contract(entry)
+        if contract_err:
+            excluded.append({
+                "name": tool.get("name", "unknown"),
+                "github": github_url,
+                "status": f"contract-{entry.get('arg_style', '?')}",
+                "reason": contract_err,
+                "install_cmd": v.get("install_cmd", ""),
+                "has_license": v.get("has_license", False),
+                "paper_title": tool.get("source", {}).get("paper_title", ""),
+            })
+            print(f"  [contract-reject] {entry.get('name')}: {contract_err}")
+            continue
+
         registry["tools"].append(entry)
 
     with open(output_file, "w", encoding="utf-8") as f:
