@@ -121,9 +121,10 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
     unknown = set(arguments) - known
     if unknown:
         return {}, f"unknown arguments: {sorted(unknown)}"
-    # an input with NO `required` field defaults to required (consistent with
-    # to_function_schemas); only `required: false` is genuinely optional.
-    missing = [k for k, m in inputs.items() if (m or {}).get("required") is not False
+    # ONLY an explicit `required: true` is enforced here, matching the function
+    # schema (to_function_schemas). Defaulting to required would reject calls
+    # the LLM legitimately makes with only the params it needs.
+    missing = [k for k, m in inputs.items() if (m or {}).get("required") is True
                and (arguments.get(k) in (None, ""))]
     if missing:
         return {}, f"missing required inputs: {missing}"

@@ -103,6 +103,16 @@ jobs:
           python registry_pipeline_test.py || echo "pipeline test reported failures (see data/registry_pipeline.json)"
         timeout-minutes: 30
 
+      - name: PREFLIGHT gate (registry contract, NO LLM)
+        # Hard gate BEFORE the LLM test: if the registry still contains
+        # placeholder/zombie entries or subcommand tools without complete
+        # details, STOP here (exit 1) instead of burning 20 minutes of agent
+        # calls on a broken schema. Prints exactly which gate/tool failed.
+        env:
+          PYTHONIOENCODING: utf-8
+          REGISTRY: data/mcp_registry.yaml
+        run: python preflight_check.py
+
       - name: Test agent can use discovered tools (volcengine LLM)
         continue-on-error: true   # a failed agent test must NOT block committing the registry
         env:

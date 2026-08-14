@@ -114,10 +114,11 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
                 key = p.get("name", "").lstrip("-").replace("-", "_").lower()
                 props[key] = {"type": "string",
                               "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
-                # unified required semantics: no `required` field -> required by
-                # default (same as the non-subcommand branch); only an explicit
-                # `required: false` (e.g. a flag with a default) stays optional.
-                if (p.get("required")) is not False:
+                # ONLY an explicit `required: true` makes a param required.
+                # A flag with no required marker is OPTIONAL -- forcing every
+                # param required would hand the LLM a fake schema (e.g. kaptain
+                # with all 15 flags required -> LLM fills garbage -> CLI error).
+                if p.get("required") is True:
                     required.append(key)
             fname = f"{tool['name']}_{sub.replace('-', '_')}"
             out.append({"type": "function", "function": {
@@ -133,10 +134,11 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     for name, meta in (tool.get("inputs") or {}).items():
         props[name] = {"type": "string",
                        "description": (meta or {}).get("description", "") or ""}
-        # an input with NO `required` field is treated as required by default
-        # (auto-discovery only marks the few genuinely-optional flags). An
-        # explicit `required: false` stays optional.
-        if (meta or {}).get("required") is not False:
+        # ONLY an explicit `required: true` is required. Auto-discovery cannot
+        # reliably know which flags are mandatory, so defaulting to optional is
+        # the honest schema (a guessed-required list is worse: the LLM invents
+        # values for flags the tool doesn't need).
+        if (meta or {}).get("required") is True:
             required.append(name)
     fn = {"type": "function", "function": {
         "name": tool["name"],
