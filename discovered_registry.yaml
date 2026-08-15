@@ -1,192 +1,26 @@
 tools:
-- name: openapi-generator
-  type: cli
-  command: disc_openapi-generator {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] OpenAPI Generator allows generation of API client
-    libraries (SDK generation), server stubs, documentation and configuration automatically
-    given an OpenAPI Spec (v2, v3) (⭐26670, Java) (license: LICENSE)'
+- name: bioemu
+  type: python
+  command: python -m bioemu.sample --filter_samples {{filter_samples}}
+  arg_style: python
+  callable_via: python -m bioemu.sample
+  readme_examples:
+  - python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10 --output_dir ~/test-chignolin
+  - python -m bioemu.sample \
+  - python -m bioemu.sidechain_relax --pdb-path path/to/topology.pdb --xtc-path path/to/samples.xtc
+  readme_usage: python -m bioemu.sample
+  description: '[Auto-discovered] Inference code for scalable emulation of protein
+    equilibrium ensembles with generative deep learning (⭐866, Python) (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    input_file:
-      type: string
-      description: Input file path inside /data.
-      source: placeholder
-  outputs:
-    stdout:
-      type: text
-      description: Tool result printed to stdout.
-      source: inferred
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: docker
-    command: docker build -t openapi-generator . && docker run openapi-generator
-    system_commands: []
-    python_packages: []
-    declared_packages:
-    - aenum
-    - aiohttp
-    - aiohttp-retry
-    - pem
-    - pycryptodome
-    - pydantic
-    - python-dateutil
-    - setuptools
-    - typing-extensions
-    - urllib3
-    missing_deps: []
-    venv_path: ''
-  _discovery_metadata:
-    github: https://github.com/OpenAPITools/openapi-generator
-    stars: 26670
-    language: Java
-    tags:
-    - enzyme
-    - openapi
-    - web_server
-    - generator
-    quality_score: 55
-    paper_doi: 10.1093/nar/gkaf1082
-    paper_title: 'Open Enzyme Database: a community-wide repository for sharing enzyme
-      data.'
-    install_method: docker
-    install_url: docker build -t openapi-generator . && docker run openapi-generator
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps:  docker lang=Python
-      license); command not installed'
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T07:43:07.909609'
-    dependencies:
-      system_commands: []
-      readme_hint: docker
-      container_files:
-      - Dockerfile
-      - docker-compose.yml
-      install_method: docker
-    exec_status: passed
-    exec_reason: '`docker run disc_openapi-generator --help` -> exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "rators\n    meta          MetaGenerator. Generator for creating\
-      \ a new template set and configuration for Codegen.  The output will be based\
-      \ on the language you specify, and includes default templates to include.\n\
-      \    validate      Validate specification\n    version       Show version information\
-      \ used in tooling\n\nSee 'openapi-generator-cli help <command>' for more information\
-      \ on a specific\ncommand.\n\n"
-    exec_params_schema: []
-    exec_installed_versions: []
-    exec_executable: disc_openapi-generator
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: placeholder
-- name: ncbi-genome-download
-  type: cli
-  command: ncbi-genome-download {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] Scripts to download genomes from the NCBI FTP servers
-    (⭐1082, Python) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    s:
-      type: string
-      description: ', --section {refseq,genbank}'
+    filter_samples:
+      type: boolean
+      description: 'Type: bool  Default: True  Filter out unphysical samples with
+        e.g. long bond distances or steric clashes.'
+      required: false
       source: help_parsed
-    F:
-      type: string
-      description: ', --formats FILE_FORMATS'
-      source: help_parsed
-    l:
-      type: string
-      description: ', --assembly-levels ASSEMBLY_LEVELS'
-      source: help_parsed
-    g:
-      type: string
-      description: ', --genera GENERA'
-      source: help_parsed
-    genus:
-      type: string
-      description: Deprecated alias of --genera
-      source: help_parsed
-    fuzzy_genus:
-      type: string
-      description: a fuzzy search on the organism name instead of an
-      source: help_parsed
-    S:
-      type: string
-      description: ', --strains STRAINS'
-      source: help_parsed
-    T:
-      type: string
-      description: ', --species-taxids SPECIES_TAXIDS'
-      source: help_parsed
-    t:
-      type: string
-      description: ', --taxids TAXIDS'
-      source: help_parsed
-    A:
-      type: string
-      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
-      source: help_parsed
-    fuzzy_accessions:
-      type: string
-      description: a fuzzy search on the entry accession instead of
-      source: help_parsed
-    R:
-      type: string
-      description: ', --refseq-categories REFSEQ_CATEGORIES'
-      source: help_parsed
-    refseq_category:
-      type: string
-      description: CLI flag --refseq-category
-      source: help_parsed
-    o:
-      type: string
-      description: ', --output-folder OUTPUT'
-      source: help_parsed
-    flat_output:
-      type: string
-      description: all files right into the output folder without
-      source: help_parsed
-    human_readable:
-      type: string
-      description: links in human-readable hierarchy (might fail
-      source: help_parsed
-    progress_bar:
-      type: string
-      description: a progress bar for indicating the download
-      source: help_parsed
-    u:
-      type: string
-      description: ', --uri URI     NCBI base URI to use (default:'
-      source: help_parsed
-    p:
-      type: integer
-      description: ', --parallel N    Run N downloads in parallel (default: 1)'
-      source: help_parsed
-    r:
-      type: integer
-      description: ', --retries N     Retry download N times when connection to NCBI
-        fails'
-      source: help_parsed
-    groups:
-      type: path
-      description: Positional argument groups
-      source: help_parsed
-      positional: true
   outputs:
     stdout:
       type: text
@@ -198,383 +32,392 @@ tools:
   subcommand_discovery_complete: false
   install:
     method: pip_pkg
-    command: pip install https://github.com/kblin/ncbi-genome-download
+    command: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
     system_commands: []
     python_packages:
-    - appdirs==1.4.4
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_qsn96iw2/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
     - certifi==2026.7.22
-    - charset-normalizer==3.5.0
-    - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_c8_v29c4/ncbi-genome-download
-    - packaging==26.3
-    - requests==2.34.2
-    - tqdm==4.70.0
-    - urllib3==2.7.0
-    declared_packages:
-    - coverage
-    - pytest
-    - pytest-cov
-    - pytest-mock
-    - requests-mock
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    declared_packages: []
     missing_deps:
-    - appdirs
-    - config
-    - core
-    - errno
-    - ete3
-    - jobs
-    - ncbi_genome_download
+    - Bio
+    - FastMBAR
+    - alphafold
+    - bioemu
+    - chemgraph
+    - collective_variables
+    - denoiser
+    - fire
+    - hpacker
+    - huggingface_hub
+    - hydra
+    - matplotlib
+    - mdtraj
+    - models
+    - numpy
+    - omegaconf
+    - openfold
+    - openmm
+    - potentials
     - requests
-    - setuptools
-    - summary
+    - scipy
+    - sde_lib
+    - so3_sde
+    - stackprinter
+    - steered_dg_lib
+    - structure_module
+    - torch
+    - torch_geometric
+    - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_c8_v29c4/venv
+    venv_path: /tmp/execute_qsn96iw2/venv
   _discovery_metadata:
-    github: https://github.com/kblin/ncbi-genome-download
-    stars: 1082
+    github: https://github.com/microsoft/bioemu
+    stars: 866
     language: Python
     tags:
-    - download
-    - genome
-    - web_server
-    - ncbi
+    - protein
+    - bioemu
+    - library
     quality_score: 55
-    paper_doi: 10.1093/sysbio/syaf011
-    paper_title: 'UnFATE: A Comprehensive Probe Set and Bioinformatics Pipeline for
-      Phylogeny Reconstruction and Multi'
+    paper_doi: 10.1107/S2059798326006054
+    paper_title: 'PETIMOT: a novel framework for inferring protein motions from sparse
+      data using SE(3)-equivariant gr'
     install_method: pip_pkg
-    install_url: pip install https://github.com/kblin/ncbi-genome-download
+    install_url: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
     verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: ncbi_genome_download/__main__.py;
-      deps: requirements.txt, setup.cfg lang=Python license); command not installed'
+    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml lang=Python
+      license); command not installed'
     verified_license: true
     verified_license_path: LICENSE
-    verified_entry_scripts:
-    - ncbi_genome_download/__main__.py
-    verified_checked_at: '2026-08-14T07:45:09.142854'
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-15T12:13:13.139562'
     dependencies:
       system_commands: []
-      readme_hint: conda
+      readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_c8_v29c4/venv/bin/ncbi-genome-download --help` ->
-      exit 0'
+    exec_reason: 'README usage: python -m bioemu.sample --help'
     exec_install_evidence: ''
-    exec_run_evidence: "             comma-separated list of relatons. For example:\n\
-      \                        \"reference,synonym\". Choose from: ['any', 'all',\n\
-      \                        'type', 'reference', 'synonym', 'proxytype',\n    \
-      \                    'neotype'] .\n  --md5-cache-days MD5_CACHE_DAYS\n     \
-      \                   Age the md5sum files can have before having to be re-\n\
-      \                        downloaded (default: 1).\n"
+    exec_run_evidence: "      Type: bool\n        Default: True\n        Filter out\
+      \ unphysical samples with e.g. long bond distances or steric clashes.\n    --base_seed=BASE_SEED\n\
+      \        Type: Optional[int | None]\n        Default: None\n        Base random\
+      \ seed for sampling. If set, each batch's seed will be set to base_seed + (num\
+      \ samples already generated).\n\nNOTES\n    You can also use flags syntax for\
+      \ POSITIONAL ARGUMENTS\n"
     exec_params_schema:
-    - name: -s
-      type: string
-      description: ', --section {refseq,genbank}'
-    - name: -F
-      type: string
-      description: ', --formats FILE_FORMATS'
-    - name: -l
-      type: string
-      description: ', --assembly-levels ASSEMBLY_LEVELS'
-    - name: -g
-      type: string
-      description: ', --genera GENERA'
-    - name: --genus
-      type: string
-      description: Deprecated alias of --genera
-    - name: --fuzzy-genus
-      type: string
-      description: a fuzzy search on the organism name instead of an
-    - name: -S
-      type: string
-      description: ', --strains STRAINS'
-    - name: -T
-      type: string
-      description: ', --species-taxids SPECIES_TAXIDS'
-    - name: -t
-      type: string
-      description: ', --taxids TAXIDS'
-    - name: -A
-      type: string
-      description: ', --assembly-accessions ASSEMBLY_ACCESSIONS'
-    - name: --fuzzy-accessions
-      type: string
-      description: a fuzzy search on the entry accession instead of
-    - name: -R
-      type: string
-      description: ', --refseq-categories REFSEQ_CATEGORIES'
-    - name: --refseq-category
-      type: string
-      description: CLI flag --refseq-category
-    - name: -o
-      type: string
-      description: ', --output-folder OUTPUT'
-    - name: --flat-output
-      type: string
-      description: all files right into the output folder without
-    - name: --human-readable
-      type: string
-      description: links in human-readable hierarchy (might fail
-      aliases:
-      - -H
-    - name: --progress-bar
-      type: string
-      description: a progress bar for indicating the download
-      aliases:
-      - -P
-    - name: -u
-      type: string
-      description: ', --uri URI     NCBI base URI to use (default:'
-    - name: -p
-      type: integer
-      description: ', --parallel N    Run N downloads in parallel (default: 1)'
+    - name: --filter_samples
+      type: boolean
+      description: 'Type: bool  Default: True  Filter out unphysical samples with
+        e.g. long bond distances or steric clashes.'
       required: false
-    - name: -r
-      type: integer
-      description: ', --retries N     Retry download N times when connection to NCBI
-        fails'
+      takes_value: false
+      aliases:
+      - -f
     exec_installed_versions:
-    - appdirs==1.4.4
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_qsn96iw2/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
     - certifi==2026.7.22
-    - charset-normalizer==3.5.0
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    - cycler==0.12.1
+    - dm-haiku==0.0.17
+    - dm-tree==0.1.10
+    - einops==0.8.2
+    - filelock==3.32.3
+    - fire==0.7.1
+    - flatbuffers==25.12.19
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.7.0
+    - gast==0.7.0
+    - google-pasta==0.2.0
+    - gprofiler-official==1.0.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.14.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - hydra-core==1.3.5
     - idna==3.18
-    - ncbi-genome-download @ file:///tmp/execute_c8_v29c4/ncbi-genome-download
-    - packaging==26.3
-    - requests==2.34.2
-    - tqdm==4.70.0
-    - urllib3==2.7.0
-    exec_executable: ncbi-genome-download
+    - ihm==2.11
+    - jax==0.10.2
+    - jaxlib==0.10.2
+    - Jinja2==3.1.6
+    - jmp==0.0.4
+    - keras==3.15.1
+    - kiwisolver==1.5.0
+    - libclang==18.1.1
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mdtraj==1.11.1.post2
+    - mdurl==0.1.2
+    - ml_collections==1.1.0
+    - ml_dtypes==0.6.0
+    - modelcif==1.7
+    - mpmath==1.3.0
+    - msgpack==1.2.1
+    - multidict==6.7.1
+    - mygene==3.2.2
+    - namex==0.1.0
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - nvidia-cublas==13.1.1.3
+    - nvidia-cuda-cupti==13.0.85
+    - nvidia-cuda-nvrtc==13.0.88
+    - nvidia-cuda-runtime==13.0.96
+    - nvidia-cudnn-cu13==9.20.0.48
+    - nvidia-cufft==12.0.0.61
+    - nvidia-cufile==1.15.1.6
+    - nvidia-curand==10.4.0.35
+    - nvidia-cusolver==12.0.4.66
+    - nvidia-cusparse==12.6.3.3
+    - nvidia-cusparselt-cu13==0.8.1
+    - nvidia-nccl-cu13==2.29.7
+    - nvidia-nvjitlink==13.3.33
+    - nvidia-nvshmem-cu13==3.4.5
+    - nvidia-nvtx==13.0.85
+    exec_executable: bioemu
     exec_retries: 0
     exec_heal_evidence: ''
     inputs_source: help_parsed
-- name: vitap
+    pending_reason: ''
+- name: kaptain
   type: cli
-  command: VITAP {{input_file}}
+  command: kaptain {{ONT_IN}} {{ONT_IN}} {{DB}} {{DB_LOOKUP}}
   arg_style: positional
   callable_via: ''
   readme_examples: []
   readme_usage: ''
-  description: '[Auto-discovered] The viral taxonomic assignment pipeline (⭐45, Python)
-    (license: LICENSE)'
+  description: '[Auto-discovered] KMA-bAsed Pipeline for meTAgenomic specIes ideNtification
+    (⭐3, Python) (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    input_file:
+    ont_in:
       type: string
-      description: Input file path inside /data.
-      source: placeholder
-  outputs:
-    stdout:
-      type: text
-      description: Tool result printed to stdout.
-      source: inferred
-  execution: null
-  subcommands:
-  - assignment
-  - upd
-  - The
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: pip_pkg
-    command: pip install https://github.com/DrKaiyangZheng/VITAP
-    system_commands: []
-    python_packages:
-    - archspec==0.2.6
-    - biopython==1.88
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - polars==1.43.2
-    - polars-runtime-32==1.43.2
-    - pyarrow==25.0.1
-    - pyrodigal==3.7.1
-    - python-dateutil==2.9.0.post0
-    - six==1.17.0
-    - tqdm==4.70.0
-    - VITAP @ file:///tmp/execute_lasawdq1/VITAP
-    declared_packages: []
-    missing_deps:
-    - Bio
-    - concurrent
-    - pandas
-    - polars
-    - pyrodigal
-    - setuptools
-    - tqdm
-    - uniref90_accession2taxid
-    - uniref_taxa_fallback
-    venv_path: /tmp/execute_lasawdq1/venv
-  _discovery_metadata:
-    github: https://github.com/DrKaiyangZheng/VITAP
-    stars: 45
-    language: Python
-    tags:
-    - pipeline
-    - vitap
-    quality_score: 52.0
-    paper_doi: 10.1038/s41467-025-57500-7
-    paper_title: 'VITAP: a high precision tool for DNA and RNA viral classification
-      based on meta-omic data.'
-    install_method: pip_pkg
-    install_url: pip install https://github.com/DrKaiyangZheng/VITAP
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
-      license); command not installed'
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_entry_scripts: []
-    verified_checked_at: '2026-08-14T07:46:22.847566'
-    dependencies:
-      system_commands: []
-      readme_hint: conda
-      container_files: []
-      install_method: pip_pkg
-    exec_status: passed
-    exec_reason: '`/tmp/execute_lasawdq1/venv/bin/VITAP --help` -> exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "nt    VITAP taxonomic assignment pipeline.\n  upd        \
-      \   Update program of VITAP.\n                The VITAP will update database\
-      \ based on ICTV VMR (or other formated source) and UniRef90 database.\n\nPlease\
-      \ cite: Zheng, K. et al. VITAP: a high precision tool for DNA and RNA viral\
-      \ classification based on meta-omic data. Nat Commun 16, 2226 (2025).\nFor command-specific\
-      \ help, run: VITAP <command> -h\n"
-    exec_params_schema: []
-    exec_installed_versions:
-    - archspec==0.2.6
-    - biopython==1.88
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - polars==1.43.2
-    - polars-runtime-32==1.43.2
-    - pyarrow==25.0.1
-    - pyrodigal==3.7.1
-    - python-dateutil==2.9.0.post0
-    - six==1.17.0
-    - tqdm==4.70.0
-    - VITAP @ file:///tmp/execute_lasawdq1/VITAP
-    exec_executable: VITAP
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: placeholder
-- name: midas
-  type: cli
-  command: midas {{input_file}}
-  arg_style: named
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] Metagenomic Intra-Species Diversity Analysis (MIDAS)
-    (⭐44, Python) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    version:
-      type: string
-      description: program's version number and exit
+      description: 'ONT input FASTA/Q file (default: None)'
+      required: false
       source: help_parsed
+    output:
+      type: string
+      description: 'Output directory (default: None)'
+      required: false
+      source: help_parsed
+    ONT_IN:
+      type: path
+      description: Positional argument ONT_IN
+      source: help_parsed
+      positional: true
+    DB:
+      type: path
+      description: Positional argument DB
+      source: help_parsed
+      positional: true
+    DB_LOOKUP:
+      type: path
+      description: Positional argument DB_LOOKUP
+      source: help_parsed
+      positional: true
   outputs:
-    stdout:
-      type: text
-      description: Tool result printed to stdout.
-      source: inferred
+    output:
+      type: file
+      description: 'Output directory (default: None)'
+      source: help_parsed
   execution: null
   subcommands: []
   subcommand_details: {}
   subcommand_discovery_complete: false
   install:
     method: pip_pkg
-    command: pip install https://github.com/pollardlab/MIDAS
+    command: 'pip install kaptain  # source: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN'
     system_commands: []
     python_packages:
-    - argcomplete==3.7.2
-    - argh==0.31.3
-    - biopython==1.83
-    - gffutils==0.14
-    - midasv3 @ file:///tmp/execute_f2_o47z9/MIDAS
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - pybedtools==0.12.0
-    - pyfaidx==0.9.0.4
-    - pysam==0.24.0
-    - python-dateutil==2.9.0.post0
-    - simplejson==4.1.1
-    - six==1.17.0
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.1
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
     declared_packages: []
     missing_deps:
-    - Bio
-    - bisect
-    - gffutils
-    - midas
-    - numpy
-    - operator
+    - bs4
+    - importlib
+    - kaptain
     - pandas
-    - pybedtools
-    - pysam
-    - setuptools
-    - sphinx_rtd_theme
-    venv_path: /tmp/execute_f2_o47z9/venv
+    - yaml
+    - yattag
+    venv_path: /tmp/execute_g8aqj3wi/venv
   _discovery_metadata:
-    github: https://github.com/pollardlab/MIDAS
-    stars: 44
+    github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
+    stars: 3
     language: Python
     tags:
-    - software
-    - midas
-    quality_score: 51.4
-    paper_doi: 10.1093/bioinformatics/btac713
-    paper_title: 'MIDAS2: Metagenomic Intra-species Diversity Analysis System.'
+    - pipeline
+    - kaptain
+    quality_score: 26.8
+    paper_doi: 10.1186/s12864-026-12668-0
+    paper_title: 'Filtering for truth: high-precision taxonomic classification in
+      nanopore shotgun metagenomics data t'
     install_method: pip_pkg
-    install_url: pip install https://github.com/pollardlab/MIDAS
+    install_url: 'pip install kaptain  # source: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN'
     verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: midas/__main__.py; deps: setup.cfg,
-      setup.py lang=Python license); command not installed'
+    verified_reason: 'repo healthy (entry scripts: kaptain/__main__.py; deps: pyproject.toml
+      lang=Python license); command not installed'
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts:
-    - midas/__main__.py
-    verified_checked_at: '2026-08-14T07:46:28.073309'
+    - kaptain/__main__.py
+    verified_checked_at: '2026-08-15T12:14:54.261856'
     dependencies:
       system_commands: []
-      readme_hint: conda
+      readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_f2_o47z9/venv/bin/midas --help` -> exit 0'
+    exec_reason: '`/tmp/execute_g8aqj3wi/venv/bin/kaptain --help` -> exit 0'
     exec_install_evidence: ''
-    exec_run_evidence: "\n    annotate_pangenome  Decorate pangenome with annotated\
-      \ genomes.\n    enhance_pangenome   Enhance pangenome for specified species\n\
-      \    prune_centroids     Prune centroids for specified genomes/species\n\noptions:\n\
-      \  -h, --help            show this help message and exit\n  -v, --version  \
-      \       show program's version number and exit\n\nFor more information, see\
-      \ https://midas2.readthedocs.io/en/latest/#\n"
+    exec_run_evidence: "efore\n                        classification. Leave empty\
+      \ or use None for no\n                        downsampling. (default: [None])\n\
+      \  --fdr {15,10,5,1} [{15,10,5,1} ...]\n                        FDR setting.\
+      \ (default: [5])\n  --threads THREADS     Number of threads (default: 4)\n \
+      \ --version             Print version and exit\n  --log                 Write\
+      \ out log information to file (default: False)\n"
     exec_params_schema:
-    - name: --version
+    - name: --ont-in
       type: string
-      description: program's version number and exit
+      description: 'ONT input FASTA/Q file (default: None)'
+      required: false
+      takes_value: true
       aliases:
-      - -v
+      - -i
+    - name: --output
+      type: string
+      description: 'Output directory (default: None)'
+      required: false
+      takes_value: true
+      aliases:
+      - -o
     exec_installed_versions:
-    - argcomplete==3.7.2
-    - argh==0.31.3
-    - biopython==1.83
-    - gffutils==0.14
-    - midasv3 @ file:///tmp/execute_f2_o47z9/MIDAS
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.1
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
+    - Jinja2==3.1.6
+    - jsonschema==4.26.0
+    - jsonschema-specifications==2025.9.1
+    - jupyter_core==5.9.1
+    - kaptain @ file:///tmp/execute_g8aqj3wi/KAPTAIN
+    - MarkupSafe==3.0.3
+    - nbformat==5.11.0
     - numpy==2.4.6
-    - packaging==26.3
+    - packaging==25.0
     - pandas==3.0.5
-    - pybedtools==0.12.0
-    - pyfaidx==0.9.0.4
-    - pysam==0.24.0
+    - platformdirs==4.11.3
+    - pluggy==1.6.0
+    - psutil==7.2.2
+    - PuLP==2.7.0
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - Pygments==2.20.0
+    - pytest==9.1.1
     - python-dateutil==2.9.0.post0
-    - simplejson==4.1.1
+    - PyYAML==6.0.3
+    - referencing==0.37.0
+    - requests==2.34.2
+    - rpds-py==2026.6.3
     - six==1.17.0
-    exec_executable: midas
+    - smart_open==7.7.1
+    - smmap==5.0.3
+    - snakemake==9.25.1
+    - snakemake-interface-common==1.23.0
+    - snakemake-interface-executor-plugins==9.4.0
+    - snakemake-interface-logger-plugins==2.1.0
+    - snakemake-interface-report-plugins==1.3.0
+    - snakemake-interface-scheduler-plugins==2.0.2
+    - snakemake-interface-storage-plugins==4.4.1
+    - soupsieve==2.9.2
+    - SQLAlchemy==2.0.52
+    - sqlmodel==0.0.37
+    - tabulate==0.10.0
+    - tenacity==9.1.4
+    - throttler==1.2.3
+    - traitlets==5.16.1
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - urllib3==2.7.0
+    - wrapt==2.3.0
+    - yattag==1.16.1
+    - yte==1.9.4
+    exec_executable: kaptain
     exec_retries: 0
     exec_heal_evidence: ''
     inputs_source: help_parsed
+    pending_reason: ''
