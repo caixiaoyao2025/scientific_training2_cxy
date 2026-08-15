@@ -1,4 +1,401 @@
 tools:
+- name: bioemu
+  type: cli
+  command: python -m bioemu.sample {sequence} {num_samples} {output_dir} --batch_size_100
+    {batch_size_100} --model_name {model_name} --ckpt_path {ckpt_path} --model_config_path
+    {model_config_path} --denoiser_type {denoiser_type} --denoiser_config {denoiser_config}
+    --cache_embeds_dir {cache_embeds_dir} --cache_so3_dir {cache_so3_dir} --msa_host_url
+    {msa_host_url} --filter_samples --base_seed {base_seed}
+  arg_style: python
+  callable_via: python -m bioemu.sample
+  readme_examples:
+  - python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10 --output_dir ~/test-chignolin
+  - python -m bioemu.sample \
+  - python -m bioemu.sidechain_relax --pdb-path path/to/topology.pdb --xtc-path path/to/samples.xtc
+  readme_usage: python -m bioemu.sample
+  description: '[Auto-discovered] Inference code for scalable emulation of protein
+    equilibrium ensembles with generative deep learning (⭐866, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    batch_size_100:
+      type: string
+      description: Batch size you'd use for a sequence of length 100. The batch size
+        will be calculated from this, assuming that the memory requirement to compute
+        each sample scales quadratically with the sequence length.
+      required: false
+      source: help_parsed
+    model_name:
+      type: string
+      description: Name of pretrained model to use. If this is set, you do not need
+        to provide `ckpt_path` or `model_config_path`.
+      required: false
+      source: help_parsed
+    ckpt_path:
+      type: string
+      description: Path to the model checkpoint. If this is set, `model_name` will
+        be ignored.
+      required: false
+      source: help_parsed
+    model_config_path:
+      type: string
+      description: Path to the model config, defining score model architecture and
+        the corruption process the model was trained with. Only required if `ckpt_path`
+        is set.
+      required: false
+      source: help_parsed
+    denoiser_type:
+      type: string
+      description: Denoiser to use for sampling, if `denoiser_config` not specified.
+        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
+      required: false
+      source: help_parsed
+    denoiser_config:
+      type: string
+      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
+        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
+        which includes the denoiser target, potentials, and steering parameters in
+        one file.
+      required: false
+      source: help_parsed
+    cache_embeds_dir:
+      type: string
+      description: Directory to store MSA embeddings. If not set, this defaults to
+        `COLABFOLD_DIR/embeds_cache`.
+      required: false
+      source: help_parsed
+    cache_so3_dir:
+      type: string
+      description: Directory to store SO3 precomputations. If not set, this defaults
+        to `~/sampling_so3_cache`.
+      required: false
+      source: help_parsed
+    msa_host_url:
+      type: string
+      description: MSA server URL. If not set, this defaults to colabfold's remote
+        server. If sequence is an a3m file, this is ignored.
+      required: false
+      source: help_parsed
+    filter_samples:
+      type: boolean
+      description: Filter out unphysical samples with e.g. long bond distances or
+        steric clashes.
+      required: false
+      source: help_parsed
+    base_seed:
+      type: string
+      description: Base random seed for sampling. If set, each batch's seed will be
+        set to base_seed + (num samples already generated).
+      required: false
+      source: help_parsed
+    sequence:
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      required: true
+      source: help_parsed
+      positional: true
+      position: 0
+    num_samples:
+      type: path
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      required: true
+      source: help_parsed
+      positional: true
+      position: 1
+    output_dir:
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      required: true
+      source: help_parsed
+      positional: true
+      position: 2
+  outputs:
+    output_dir:
+      type: file
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
+    system_commands: []
+    python_packages:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_lcazkpac/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - FastMBAR
+    - alphafold
+    - bioemu
+    - chemgraph
+    - collective_variables
+    - denoiser
+    - fire
+    - hpacker
+    - huggingface_hub
+    - hydra
+    - matplotlib
+    - mdtraj
+    - models
+    - numpy
+    - omegaconf
+    - openfold
+    - openmm
+    - potentials
+    - requests
+    - scipy
+    - sde_lib
+    - so3_sde
+    - stackprinter
+    - steered_dg_lib
+    - structure_module
+    - torch
+    - torch_geometric
+    - toy_gmm
+    - tqdm
+    venv_path: /tmp/execute_lcazkpac/venv
+  evidence:
+    exec_status: passed
+    exec_reason: 'README usage: python -m bioemu.sample --help'
+    exec_executable: bioemu
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --batch_size_100
+      type: string
+      description: Batch size you'd use for a sequence of length 100. The batch size
+        will be calculated from this, assuming that the memory requirement to compute
+        each sample scales quadratically with the sequence length.
+      required: false
+      takes_value: true
+    - name: --model_name
+      type: string
+      description: Name of pretrained model to use. If this is set, you do not need
+        to provide `ckpt_path` or `model_config_path`.
+      required: false
+      takes_value: true
+    - name: --ckpt_path
+      type: string
+      description: Path to the model checkpoint. If this is set, `model_name` will
+        be ignored.
+      required: false
+      takes_value: true
+    - name: --model_config_path
+      type: string
+      description: Path to the model config, defining score model architecture and
+        the corruption process the model was trained with. Only required if `ckpt_path`
+        is set.
+      required: false
+      takes_value: true
+    - name: --denoiser_type
+      type: string
+      description: Denoiser to use for sampling, if `denoiser_config` not specified.
+        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
+      required: false
+      takes_value: true
+    - name: --denoiser_config
+      type: string
+      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
+        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
+        which includes the denoiser target, potentials, and steering parameters in
+        one file.
+      required: false
+      takes_value: true
+    - name: --cache_embeds_dir
+      type: string
+      description: Directory to store MSA embeddings. If not set, this defaults to
+        `COLABFOLD_DIR/embeds_cache`.
+      required: false
+      takes_value: true
+    - name: --cache_so3_dir
+      type: string
+      description: Directory to store SO3 precomputations. If not set, this defaults
+        to `~/sampling_so3_cache`.
+      required: false
+      takes_value: true
+    - name: --msa_host_url
+      type: string
+      description: MSA server URL. If not set, this defaults to colabfold's remote
+        server. If sequence is an a3m file, this is ignored.
+      required: false
+      takes_value: true
+    - name: --filter_samples
+      type: boolean
+      description: Filter out unphysical samples with e.g. long bond distances or
+        steric clashes.
+      required: false
+      takes_value: false
+      aliases:
+      - -f
+    - name: --base_seed
+      type: string
+      description: Base random seed for sampling. If set, each batch's seed will be
+        set to base_seed + (num samples already generated).
+      required: false
+      takes_value: true
+    - name: sequence
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      positional: true
+      position: 0
+      required: true
+    - name: num_samples
+      type: path
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      positional: true
+      position: 1
+      required: true
+    - name: output_dir
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      positional: true
+      position: 2
+      required: true
+    exec_positional_args:
+    - name: sequence
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      positional: true
+      position: 0
+    - name: num_samples
+      type: path
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      positional: true
+      position: 1
+    - name: output_dir
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      positional: true
+      position: 2
+    installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_lcazkpac/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    - cycler==0.12.1
+    - dm-haiku==0.0.17
+    - dm-tree==0.1.10
+    - einops==0.8.2
+    - filelock==3.32.3
+    - fire==0.7.1
+    - flatbuffers==25.12.19
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.7.0
+    - gast==0.7.0
+    - google-pasta==0.2.0
+    - gprofiler-official==1.0.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.14.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - hydra-core==1.3.5
+    - idna==3.18
+    - ihm==2.11
+    - jax==0.10.2
+    - jaxlib==0.10.2
+    - Jinja2==3.1.6
+    - jmp==0.0.4
+    - keras==3.15.1
+    - kiwisolver==1.5.0
+    - libclang==18.1.1
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mdtraj==1.11.1.post2
+    - mdurl==0.1.2
+    - ml_collections==1.1.0
+    - ml_dtypes==0.6.0
+    - modelcif==1.7
+    - mpmath==1.3.0
+    - msgpack==1.2.1
+    - multidict==6.7.1
+    - mygene==3.2.2
+    - namex==0.1.0
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - nvidia-cublas==13.1.1.3
+    - nvidia-cuda-cupti==13.0.85
+    - nvidia-cuda-nvrtc==13.0.88
+    - nvidia-cuda-runtime==13.0.96
+    - nvidia-cudnn-cu13==9.20.0.48
+    - nvidia-cufft==12.0.0.61
+    - nvidia-cufile==1.15.1.6
+    - nvidia-curand==10.4.0.35
+    - nvidia-cusolver==12.0.4.66
+    - nvidia-cusparse==12.6.3.3
+    - nvidia-cusparselt-cu13==0.8.1
+    - nvidia-nccl-cu13==2.29.7
+    - nvidia-nvjitlink==13.3.33
+    - nvidia-nvshmem-cu13==3.4.5
+    - nvidia-nvtx==13.0.85
+  expected_outputs:
+  - name: output_dir
+    render_as: text
 - name: bqtools
   type: cli
   command: bqtools {subcommand}
@@ -179,11 +576,12 @@ tools:
         description: Pipe the output to stdout
         required: false
         takes_value: false
-      - name: input]..
+      - name: input
         type: path
-        description: Positional argument INPUT]..
+        description: Positional argument INPUT
         positional: true
         position: 0
+        required: true
       usage: bqtools encode [OPTIONS] [INPUT]...
     decode:
       params:
@@ -240,6 +638,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools decode [OPTIONS] <INPUT>
     cat:
       params:
@@ -327,11 +726,12 @@ tools:
         description: Pipe the output to stdout
         required: false
         takes_value: false
-      - name: input]..
+      - name: input
         type: path
-        description: Positional argument INPUT]..
+        description: Positional argument INPUT
         positional: true
         position: 0
+        required: true
       usage: bqtools cat [OPTIONS] [INPUT]...
     info:
       params:
@@ -359,11 +759,12 @@ tools:
         description: Print the block headers of the file
         required: false
         takes_value: false
-      - name: input>
+      - name: input
         type: path
         description: Positional argument <INPUT>...
         positional: true
         position: 0
+        required: true
       usage: bqtools info [OPTIONS] <INPUT>...
     grep:
       params:
@@ -501,11 +902,13 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
-      - name: reg]..
+        required: true
+      - name: reg
         type: path
-        description: Positional argument REG]..
+        description: Positional argument REG
         positional: true
         position: 1
+        required: true
       usage: bqtools grep [OPTIONS] <INPUT> [REG]...
     sample:
       params:
@@ -513,7 +916,7 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --output
         type: string
@@ -525,35 +928,35 @@ tools:
       - name: --prefix
         type: string
         description: Output file format prefix (required for paired BINSEQ files
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --mate
         type: string
         description: Designate which of the two mates is being processed
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -m
       - name: --format
         type: string
         description: Output file format
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -f
       - name: --compress
         type: string
         description: Compress output file
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -c
       - name: --threads
         type: string
         description: Number of threads to use for parallel compression (0 for auto)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -567,7 +970,7 @@ tools:
       - name: --seed
         type: string
         description: Seed to use for random sampling
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -S
@@ -576,6 +979,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools sample [OPTIONS] --fraction <FRACTION> <INPUT>
     split:
       params:
@@ -656,6 +1060,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools split [OPTIONS] <INPUT>
     pipe:
       params:
@@ -705,6 +1110,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools pipe [OPTIONS] <INPUT>
     revcomp:
       params:
@@ -810,6 +1216,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools revcomp [OPTIONS] <INPUT>
     verify:
       params:
@@ -865,6 +1272,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools verify [OPTIONS] <INPUT>
   subcommand_discovery_complete: true
   install:
@@ -874,10 +1282,10 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_2pjft94k/venv
+    venv_path: /tmp/execute_3nyv2zn3/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_2pjft94k/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_3nyv2zn3/bqtools/target/release/bqtools --help` ->
       exit 0'
     exec_executable: bqtools
     verified_license: false
@@ -891,337 +1299,10 @@ tools:
       takes_value: false
       aliases:
       - -V
-- name: bioemu
-  type: cli
-  command: python -m bioemu.sample --batch_size_100 {batch_size_100} --model_name
-    {model_name} --ckpt_path {ckpt_path} --model_config_path {model_config_path} --denoiser_type
-    {denoiser_type} --denoiser_config {denoiser_config} --cache_embeds_dir {cache_embeds_dir}
-    --cache_so3_dir {cache_so3_dir} --msa_host_url {msa_host_url} --filter_samples
-    {filter_samples} --base_seed {base_seed}
-  arg_style: python
-  callable_via: python -m bioemu.sample
-  readme_examples:
-  - python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10 --output_dir ~/test-chignolin
-  - python -m bioemu.sample \
-  - python -m bioemu.sidechain_relax --pdb-path path/to/topology.pdb --xtc-path path/to/samples.xtc
-  readme_usage: python -m bioemu.sample
-  description: '[Auto-discovered] Inference code for scalable emulation of protein
-    equilibrium ensembles with generative deep learning (⭐866, Python) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    batch_size_100:
-      type: string
-      description: 'Type: int  Default: 10  Batch size you''d use for a sequence of
-        length 100. The batch size will be calculated from this, assuming that the
-        memory requirement to compute each sample scales quadratically with the sequence
-        length.'
-      required: false
-      source: help_parsed
-    model_name:
-      type: string
-      description: 'Type: Optional  Default: ''bioemu-v1.1''  Name of pretrained model
-        to use. If this is set, you do not need to provide `ckpt_path` or `model_config_path`.'
-      required: false
-      source: help_parsed
-    ckpt_path:
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        checkpoint. If this is set, `model_name` will be ignored.'
-      required: false
-      source: help_parsed
-    model_config_path:
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        config, defining score model architecture and the corruption process the model
-        was trained with. Only required if `ckpt_path` is set.'
-      required: false
-      source: help_parsed
-    denoiser_type:
-      type: string
-      description: 'Type: Optional  Default: ''dpm''  Denoiser to use for sampling,
-        if `denoiser_config` not specified. Comes in with default parameter configuration.
-        Must be one of [''dpm'', ''heun'']'
-      required: false
-      source: help_parsed
-    denoiser_config:
-      type: string
-      description: 'Type: Optional[str | ...  Default: None  Path (str or :class:`os.PathLike`)
-        to a denoiser config YAML, or a dict. For steered sampling, pass a steering
-        config (e.g., config/steering/physical_steering.yaml) which includes the denoiser
-        target, potentials, and steering parameters in one file.'
-      required: false
-      source: help_parsed
-    cache_embeds_dir:
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        MSA embeddings. If not set, this defaults to `COLABFOLD_DIR/embeds_cache`.'
-      required: false
-      source: help_parsed
-    cache_so3_dir:
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        SO3 precomputations. If not set, this defaults to `~/sampling_so3_cache`.'
-      required: false
-      source: help_parsed
-    msa_host_url:
-      type: string
-      description: 'Type: Optional[str | None]  Default: None  MSA server URL. If
-        not set, this defaults to colabfold''s remote server. If sequence is an a3m
-        file, this is ignored.'
-      required: false
-      source: help_parsed
-    filter_samples:
-      type: string
-      description: 'Type: bool  Default: True  Filter out unphysical samples with
-        e.g. long bond distances or steric clashes.'
-      required: false
-      source: help_parsed
-    base_seed:
-      type: string
-      description: 'Type: Optional[int | None]  Default: None  Base random seed for
-        sampling. If set, each batch''s seed will be set to base_seed + (num samples
-        already generated).'
-      required: false
-      source: help_parsed
-  outputs:
-    stdout:
-      type: text
-      description: Tool result printed to stdout.
-      source: inferred
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
-    method: pip_pkg
-    command: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
-    system_commands: []
-    python_packages:
-    - absl-py==2.5.0
-    - aiohappyeyeballs==2.7.1
-    - aiohttp==3.14.3
-    - aiosignal==1.4.0
-    - annotated-doc==0.0.5
-    - antlr4-python3-runtime==4.9.3
-    - anyio==4.14.2
-    - astunparse==1.6.3
-    - attrs==26.1.0
-    - bio==1.8.3
-    - bioemu @ file:///tmp/execute_g23g2hd7/bioemu
-    - biopython==1.88
-    - biothings_client==0.5.1
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cuda-bindings==13.3.1
-    - cuda-pathfinder==1.6.0
-    - cuda-toolkit==13.0.3.0
-    declared_packages: []
-    missing_deps:
-    - Bio
-    - FastMBAR
-    - alphafold
-    - bioemu
-    - chemgraph
-    - collective_variables
-    - denoiser
-    - fire
-    - hpacker
-    - huggingface_hub
-    - hydra
-    - matplotlib
-    - mdtraj
-    - models
-    - numpy
-    - omegaconf
-    - openfold
-    - openmm
-    - potentials
-    - requests
-    - scipy
-    - sde_lib
-    - so3_sde
-    - stackprinter
-    - steered_dg_lib
-    - structure_module
-    - torch
-    - torch_geometric
-    - toy_gmm
-    - tqdm
-    venv_path: /tmp/execute_g23g2hd7/venv
-  evidence:
-    exec_status: passed
-    exec_reason: 'README usage: python -m bioemu.sample --help'
-    exec_executable: bioemu
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_status: repo_ok
-    inputs_source: help_parsed
-    params_schema:
-    - name: --batch_size_100
-      type: string
-      description: 'Type: int  Default: 10  Batch size you''d use for a sequence of
-        length 100. The batch size will be calculated from this, assuming that the
-        memory requirement to compute each sample scales quadratically with the sequence
-        length.'
-      required: false
-      takes_value: true
-    - name: --model_name
-      type: string
-      description: 'Type: Optional  Default: ''bioemu-v1.1''  Name of pretrained model
-        to use. If this is set, you do not need to provide `ckpt_path` or `model_config_path`.'
-      required: false
-      takes_value: true
-    - name: --ckpt_path
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        checkpoint. If this is set, `model_name` will be ignored.'
-      required: false
-      takes_value: true
-    - name: --model_config_path
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        config, defining score model architecture and the corruption process the model
-        was trained with. Only required if `ckpt_path` is set.'
-      required: false
-      takes_value: true
-    - name: --denoiser_type
-      type: string
-      description: 'Type: Optional  Default: ''dpm''  Denoiser to use for sampling,
-        if `denoiser_config` not specified. Comes in with default parameter configuration.
-        Must be one of [''dpm'', ''heun'']'
-      required: false
-      takes_value: true
-    - name: --denoiser_config
-      type: string
-      description: 'Type: Optional[str | ...  Default: None  Path (str or :class:`os.PathLike`)
-        to a denoiser config YAML, or a dict. For steered sampling, pass a steering
-        config (e.g., config/steering/physical_steering.yaml) which includes the denoiser
-        target, potentials, and steering parameters in one file.'
-      required: false
-      takes_value: true
-    - name: --cache_embeds_dir
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        MSA embeddings. If not set, this defaults to `COLABFOLD_DIR/embeds_cache`.'
-      required: false
-      takes_value: true
-    - name: --cache_so3_dir
-      type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        SO3 precomputations. If not set, this defaults to `~/sampling_so3_cache`.'
-      required: false
-      takes_value: true
-    - name: --msa_host_url
-      type: string
-      description: 'Type: Optional[str | None]  Default: None  MSA server URL. If
-        not set, this defaults to colabfold''s remote server. If sequence is an a3m
-        file, this is ignored.'
-      required: false
-      takes_value: true
-    - name: --filter_samples
-      type: string
-      description: 'Type: bool  Default: True  Filter out unphysical samples with
-        e.g. long bond distances or steric clashes.'
-      required: false
-      takes_value: true
-      aliases:
-      - -f
-    - name: --base_seed
-      type: string
-      description: 'Type: Optional[int | None]  Default: None  Base random seed for
-        sampling. If set, each batch''s seed will be set to base_seed + (num samples
-        already generated).'
-      required: false
-      takes_value: true
-    installed_versions:
-    - absl-py==2.5.0
-    - aiohappyeyeballs==2.7.1
-    - aiohttp==3.14.3
-    - aiosignal==1.4.0
-    - annotated-doc==0.0.5
-    - antlr4-python3-runtime==4.9.3
-    - anyio==4.14.2
-    - astunparse==1.6.3
-    - attrs==26.1.0
-    - bio==1.8.3
-    - bioemu @ file:///tmp/execute_g23g2hd7/bioemu
-    - biopython==1.88
-    - biothings_client==0.5.1
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cuda-bindings==13.3.1
-    - cuda-pathfinder==1.6.0
-    - cuda-toolkit==13.0.3.0
-    - cycler==0.12.1
-    - dm-haiku==0.0.17
-    - dm-tree==0.1.10
-    - einops==0.8.2
-    - filelock==3.32.3
-    - fire==0.7.1
-    - flatbuffers==25.12.19
-    - fonttools==4.63.0
-    - frozenlist==1.8.0
-    - fsspec==2026.7.0
-    - gast==0.7.0
-    - google-pasta==0.2.0
-    - gprofiler-official==1.0.0
-    - grpcio==1.83.0
-    - h11==0.16.0
-    - h5py==3.14.0
-    - hf-xet==1.6.0
-    - httpcore==1.0.9
-    - httpx==0.28.1
-    - huggingface_hub==1.27.0
-    - hydra-core==1.3.5
-    - idna==3.18
-    - ihm==2.11
-    - jax==0.10.2
-    - jaxlib==0.10.2
-    - Jinja2==3.1.6
-    - jmp==0.0.4
-    - keras==3.15.1
-    - kiwisolver==1.5.0
-    - libclang==18.1.1
-    - markdown-it-py==4.2.0
-    - MarkupSafe==3.0.3
-    - matplotlib==3.11.1
-    - mdtraj==1.11.1.post2
-    - mdurl==0.1.2
-    - ml_collections==1.1.0
-    - ml_dtypes==0.6.0
-    - modelcif==1.7
-    - mpmath==1.3.0
-    - msgpack==1.2.1
-    - multidict==6.7.1
-    - mygene==3.2.2
-    - namex==0.1.0
-    - networkx==3.6.1
-    - numpy==2.4.6
-    - nvidia-cublas==13.1.1.3
-    - nvidia-cuda-cupti==13.0.85
-    - nvidia-cuda-nvrtc==13.0.88
-    - nvidia-cuda-runtime==13.0.96
-    - nvidia-cudnn-cu13==9.20.0.48
-    - nvidia-cufft==12.0.0.61
-    - nvidia-cufile==1.15.1.6
-    - nvidia-curand==10.4.0.35
-    - nvidia-cusolver==12.0.4.66
-    - nvidia-cusparse==12.6.3.3
-    - nvidia-cusparselt-cu13==0.8.1
-    - nvidia-nccl-cu13==2.29.7
-    - nvidia-nvjitlink==13.3.33
-    - nvidia-nvshmem-cu13==3.4.5
-    - nvidia-nvtx==13.0.85
 - name: kaptain
   type: cli
-  command: kaptain --output {output} --ont-in {ont_in} --db {db} --db-lookup {db_lookup}
-    --dir-working {dir_working} --output-html {output_html} --subsampling {subsampling}
+  command: kaptain --ont-in {ont_in} --db {db} --db-lookup {db_lookup} --dir-working
+    {dir_working} --output {output} --output-html {output_html} --subsampling {subsampling}
     --fdr {fdr} --threads {threads} --version {version} --log {log}
   arg_style: positional
   callable_via: ''
@@ -1233,31 +1314,31 @@ tools:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    output:
-      type: string
-      description: CLI flag --output
-      required: true
-      source: help_parsed
     ont_in:
       type: string
       description: 'ONT input FASTA/Q file (default: None)'
-      required: false
+      required: true
       source: help_parsed
     db:
       type: string
       description: 'Basename of KMA database. Database exists of four  files named
         *.{comp.b, length.b, name, seq.b}  (default: None)'
-      required: false
+      required: true
       source: help_parsed
     db_lookup:
       type: string
       description: 'Lookup file of KMA database (default: None)'
-      required: false
+      required: true
       source: help_parsed
     dir_working:
       type: string
       description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
+      source: help_parsed
+    output:
+      type: string
+      description: 'Output directory (default: None)'
+      required: true
       source: help_parsed
     output_html:
       type: string
@@ -1293,7 +1374,7 @@ tools:
   outputs:
     output:
       type: file
-      description: CLI flag --output
+      description: 'Output directory (default: None)'
       source: help_parsed
     output_html:
       type: file
@@ -1336,28 +1417,20 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_pdwjnlr8/venv
+    venv_path: /tmp/execute_cpdpu5p5/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_pdwjnlr8/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_cpdpu5p5/venv/bin/kaptain --help` -> exit 0'
     exec_executable: kaptain
     verified_license: true
     verified_license_path: LICENSE
     verified_status: repo_ok
     inputs_source: help_parsed
     params_schema:
-    - name: --output
-      type: string
-      description: CLI flag --output
-      required: true
-      takes_value: true
-      aliases:
-      - --subsampling
-      - --fdr
     - name: --ont-in
       type: string
       description: 'ONT input FASTA/Q file (default: None)'
-      required: false
+      required: true
       takes_value: true
       aliases:
       - -i
@@ -1365,18 +1438,25 @@ tools:
       type: string
       description: 'Basename of KMA database. Database exists of four  files named
         *.{comp.b, length.b, name, seq.b}  (default: None)'
-      required: false
+      required: true
       takes_value: true
     - name: --db-lookup
       type: string
       description: 'Lookup file of KMA database (default: None)'
-      required: false
+      required: true
       takes_value: true
     - name: --dir-working
       type: string
       description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
       takes_value: true
+    - name: --output
+      type: string
+      description: 'Output directory (default: None)'
+      required: true
+      takes_value: true
+      aliases:
+      - -o
     - name: --output-html
       type: string
       description: 'Output report name (default: report.html)'
@@ -1433,7 +1513,7 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_pdwjnlr8/KAPTAIN
+    - kaptain @ file:///tmp/execute_cpdpu5p5/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.0
     - numpy==2.4.6

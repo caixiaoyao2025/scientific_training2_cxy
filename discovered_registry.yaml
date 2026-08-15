@@ -1,11 +1,11 @@
 tools:
 - name: bioemu
   type: python
-  command: python -m bioemu.sample --batch_size_100 {{batch_size_100}} --model_name
-    {{model_name}} --ckpt_path {{ckpt_path}} --model_config_path {{model_config_path}}
-    --denoiser_type {{denoiser_type}} --denoiser_config {{denoiser_config}} --cache_embeds_dir
-    {{cache_embeds_dir}} --cache_so3_dir {{cache_so3_dir}} --msa_host_url {{msa_host_url}}
-    --filter_samples {{filter_samples}} --base_seed {{base_seed}}
+  command: python -m bioemu.sample {{sequence}} {{num_samples}} {{output_dir}} --batch_size_100
+    {{batch_size_100}} --model_name {{model_name}} --ckpt_path {{ckpt_path}} --model_config_path
+    {{model_config_path}} --denoiser_type {{denoiser_type}} --denoiser_config {{denoiser_config}}
+    --cache_embeds_dir {{cache_embeds_dir}} --cache_so3_dir {{cache_so3_dir}} --msa_host_url
+    {{msa_host_url}} --filter_samples --base_seed {{base_seed}}
   arg_style: python
   callable_via: python -m bioemu.sample
   readme_examples:
@@ -21,83 +21,108 @@ tools:
   inputs:
     batch_size_100:
       type: string
-      description: 'Type: int  Default: 10  Batch size you''d use for a sequence of
-        length 100. The batch size will be calculated from this, assuming that the
-        memory requirement to compute each sample scales quadratically with the sequence
-        length.'
+      description: Batch size you'd use for a sequence of length 100. The batch size
+        will be calculated from this, assuming that the memory requirement to compute
+        each sample scales quadratically with the sequence length.
       required: false
       source: help_parsed
     model_name:
       type: string
-      description: 'Type: Optional  Default: ''bioemu-v1.1''  Name of pretrained model
-        to use. If this is set, you do not need to provide `ckpt_path` or `model_config_path`.'
+      description: Name of pretrained model to use. If this is set, you do not need
+        to provide `ckpt_path` or `model_config_path`.
       required: false
       source: help_parsed
     ckpt_path:
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        checkpoint. If this is set, `model_name` will be ignored.'
+      description: Path to the model checkpoint. If this is set, `model_name` will
+        be ignored.
       required: false
       source: help_parsed
     model_config_path:
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        config, defining score model architecture and the corruption process the model
-        was trained with. Only required if `ckpt_path` is set.'
+      description: Path to the model config, defining score model architecture and
+        the corruption process the model was trained with. Only required if `ckpt_path`
+        is set.
       required: false
       source: help_parsed
     denoiser_type:
       type: string
-      description: 'Type: Optional  Default: ''dpm''  Denoiser to use for sampling,
-        if `denoiser_config` not specified. Comes in with default parameter configuration.
-        Must be one of [''dpm'', ''heun'']'
+      description: Denoiser to use for sampling, if `denoiser_config` not specified.
+        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
       required: false
       source: help_parsed
     denoiser_config:
       type: string
-      description: 'Type: Optional[str | ...  Default: None  Path (str or :class:`os.PathLike`)
-        to a denoiser config YAML, or a dict. For steered sampling, pass a steering
-        config (e.g., config/steering/physical_steering.yaml) which includes the denoiser
-        target, potentials, and steering parameters in one file.'
+      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
+        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
+        which includes the denoiser target, potentials, and steering parameters in
+        one file.
       required: false
       source: help_parsed
     cache_embeds_dir:
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        MSA embeddings. If not set, this defaults to `COLABFOLD_DIR/embeds_cache`.'
+      description: Directory to store MSA embeddings. If not set, this defaults to
+        `COLABFOLD_DIR/embeds_cache`.
       required: false
       source: help_parsed
     cache_so3_dir:
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        SO3 precomputations. If not set, this defaults to `~/sampling_so3_cache`.'
+      description: Directory to store SO3 precomputations. If not set, this defaults
+        to `~/sampling_so3_cache`.
       required: false
       source: help_parsed
     msa_host_url:
       type: string
-      description: 'Type: Optional[str | None]  Default: None  MSA server URL. If
-        not set, this defaults to colabfold''s remote server. If sequence is an a3m
-        file, this is ignored.'
+      description: MSA server URL. If not set, this defaults to colabfold's remote
+        server. If sequence is an a3m file, this is ignored.
       required: false
       source: help_parsed
     filter_samples:
-      type: string
-      description: 'Type: bool  Default: True  Filter out unphysical samples with
-        e.g. long bond distances or steric clashes.'
+      type: boolean
+      description: Filter out unphysical samples with e.g. long bond distances or
+        steric clashes.
       required: false
       source: help_parsed
     base_seed:
       type: string
-      description: 'Type: Optional[int | None]  Default: None  Base random seed for
-        sampling. If set, each batch''s seed will be set to base_seed + (num samples
-        already generated).'
+      description: Base random seed for sampling. If set, each batch's seed will be
+        set to base_seed + (num samples already generated).
       required: false
       source: help_parsed
+    sequence:
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      required: true
+      source: help_parsed
+      positional: true
+      position: 0
+    num_samples:
+      type: path
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      required: true
+      source: help_parsed
+      positional: true
+      position: 1
+    output_dir:
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      required: true
+      source: help_parsed
+      positional: true
+      position: 2
   outputs:
-    stdout:
-      type: text
-      description: Tool result printed to stdout.
-      source: inferred
+    output_dir:
+      type: file
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      source: help_parsed
   execution: null
   subcommands: []
   subcommand_details: {}
@@ -117,7 +142,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_g23g2hd7/bioemu
+    - bioemu @ file:///tmp/execute_lcazkpac/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -159,7 +184,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_g23g2hd7/venv
+    venv_path: /tmp/execute_lcazkpac/venv
   _discovery_metadata:
     github: https://github.com/microsoft/bioemu
     stars: 866
@@ -180,7 +205,7 @@ tools:
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-15T13:38:18.041098'
+    verified_checked_at: '2026-08-15T15:48:51.739209'
     dependencies:
       system_commands: []
       readme_hint: ''
@@ -198,81 +223,122 @@ tools:
     exec_params_schema:
     - name: --batch_size_100
       type: string
-      description: 'Type: int  Default: 10  Batch size you''d use for a sequence of
-        length 100. The batch size will be calculated from this, assuming that the
-        memory requirement to compute each sample scales quadratically with the sequence
-        length.'
+      description: Batch size you'd use for a sequence of length 100. The batch size
+        will be calculated from this, assuming that the memory requirement to compute
+        each sample scales quadratically with the sequence length.
       required: false
       takes_value: true
     - name: --model_name
       type: string
-      description: 'Type: Optional  Default: ''bioemu-v1.1''  Name of pretrained model
-        to use. If this is set, you do not need to provide `ckpt_path` or `model_config_path`.'
+      description: Name of pretrained model to use. If this is set, you do not need
+        to provide `ckpt_path` or `model_config_path`.
       required: false
       takes_value: true
     - name: --ckpt_path
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        checkpoint. If this is set, `model_name` will be ignored.'
+      description: Path to the model checkpoint. If this is set, `model_name` will
+        be ignored.
       required: false
       takes_value: true
     - name: --model_config_path
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Path to the model
-        config, defining score model architecture and the corruption process the model
-        was trained with. Only required if `ckpt_path` is set.'
+      description: Path to the model config, defining score model architecture and
+        the corruption process the model was trained with. Only required if `ckpt_path`
+        is set.
       required: false
       takes_value: true
     - name: --denoiser_type
       type: string
-      description: 'Type: Optional  Default: ''dpm''  Denoiser to use for sampling,
-        if `denoiser_config` not specified. Comes in with default parameter configuration.
-        Must be one of [''dpm'', ''heun'']'
+      description: Denoiser to use for sampling, if `denoiser_config` not specified.
+        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
       required: false
       takes_value: true
     - name: --denoiser_config
       type: string
-      description: 'Type: Optional[str | ...  Default: None  Path (str or :class:`os.PathLike`)
-        to a denoiser config YAML, or a dict. For steered sampling, pass a steering
-        config (e.g., config/steering/physical_steering.yaml) which includes the denoiser
-        target, potentials, and steering parameters in one file.'
+      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
+        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
+        which includes the denoiser target, potentials, and steering parameters in
+        one file.
       required: false
       takes_value: true
     - name: --cache_embeds_dir
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        MSA embeddings. If not set, this defaults to `COLABFOLD_DIR/embeds_cache`.'
+      description: Directory to store MSA embeddings. If not set, this defaults to
+        `COLABFOLD_DIR/embeds_cache`.
       required: false
       takes_value: true
     - name: --cache_so3_dir
       type: string
-      description: 'Type: Optional[str | pathlib...  Default: None  Directory to store
-        SO3 precomputations. If not set, this defaults to `~/sampling_so3_cache`.'
+      description: Directory to store SO3 precomputations. If not set, this defaults
+        to `~/sampling_so3_cache`.
       required: false
       takes_value: true
     - name: --msa_host_url
       type: string
-      description: 'Type: Optional[str | None]  Default: None  MSA server URL. If
-        not set, this defaults to colabfold''s remote server. If sequence is an a3m
-        file, this is ignored.'
+      description: MSA server URL. If not set, this defaults to colabfold's remote
+        server. If sequence is an a3m file, this is ignored.
       required: false
       takes_value: true
     - name: --filter_samples
-      type: string
-      description: 'Type: bool  Default: True  Filter out unphysical samples with
-        e.g. long bond distances or steric clashes.'
+      type: boolean
+      description: Filter out unphysical samples with e.g. long bond distances or
+        steric clashes.
       required: false
-      takes_value: true
+      takes_value: false
       aliases:
       - -f
     - name: --base_seed
       type: string
-      description: 'Type: Optional[int | None]  Default: None  Base random seed for
-        sampling. If set, each batch''s seed will be set to base_seed + (num samples
-        already generated).'
+      description: Base random seed for sampling. If set, each batch's seed will be
+        set to base_seed + (num samples already generated).
       required: false
       takes_value: true
-    exec_positional_args: []
+    - name: sequence
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      positional: true
+      position: 0
+      required: true
+    - name: num_samples
+      type: path
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      positional: true
+      position: 1
+      required: true
+    - name: output_dir
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      positional: true
+      position: 2
+      required: true
+    exec_positional_args:
+    - name: sequence
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      positional: true
+      position: 0
+    - name: num_samples
+      type: path
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      positional: true
+      position: 1
+    - name: output_dir
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      positional: true
+      position: 2
     exec_installed_versions:
     - absl-py==2.5.0
     - aiohappyeyeballs==2.7.1
@@ -284,7 +350,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_g23g2hd7/bioemu
+    - bioemu @ file:///tmp/execute_lcazkpac/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -534,11 +600,12 @@ tools:
         description: Pipe the output to stdout
         required: false
         takes_value: false
-      - name: input]..
+      - name: input
         type: path
-        description: Positional argument INPUT]..
+        description: Positional argument INPUT
         positional: true
         position: 0
+        required: true
       usage: bqtools encode [OPTIONS] [INPUT]...
     decode:
       params:
@@ -595,6 +662,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools decode [OPTIONS] <INPUT>
     cat:
       params:
@@ -682,11 +750,12 @@ tools:
         description: Pipe the output to stdout
         required: false
         takes_value: false
-      - name: input]..
+      - name: input
         type: path
-        description: Positional argument INPUT]..
+        description: Positional argument INPUT
         positional: true
         position: 0
+        required: true
       usage: bqtools cat [OPTIONS] [INPUT]...
     info:
       params:
@@ -714,11 +783,12 @@ tools:
         description: Print the block headers of the file
         required: false
         takes_value: false
-      - name: input>
+      - name: input
         type: path
         description: Positional argument <INPUT>...
         positional: true
         position: 0
+        required: true
       usage: bqtools info [OPTIONS] <INPUT>...
     grep:
       params:
@@ -856,11 +926,13 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
-      - name: reg]..
+        required: true
+      - name: reg
         type: path
-        description: Positional argument REG]..
+        description: Positional argument REG
         positional: true
         position: 1
+        required: true
       usage: bqtools grep [OPTIONS] <INPUT> [REG]...
     sample:
       params:
@@ -868,7 +940,7 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --output
         type: string
@@ -880,35 +952,35 @@ tools:
       - name: --prefix
         type: string
         description: Output file format prefix (required for paired BINSEQ files
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --mate
         type: string
         description: Designate which of the two mates is being processed
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -m
       - name: --format
         type: string
         description: Output file format
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -f
       - name: --compress
         type: string
         description: Compress output file
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -c
       - name: --threads
         type: string
         description: Number of threads to use for parallel compression (0 for auto)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -922,7 +994,7 @@ tools:
       - name: --seed
         type: string
         description: Seed to use for random sampling
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -S
@@ -931,6 +1003,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools sample [OPTIONS] --fraction <FRACTION> <INPUT>
     split:
       params:
@@ -1011,6 +1084,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools split [OPTIONS] <INPUT>
     pipe:
       params:
@@ -1060,6 +1134,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools pipe [OPTIONS] <INPUT>
     revcomp:
       params:
@@ -1165,6 +1240,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools revcomp [OPTIONS] <INPUT>
     verify:
       params:
@@ -1220,6 +1296,7 @@ tools:
         description: Positional argument <INPUT>
         positional: true
         position: 0
+        required: true
       usage: bqtools verify [OPTIONS] <INPUT>
   subcommand_discovery_complete: true
   install:
@@ -1229,7 +1306,7 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_2pjft94k/venv
+    venv_path: /tmp/execute_3nyv2zn3/venv
   _discovery_metadata:
     github: https://github.com/ArcInstitute/bqtools
     stars: 39
@@ -1249,21 +1326,21 @@ tools:
     verified_license: false
     verified_license_path: ''
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-15T13:40:56.781931'
+    verified_checked_at: '2026-08-15T15:51:32.680503'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: cargo
     exec_status: passed
-    exec_reason: '`/tmp/execute_2pjft94k/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_3nyv2zn3/bqtools/target/release/bqtools --help` ->
       exit 0'
-    exec_install_evidence: " v1.4.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
+    exec_install_evidence: ".4.0\n   Compiling walkdir v2.5.0\n   Compiling rand v0.10.2\n\
       \   Compiling is-terminal v0.4.17\n   Compiling fixedbitset v0.5.7\n   Compiling\
       \ xxhash-rust v0.8.18\n   Compiling thousands v0.2.0\n   Compiling rust-htslib\
       \ v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling\
-      \ bqtools v0.5.13 (/tmp/execute_2pjft94k/bqtools)\n    Finished `release` profile\
-      \ [optimized] target(s) in 2m 11s\n"
+      \ bqtools v0.5.13 (/tmp/execute_3nyv2zn3/bqtools)\n    Finished `release` profile\
+      \ [optimized] target(s) in 2m 16s\n"
     exec_run_evidence: "into multiple files based on patterns provided in a pattern\
       \ file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc      \
       \ \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify \
@@ -1287,8 +1364,8 @@ tools:
     pending_reason: ''
 - name: kaptain
   type: cli
-  command: kaptain --output {{output}} --ont-in {{ont_in}} --db {{db}} --db-lookup
-    {{db_lookup}} --dir-working {{dir_working}} --output-html {{output_html}} --subsampling
+  command: kaptain --ont-in {{ont_in}} --db {{db}} --db-lookup {{db_lookup}} --dir-working
+    {{dir_working}} --output {{output}} --output-html {{output_html}} --subsampling
     {{subsampling}} --fdr {{fdr}} --threads {{threads}} --version {{version}} --log
     {{log}}
   arg_style: positional
@@ -1301,31 +1378,31 @@ tools:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    output:
-      type: string
-      description: CLI flag --output
-      required: true
-      source: help_parsed
     ont_in:
       type: string
       description: 'ONT input FASTA/Q file (default: None)'
-      required: false
+      required: true
       source: help_parsed
     db:
       type: string
       description: 'Basename of KMA database. Database exists of four  files named
         *.{comp.b, length.b, name, seq.b}  (default: None)'
-      required: false
+      required: true
       source: help_parsed
     db_lookup:
       type: string
       description: 'Lookup file of KMA database (default: None)'
-      required: false
+      required: true
       source: help_parsed
     dir_working:
       type: string
       description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
+      source: help_parsed
+    output:
+      type: string
+      description: 'Output directory (default: None)'
+      required: true
       source: help_parsed
     output_html:
       type: string
@@ -1361,7 +1438,7 @@ tools:
   outputs:
     output:
       type: file
-      description: CLI flag --output
+      description: 'Output directory (default: None)'
       source: help_parsed
     output_html:
       type: file
@@ -1404,7 +1481,7 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_pdwjnlr8/venv
+    venv_path: /tmp/execute_cpdpu5p5/venv
   _discovery_metadata:
     github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
     stars: 3
@@ -1425,14 +1502,14 @@ tools:
     verified_license_path: LICENSE
     verified_entry_scripts:
     - kaptain/__main__.py
-    verified_checked_at: '2026-08-15T13:41:43.770862'
+    verified_checked_at: '2026-08-15T15:52:28.558308'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_pdwjnlr8/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_cpdpu5p5/venv/bin/kaptain --help` -> exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "efore\n                        classification. Leave empty\
       \ or use None for no\n                        downsampling. (default: [None])\n\
@@ -1441,18 +1518,10 @@ tools:
       \ --version             Print version and exit\n  --log                 Write\
       \ out log information to file (default: False)\n"
     exec_params_schema:
-    - name: --output
-      type: string
-      description: CLI flag --output
-      required: true
-      takes_value: true
-      aliases:
-      - --subsampling
-      - --fdr
     - name: --ont-in
       type: string
       description: 'ONT input FASTA/Q file (default: None)'
-      required: false
+      required: true
       takes_value: true
       aliases:
       - -i
@@ -1460,18 +1529,25 @@ tools:
       type: string
       description: 'Basename of KMA database. Database exists of four  files named
         *.{comp.b, length.b, name, seq.b}  (default: None)'
-      required: false
+      required: true
       takes_value: true
     - name: --db-lookup
       type: string
       description: 'Lookup file of KMA database (default: None)'
-      required: false
+      required: true
       takes_value: true
     - name: --dir-working
       type: string
       description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
       takes_value: true
+    - name: --output
+      type: string
+      description: 'Output directory (default: None)'
+      required: true
+      takes_value: true
+      aliases:
+      - -o
     - name: --output-html
       type: string
       description: 'Output report name (default: report.html)'
@@ -1529,7 +1605,7 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_pdwjnlr8/KAPTAIN
+    - kaptain @ file:///tmp/execute_cpdpu5p5/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.0
     - numpy==2.4.6

@@ -1,5 +1,30 @@
 [
   {
+    "name": "bioemu",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: DEBUG:httpcore.connection:connect_tcp.started host='huggingface.co' port=443 local_address=None timeout=3 socket_options))",
+    "output": "FAIL (output: exit 1 (stderr: DEBUG:httpcore.connection:connect_tcp.started host='huggingface.co' port=443 local_address=None timeout=3 socket_options))",
+    "_argv": [
+      "python",
+      "-m",
+      "bioemu.sample",
+      "MKT",
+      "1",
+      "/tmp/out",
+      "--filter_samples"
+    ],
+    "_args": {
+      "sequence": "MKT",
+      "num_samples": 1,
+      "output_dir": "/tmp/out"
+    },
+    "_functions": [
+      "bioemu"
+    ],
+    "_return_code": 1
+  },
+  {
     "name": "bqtools",
     "schema": "PASS",
     "render": "PASS",
@@ -27,39 +52,31 @@
     "_return_code": 2
   },
   {
-    "name": "bioemu",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: ERROR: The function received no value for the required argument: sequence\nUsage: sample.py SEQUENCE NUM_SAMPLES OUTPUT_D))",
-    "output": "FAIL (output: exit 2 (stderr: ERROR: The function received no value for the required argument: sequence\nUsage: sample.py SEQUENCE NUM_SAMPLES OUTPUT_D))",
-    "_argv": [
-      "python",
-      "-m",
-      "bioemu.sample"
-    ],
-    "_args": {},
-    "_functions": [
-      "bioemu"
-    ],
-    "_return_code": 2
-  },
-  {
     "name": "kaptain",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
-    "output": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
+    "execute": "FAIL (output: exit 1 (stderr: 2026-08-15 16:50:09,547 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 16:50:09,547 -        __init_))",
+    "output": "FAIL (output: exit 1 (stderr: 2026-08-15 16:50:09,547 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 16:50:09,547 -        __init_))",
     "_argv": [
       "kaptain",
+      "--ont-in",
+      "x",
+      "--db",
+      "x",
+      "--db-lookup",
+      "x",
       "--output",
       "/tmp/out.tsv"
     ],
     "_args": {
+      "ont_in": "x",
+      "db": "x",
+      "db_lookup": "x",
       "output": "/tmp/out.tsv"
     },
     "_functions": [
       "kaptain"
     ],
-    "_return_code": 2
+    "_return_code": 1
   }
 ]
