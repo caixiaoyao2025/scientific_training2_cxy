@@ -163,6 +163,7 @@ def _detect_arg_style(help_output: str) -> str:
         return "subcommand"
     # positional: usage tokens after the binary that are real args (not
     # options, not [..], not pseudo tokens like options:/COMMAND)
+    usage_line = _extract_usage(help_output)
     if usage_line:
         after = re.sub(r"\[[^\]]*\]", " ", usage_line)
         after = re.sub(r"\s-\w", " ", after)  # cut option flags
