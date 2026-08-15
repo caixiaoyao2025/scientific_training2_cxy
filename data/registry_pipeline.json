@@ -1,5 +1,32 @@
 [
   {
+    "name": "bqtools",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 2 (stderr: error: unrecognized subcommand 'x'\n\nUsage: bqtools <COMMAND>\n\nFor more information, try '--help'.\n))",
+    "output": "FAIL (output: exit 2 (stderr: error: unrecognized subcommand 'x'\n\nUsage: bqtools <COMMAND>\n\nFor more information, try '--help'.\n))",
+    "_argv": [
+      "bqtools",
+      "x"
+    ],
+    "_args": {
+      "subcommand": "x"
+    },
+    "_functions": [
+      "bqtools_encode",
+      "bqtools_decode",
+      "bqtools_cat",
+      "bqtools_info",
+      "bqtools_grep",
+      "bqtools_sample",
+      "bqtools_split",
+      "bqtools_pipe",
+      "bqtools_revcomp",
+      "bqtools_verify"
+    ],
+    "_return_code": 2
+  },
+  {
     "name": "bioemu",
     "schema": "PASS",
     "render": "PASS",
@@ -23,9 +50,13 @@
     "execute": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
     "output": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
     "_argv": [
-      "kaptain"
+      "kaptain",
+      "--output",
+      "/tmp/out.tsv"
     ],
-    "_args": {},
+    "_args": {
+      "output": "/tmp/out.tsv"
+    },
     "_functions": [
       "kaptain"
     ],

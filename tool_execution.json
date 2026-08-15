@@ -3,9 +3,9 @@
     "tool": "sra-tools",
     "repo_url": "https://github.com/ncbi/sra-tools",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_6kbkg7rj/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_2l5xxx24/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_6kbkg7rj/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute_2l5xxx24/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -25,13 +25,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:17:17.364995"
+    "checked_at": "2026-08-15T13:46:06.917771"
   },
   {
     "tool": "enaBrowserTools",
     "repo_url": "https://github.com/enasequence/enaBrowserTools",
     "status": "env_issue",
-    "reason": "`enabrowsertools /tmp/execute_errhbg70/sample.fasta` -> exit 127; `enabrowsertools --help` -> exit 127; `python -c 'import enaBrowserTools'` -> exit 1",
+    "reason": "`enabrowsertools /tmp/execute_qht7xum4/sample.fasta` -> exit 127; `enabrowsertools --help` -> exit 127; `python -c 'import enaBrowserTools'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -60,7 +60,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:17:27.867923"
+    "checked_at": "2026-08-15T13:46:18.339426"
   },
   {
     "tool": "taxtriage",
@@ -88,7 +88,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:17:34.847351"
+    "checked_at": "2026-08-15T13:46:25.711333"
   },
   {
     "tool": "bioemu",
@@ -102,14 +102,84 @@
     "executable": "bioemu",
     "params_schema": [
       {
+        "name": "--batch_size_100",
+        "type": "string",
+        "description": "Type: int  Default: 10  Batch size you'd use for a sequence of length 100. The batch size will be calculated from this, assuming that the memory requirement to compute each sample scales quadratically with the sequence length.",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--model_name",
+        "type": "string",
+        "description": "Type: Optional  Default: 'bioemu-v1.1'  Name of pretrained model to use. If this is set, you do not need to provide `ckpt_path` or `model_config_path`.",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--ckpt_path",
+        "type": "string",
+        "description": "Type: Optional[str | pathlib...  Default: None  Path to the model checkpoint. If this is set, `model_name` will be ignored.",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--model_config_path",
+        "type": "string",
+        "description": "Type: Optional[str | pathlib...  Default: None  Path to the model config, defining score model architecture and the corruption process the model was trained with. Only required if `ckpt_path` is set.",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--denoiser_type",
+        "type": "string",
+        "description": "Type: Optional  Default: 'dpm'  Denoiser to use for sampling, if `denoiser_config` not specified. Comes in with default parameter configuration. Must be one of ['dpm', 'heun']",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--denoiser_config",
+        "type": "string",
+        "description": "Type: Optional[str | ...  Default: None  Path (str or :class:`os.PathLike`) to a denoiser config YAML, or a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml) which includes the denoiser target, potentials, and steering parameters in one file.",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--cache_embeds_dir",
+        "type": "string",
+        "description": "Type: Optional[str | pathlib...  Default: None  Directory to store MSA embeddings. If not set, this defaults to `COLABFOLD_DIR/embeds_cache`.",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--cache_so3_dir",
+        "type": "string",
+        "description": "Type: Optional[str | pathlib...  Default: None  Directory to store SO3 precomputations. If not set, this defaults to `~/sampling_so3_cache`.",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--msa_host_url",
+        "type": "string",
+        "description": "Type: Optional[str | None]  Default: None  MSA server URL. If not set, this defaults to colabfold's remote server. If sequence is an a3m file, this is ignored.",
+        "required": false,
+        "takes_value": true
+      },
+      {
         "name": "--filter_samples",
-        "type": "boolean",
+        "type": "string",
         "description": "Type: bool  Default: True  Filter out unphysical samples with e.g. long bond distances or steric clashes.",
         "required": false,
-        "takes_value": false,
+        "takes_value": true,
         "aliases": [
           "-f"
         ]
+      },
+      {
+        "name": "--base_seed",
+        "type": "string",
+        "description": "Type: Optional[int | None]  Default: None  Base random seed for sampling. If set, each batch's seed will be set to base_seed + (num samples already generated).",
+        "required": false,
+        "takes_value": true
       }
     ],
     "arg_style": "python",
@@ -137,7 +207,7 @@
       "astunparse==1.6.3",
       "attrs==26.1.0",
       "bio==1.8.3",
-      "bioemu @ file:///tmp/execute_qsn96iw2/bioemu",
+      "bioemu @ file:///tmp/execute_g23g2hd7/bioemu",
       "biopython==1.88",
       "biothings_client==0.5.1",
       "certifi==2026.7.22",
@@ -212,8 +282,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:17:54.607432",
-    "venv_path": "/tmp/execute_qsn96iw2/venv",
+    "checked_at": "2026-08-15T13:46:46.373140",
+    "venv_path": "/tmp/execute_g23g2hd7/venv",
     "venv_kept": true
   },
   {
@@ -226,9 +296,9 @@
     "tool": "BBMap",
     "repo_url": "https://github.com/BioInfoTools/BBMap",
     "status": "failed",
-    "reason": "make failed (exit 2): make: Entering directory '/tmp/execute_1upp_9i2/BBMap'\nmake: Leaving directory '/tmp/execute_1upp_9i2/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
+    "reason": "make failed (exit 2): make: Entering directory '/tmp/execute_brrnbf2c/BBMap'\nmake: Leaving directory '/tmp/execute_brrnbf2c/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
     "install_ok": false,
-    "install_evidence": "make: Entering directory '/tmp/execute_1upp_9i2/BBMap'\nmake: Leaving directory '/tmp/execute_1upp_9i2/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
+    "install_evidence": "make: Entering directory '/tmp/execute_brrnbf2c/BBMap'\nmake: Leaving directory '/tmp/execute_brrnbf2c/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -248,7 +318,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:19:41.822731"
+    "checked_at": "2026-08-15T13:48:42.412204"
   },
   {
     "tool": "ClairS-TO",
@@ -276,7 +346,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:19:48.613789"
+    "checked_at": "2026-08-15T13:48:49.689417"
   },
   {
     "tool": "pbsv",
@@ -288,9 +358,9 @@
     "tool": "kent",
     "repo_url": "https://github.com/ucscGenomeBrowser/kent",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_2ujo9syy/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_ypqd3y6k/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_2ujo9syy/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute_ypqd3y6k/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -310,13 +380,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:21:18.847900"
+    "checked_at": "2026-08-15T13:50:33.116135"
   },
   {
     "tool": "DeepExplain",
     "repo_url": "https://github.com/marcoancona/DeepExplain",
     "status": "env_issue",
-    "reason": "`deepexplain /tmp/execute_9g3o79sq/sample.fasta` -> exit 127; `deepexplain --help` -> exit 127; `python -c 'import DeepExplain'` -> exit 1",
+    "reason": "`deepexplain /tmp/execute_kifivcwz/sample.fasta` -> exit 127; `deepexplain --help` -> exit 127; `python -c 'import DeepExplain'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -336,7 +406,7 @@
     "installed_versions": [
       "contourpy==1.3.3",
       "cycler==0.12.1",
-      "deepexplain @ file:///tmp/execute_9g3o79sq/DeepExplain",
+      "deepexplain @ file:///tmp/execute_kifivcwz/DeepExplain",
       "fonttools==4.63.0",
       "ImageIO==2.37.4",
       "kiwisolver==1.5.0",
@@ -357,13 +427,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:21:39.758734"
+    "checked_at": "2026-08-15T13:50:54.260053"
   },
   {
     "tool": "tf-explain",
     "repo_url": "https://github.com/sicara/tf-explain",
     "status": "env_issue",
-    "reason": "`tf_explain /tmp/execute_xpsu3r6c/sample.fasta` -> exit 127; `tf_explain --help` -> exit 127; `python -c 'import tfexplain'` -> exit 1",
+    "reason": "`tf_explain /tmp/execute_zii2dr1m/sample.fasta` -> exit 127; `tf_explain --help` -> exit 127; `python -c 'import tfexplain'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -382,13 +452,13 @@
     "subcommand_discovery_complete": false,
     "installed_versions": [
       "packaging==26.3",
-      "tf-explain @ file:///tmp/execute_xpsu3r6c/tf-explain"
+      "tf-explain @ file:///tmp/execute_zii2dr1m/tf-explain"
     ],
     "exec_retries": 0,
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:21:58.951937"
+    "checked_at": "2026-08-15T13:51:14.598270"
   },
   {
     "tool": "DNNGP",
@@ -416,7 +486,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:22:06.799757"
+    "checked_at": "2026-08-15T13:51:22.948523"
   },
   {
     "tool": "atac-seq-pipeline",
@@ -444,7 +514,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:22:36.429124"
+    "checked_at": "2026-08-15T13:51:54.278610"
   },
   {
     "tool": "knn-smoothing",
@@ -456,9 +526,9 @@
     "tool": "bqtools",
     "repo_url": "https://github.com/ArcInstitute/bqtools",
     "status": "passed",
-    "reason": "`/tmp/execute_2us5j20t/bqtools/target/release/bqtools --help` -> exit 0",
+    "reason": "`/tmp/execute_2pjft94k/bqtools/target/release/bqtools --help` -> exit 0",
     "install_ok": true,
-    "install_evidence": ".4.0\n   Compiling walkdir v2.5.0\n   Compiling rand v0.10.2\n   Compiling is-terminal v0.4.17\n   Compiling thousands v0.2.0\n   Compiling fixedbitset v0.5.7\n   Compiling xxhash-rust v0.8.18\n   Compiling rust-htslib v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling bqtools v0.5.13 (/tmp/execute_2us5j20t/bqtools)\n    Finished `release` profile [optimized] target(s) in 2m 11s\n",
+    "install_evidence": " v1.4.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n   Compiling is-terminal v0.4.17\n   Compiling fixedbitset v0.5.7\n   Compiling xxhash-rust v0.8.18\n   Compiling thousands v0.2.0\n   Compiling rust-htslib v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling bqtools v0.5.13 (/tmp/execute_2pjft94k/bqtools)\n    Finished `release` profile [optimized] target(s) in 2m 11s\n",
     "run_ok": true,
     "run_evidence": "into multiple files based on patterns provided in a pattern file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc       \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify   Compute an order-independent checksum over a BINSEQ file\n  help     Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help     Print help\n  -V, --version  Print version\n",
     "executable": "bqtools",
@@ -491,8 +561,7 @@
       "split",
       "pipe",
       "revcomp",
-      "verify",
-      "help"
+      "verify"
     ],
     "subcommand_details": {
       "encode": {
@@ -546,6 +615,13 @@
             "aliases": [
               "-M"
             ]
+          },
+          {
+            "name": "--depth",
+            "type": "string",
+            "description": "Maximum depth in the directory tree to process. Leaving this option empty will set no limit",
+            "required": true,
+            "takes_value": true
           },
           {
             "name": "--paired",
@@ -676,12 +752,33 @@
             "aliases": [
               "-A"
             ]
+          },
+          {
+            "name": "--pipe",
+            "type": "boolean",
+            "description": "Pipe the output to stdout",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "input]..",
+            "type": "path",
+            "description": "Positional argument INPUT]..",
+            "positional": true,
+            "position": 0
           }
         ],
         "usage": "bqtools encode [OPTIONS] [INPUT]..."
       },
       "decode": {
         "params": [
+          {
+            "name": "--span",
+            "type": "string",
+            "description": "Span of records to process. If not specified, all records will be processed",
+            "required": true,
+            "takes_value": true
+          },
           {
             "name": "--output",
             "type": "string",
@@ -743,11 +840,11 @@
             ]
           },
           {
-            "name": "INPUT",
+            "name": "input",
             "type": "path",
             "description": "Positional argument <INPUT>",
             "positional": true,
-            "position": 2
+            "position": 0
           }
         ],
         "usage": "bqtools decode [OPTIONS] <INPUT>"
@@ -863,6 +960,20 @@
             "aliases": [
               "-A"
             ]
+          },
+          {
+            "name": "--pipe",
+            "type": "boolean",
+            "description": "Pipe the output to stdout",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "input]..",
+            "type": "path",
+            "description": "Positional argument INPUT]..",
+            "positional": true,
+            "position": 0
           }
         ],
         "usage": "bqtools cat [OPTIONS] [INPUT]..."
@@ -890,17 +1001,38 @@
             ]
           },
           {
-            "name": "INPUT>...",
+            "name": "--show-index",
+            "type": "boolean",
+            "description": "Print the index of the file",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--show-headers",
+            "type": "boolean",
+            "description": "Print the block headers of the file",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "input>",
             "type": "path",
             "description": "Positional argument <INPUT>...",
             "positional": true,
-            "position": 2
+            "position": 0
           }
         ],
         "usage": "bqtools info [OPTIONS] <INPUT>..."
       },
       "grep": {
         "params": [
+          {
+            "name": "--span",
+            "type": "string",
+            "description": "Span of records to process. If not specified, all records will be processed",
+            "required": true,
+            "takes_value": true
+          },
           {
             "name": "--output",
             "type": "string",
@@ -1022,6 +1154,13 @@
             ]
           },
           {
+            "name": "--range",
+            "type": "string",
+            "description": "Only match patterns that are within this range.",
+            "required": true,
+            "takes_value": true
+          },
+          {
             "name": "--pattern-count",
             "type": "boolean",
             "description": "Count number of matches per pattern",
@@ -1042,17 +1181,59 @@
             ]
           },
           {
-            "name": "INPUT",
+            "name": "--rc",
+            "type": "boolean",
+            "description": "Reverse complement all patterns before matching",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--no-dfa",
+            "type": "boolean",
+            "description": "Build Aho-Corasick automaton without DFA",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--or-logic",
+            "type": "boolean",
+            "description": "use OR logic for multiple patterns (default=AND)",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--color",
+            "type": "string",
+            "description": "Colorize output (auto, always, never)",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "input",
             "type": "path",
             "description": "Positional argument <INPUT>",
             "positional": true,
-            "position": 2
+            "position": 0
+          },
+          {
+            "name": "reg]..",
+            "type": "path",
+            "description": "Positional argument REG]..",
+            "positional": true,
+            "position": 1
           }
         ],
         "usage": "bqtools grep [OPTIONS] <INPUT> [REG]..."
       },
       "sample": {
         "params": [
+          {
+            "name": "--span",
+            "type": "string",
+            "description": "Span of records to process. If not specified, all records will be processed",
+            "required": true,
+            "takes_value": true
+          },
           {
             "name": "--output",
             "type": "string",
@@ -1134,24 +1315,52 @@
             ]
           },
           {
-            "name": "FRACTION",
-            "type": "path",
-            "description": "Positional argument <FRACTION>",
-            "positional": true,
-            "position": 3
-          },
-          {
-            "name": "INPUT",
+            "name": "input",
             "type": "path",
             "description": "Positional argument <INPUT>",
             "positional": true,
-            "position": 4
+            "position": 0
           }
         ],
         "usage": "bqtools sample [OPTIONS] --fraction <FRACTION> <INPUT>"
       },
       "split": {
         "params": [
+          {
+            "name": "--span",
+            "type": "string",
+            "description": "Span of records to process. If not specified, all records will be processed",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "--basepath",
+            "type": "string",
+            "description": "Optional base path for output files. If not provided, the current working directory will be used",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "--skip-unmatched",
+            "type": "boolean",
+            "description": "Skip writing records that do not match any pattern",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--unmatched-basename",
+            "type": "string",
+            "description": "Optional base name for unmatched records",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "--min-records",
+            "type": "string",
+            "description": "Remove output files with fewer than this many records.",
+            "required": true,
+            "takes_value": true
+          },
           {
             "name": "--fixed",
             "type": "boolean",
@@ -1161,6 +1370,20 @@
             "aliases": [
               "-x"
             ]
+          },
+          {
+            "name": "--rc",
+            "type": "boolean",
+            "description": "Reverse complement all patterns before matching",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--no-dfa",
+            "type": "boolean",
+            "description": "Don't use Aho-Corasick DFA (slower, but lower memory)",
+            "required": false,
+            "takes_value": false
           },
           {
             "name": "--threads",
@@ -1173,17 +1396,52 @@
             ]
           },
           {
-            "name": "INPUT",
+            "name": "--quiet",
+            "type": "boolean",
+            "description": "Suppress the per-pattern record count summary written to stderr",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--file",
+            "type": "path",
+            "description": "File of patterns to search for in either primary or extended sequence",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "--sfile",
+            "type": "string",
+            "description": "File of patterns to search for in primary sequence",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "--xfile",
+            "type": "string",
+            "description": "File of patterns to search for in extended sequence",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "input",
             "type": "path",
             "description": "Positional argument <INPUT>",
             "positional": true,
-            "position": 2
+            "position": 0
           }
         ],
         "usage": "bqtools split [OPTIONS] <INPUT>"
       },
       "pipe": {
         "params": [
+          {
+            "name": "--span",
+            "type": "string",
+            "description": "Span of records to process. If not specified, all records will be processed",
+            "required": true,
+            "takes_value": true
+          },
           {
             "name": "--num-pipes",
             "type": "string",
@@ -1235,17 +1493,24 @@
             ]
           },
           {
-            "name": "INPUT",
+            "name": "input",
             "type": "path",
             "description": "Positional argument <INPUT>",
             "positional": true,
-            "position": 2
+            "position": 0
           }
         ],
         "usage": "bqtools pipe [OPTIONS] <INPUT>"
       },
       "revcomp": {
         "params": [
+          {
+            "name": "--span",
+            "type": "string",
+            "description": "Span of records to process. If not specified, all records will be processed",
+            "required": true,
+            "takes_value": true
+          },
           {
             "name": "--output",
             "type": "string",
@@ -1357,6 +1622,13 @@
             ]
           },
           {
+            "name": "--pipe",
+            "type": "boolean",
+            "description": "Pipe the output to stdout",
+            "required": false,
+            "takes_value": false
+          },
+          {
             "name": "--mate",
             "type": "string",
             "description": "Which mate(s) to reverse complement",
@@ -1367,17 +1639,52 @@
             ]
           },
           {
-            "name": "INPUT",
+            "name": "input",
             "type": "path",
             "description": "Positional argument <INPUT>",
             "positional": true,
-            "position": 2
+            "position": 0
           }
         ],
         "usage": "bqtools revcomp [OPTIONS] <INPUT>"
       },
       "verify": {
         "params": [
+          {
+            "name": "--span",
+            "type": "string",
+            "description": "Span of records to process. If not specified, all records will be processed",
+            "required": true,
+            "takes_value": true
+          },
+          {
+            "name": "--skip-seq",
+            "type": "boolean",
+            "description": "Exclude sequence data from the checksum",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--skip-qual",
+            "type": "boolean",
+            "description": "Exclude quality scores from the checksum",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--skip-headers",
+            "type": "boolean",
+            "description": "Exclude sequence/record headers from the checksum",
+            "required": false,
+            "takes_value": false
+          },
+          {
+            "name": "--skip-flags",
+            "type": "boolean",
+            "description": "Exclude the per-record flag from the checksum",
+            "required": false,
+            "takes_value": false
+          },
           {
             "name": "--mate",
             "type": "string",
@@ -1409,33 +1716,33 @@
             ]
           },
           {
-            "name": "INPUT",
+            "name": "input",
             "type": "path",
             "description": "Positional argument <INPUT>",
             "positional": true,
-            "position": 2
+            "position": 0
           }
         ],
         "usage": "bqtools verify [OPTIONS] <INPUT>"
       }
     },
-    "subcommand_discovery_complete": false,
+    "subcommand_discovery_complete": true,
     "installed_versions": [],
     "exec_retries": 0,
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:22:57.394351",
-    "venv_path": "/tmp/execute_2us5j20t/venv",
+    "checked_at": "2026-08-15T13:52:16.648515",
+    "venv_path": "/tmp/execute_2pjft94k/venv",
     "venv_kept": true
   },
   {
     "tool": "brainchromatin",
     "repo_url": "https://github.com/GreenleafLab/brainchromatin",
     "status": "failed",
-    "reason": "R install_local failed (exit 1): -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_82sobc5d/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
+    "reason": "R install_local failed (exit 1): -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_4n__l2ul/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
     "install_ok": false,
-    "install_evidence": "h) :\n  cannot open compressed file '/tmp/execute_82sobc5d/brainchromatin/DESCRIPTION', probable reason 'No such file or directory'\nExecution halted\nERROR conda.cli.main_run:execute(148): `conda run R -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_82sobc5d/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
+    "install_evidence": "h) :\n  cannot open compressed file '/tmp/execute_4n__l2ul/brainchromatin/DESCRIPTION', probable reason 'No such file or directory'\nExecution halted\nERROR conda.cli.main_run:execute(148): `conda run R -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_4n__l2ul/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -1455,7 +1762,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:25:15.648273"
+    "checked_at": "2026-08-15T13:54:34.878618"
   },
   {
     "tool": "Uniprot-PDB-mapper",
@@ -1467,7 +1774,7 @@
     "tool": "MEBOCOST",
     "repo_url": "https://github.com/kaifuchenlab/MEBOCOST",
     "status": "env_issue",
-    "reason": "`mebocost /tmp/execute_8hpeeum9/sample.fasta` -> exit 127; `mebocost --help` -> exit 127; `python -c 'import MEBOCOST'` -> exit 1",
+    "reason": "`mebocost /tmp/execute_d4aapuxt/sample.fasta` -> exit 127; `mebocost --help` -> exit 127; `python -c 'import MEBOCOST'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -1485,14 +1792,14 @@
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
     "installed_versions": [
-      "mebocost @ file:///tmp/execute_8hpeeum9/MEBOCOST",
+      "mebocost @ file:///tmp/execute_d4aapuxt/MEBOCOST",
       "packaging==26.3"
     ],
     "exec_retries": 0,
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:25:32.662142"
+    "checked_at": "2026-08-15T13:54:56.257361"
   },
   {
     "tool": "scFv_Pmpnn_AF2",
@@ -1516,9 +1823,9 @@
     "tool": "ZipStrain",
     "repo_url": "https://github.com/OlmLab/ZipStrain",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_c03tvrvq/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_wf8pg1fb/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_c03tvrvq/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute_wf8pg1fb/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -1538,13 +1845,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:25:42.590101"
+    "checked_at": "2026-08-15T13:55:05.778802"
   },
   {
     "tool": "strainmake",
     "repo_url": "https://github.com/UMMISCO/strainmake",
     "status": "passed",
-    "reason": "`/tmp/execute_ifq4hf_k/venv/bin/strainmake --help` -> exit 0",
+    "reason": "`/tmp/execute_xs9zih7c/venv/bin/strainmake --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "WARNING: typer 0.27.1 does not provide the extra 'all'\n",
     "run_ok": true,
@@ -1557,7 +1864,15 @@
     "readme_examples": [],
     "llm_call_code": "",
     "llm_call_status": "",
-    "positional_args": [],
+    "positional_args": [
+      {
+        "name": "args]..",
+        "type": "path",
+        "description": "Positional argument ARGS]..",
+        "positional": true,
+        "position": 0
+      }
+    ],
     "subcommands": [],
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
@@ -1576,15 +1891,15 @@
       "rich==15.0.0",
       "shellingham==1.5.4",
       "six==1.17.0",
-      "strainmake @ file:///tmp/execute_ifq4hf_k/strainmake",
+      "strainmake @ file:///tmp/execute_xs9zih7c/strainmake",
       "typer==0.27.1"
     ],
     "exec_retries": 0,
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:25:49.160792",
-    "venv_path": "/tmp/execute_ifq4hf_k/venv",
+    "checked_at": "2026-08-15T13:55:12.676491",
+    "venv_path": "/tmp/execute_xs9zih7c/venv",
     "venv_kept": true
   },
   {
@@ -1613,13 +1928,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:26:05.682705"
+    "checked_at": "2026-08-15T13:55:29.654994"
   },
   {
     "tool": "CHROMACS",
     "repo_url": "https://github.com/epigen-bioinfolab/CHROMACS",
     "status": "env_issue",
-    "reason": "`/tmp/execute_x8_14lip/venv/bin/chromacs --help` -> exit 1; `/tmp/execute_x8_14lip/venv/bin/chromacs /tmp/execute_x8_14lip/sample.fasta` -> exit 1; `python -c 'import CHROMACS'` -> exit 1",
+    "reason": "`/tmp/execute_5vqvp7ph/venv/bin/chromacs --help` -> exit 1; `/tmp/execute_5vqvp7ph/venv/bin/chromacs /tmp/execute_5vqvp7ph/sample.fasta` -> exit 1; `python -c 'import CHROMACS'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -1637,7 +1952,7 @@
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
     "installed_versions": [
-      "chromacs @ file:///tmp/execute_x8_14lip/CHROMACS",
+      "chromacs @ file:///tmp/execute_5vqvp7ph/CHROMACS",
       "numpy==2.4.6",
       "packaging==26.3",
       "pandas==3.0.5",
@@ -1649,7 +1964,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:26:14.280884"
+    "checked_at": "2026-08-15T13:55:38.603234"
   },
   {
     "tool": "STACCato",
@@ -1657,7 +1972,7 @@
     "status": "failed",
     "reason": "R install ok but library() smoke failed",
     "install_ok": true,
-    "install_evidence": "[[i]], family = family[[i]], middle = middle[[i]],  :\n  Invalid ORCID iD: ‘YOUR-ORCID-ID’.\n** R\n** byte-compile and prepare package for lazy loading\nERROR: lazy loading failed for package ‘STACCato’\n* removing ‘/usr/share/miniconda/lib/R/library/STACCato’\nWarning message:\nIn i.p(...) :\n  installation of package ‘/tmp/RtmprN57PR/fileaab87e065541/STACCato_0.0.0.9000.tar.gz’ had non-zero exit status\n",
+    "install_evidence": "[[i]], family = family[[i]], middle = middle[[i]],  :\n  Invalid ORCID iD: ‘YOUR-ORCID-ID’.\n** R\n** byte-compile and prepare package for lazy loading\nERROR: lazy loading failed for package ‘STACCato’\n* removing ‘/usr/share/miniconda/lib/R/library/STACCato’\nWarning message:\nIn i.p(...) :\n  installation of package ‘/tmp/RtmpxBy5vM/file86a454a828dd/STACCato_0.0.0.9000.tar.gz’ had non-zero exit status\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -1677,7 +1992,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:26:29.968852"
+    "checked_at": "2026-08-15T13:55:54.720958"
   },
   {
     "tool": "treestructure",
@@ -1705,8 +2020,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:34:52.142134",
-    "venv_path": "/tmp/execute_ura0oq0z/venv",
+    "checked_at": "2026-08-15T14:04:37.342947",
+    "venv_path": "/tmp/execute__3tw2iha/venv",
     "venv_kept": true
   },
   {
@@ -1719,7 +2034,7 @@
     "tool": "PlantBind",
     "repo_url": "https://github.com/wenkaiyan-kevin/PlantBind",
     "status": "env_issue",
-    "reason": "`plantbind /tmp/execute_lexylpk_/sample.fasta` -> exit 127; `plantbind --help` -> exit 127; `src/main /tmp/execute_lexylpk_/sample.fasta` -> exit 127; `src/main --help` -> exit 127; `python -c 'import PlantBind'` -> exit 1",
+    "reason": "`plantbind /tmp/execute_nek39iss/sample.fasta` -> exit 127; `plantbind --help` -> exit 127; `src/main /tmp/execute_nek39iss/sample.fasta` -> exit 127; `src/main --help` -> exit 127; `python -c 'import PlantBind'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -1743,7 +2058,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:36:31.721879"
+    "checked_at": "2026-08-15T14:06:24.811559"
   },
   {
     "tool": "AutoRevDock",
@@ -1755,13 +2070,24 @@
     "tool": "KAPTAIN",
     "repo_url": "https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN",
     "status": "passed",
-    "reason": "`/tmp/execute_g8aqj3wi/venv/bin/kaptain --help` -> exit 0",
+    "reason": "`/tmp/execute_pdwjnlr8/venv/bin/kaptain --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": true,
     "run_evidence": "efore\n                        classification. Leave empty or use None for no\n                        downsampling. (default: [None])\n  --fdr {15,10,5,1} [{15,10,5,1} ...]\n                        FDR setting. (default: [5])\n  --threads THREADS     Number of threads (default: 4)\n  --version             Print version and exit\n  --log                 Write out log information to file (default: False)\n",
     "executable": "kaptain",
     "params_schema": [
+      {
+        "name": "--output",
+        "type": "string",
+        "description": "CLI flag --output",
+        "required": true,
+        "takes_value": true,
+        "aliases": [
+          "--subsampling",
+          "--fdr"
+        ]
+      },
       {
         "name": "--ont-in",
         "type": "string",
@@ -1773,14 +2099,67 @@
         ]
       },
       {
-        "name": "--output",
+        "name": "--db",
         "type": "string",
-        "description": "Output directory (default: None)",
+        "description": "Basename of KMA database. Database exists of four  files named *.{comp.b, length.b, name, seq.b}  (default: None)",
         "required": false,
-        "takes_value": true,
-        "aliases": [
-          "-o"
-        ]
+        "takes_value": true
+      },
+      {
+        "name": "--db-lookup",
+        "type": "string",
+        "description": "Lookup file of KMA database (default: None)",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--dir-working",
+        "type": "string",
+        "description": "Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--output-html",
+        "type": "string",
+        "description": "Output report name (default: report.html)",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--subsampling",
+        "type": "string",
+        "description": "Subsample input to number of bases before  classification. Leave empty or use None for no  downsampling. (default: [None])",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--fdr",
+        "type": "string",
+        "description": "FDR setting. (default: [5])",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--threads",
+        "type": "string",
+        "description": "Number of threads (default: 4)",
+        "required": false,
+        "takes_value": true
+      },
+      {
+        "name": "--version",
+        "type": "boolean",
+        "description": "Print version and exit",
+        "required": false,
+        "takes_value": false
+      },
+      {
+        "name": "--log",
+        "type": "boolean",
+        "description": "Write out log information to file (default: False)",
+        "required": false,
+        "takes_value": false
       }
     ],
     "arg_style": "positional",
@@ -1789,36 +2168,7 @@
     "readme_examples": [],
     "llm_call_code": "",
     "llm_call_status": "",
-    "positional_args": [
-      {
-        "name": "ONT_IN",
-        "type": "path",
-        "description": "Positional argument ONT_IN",
-        "positional": true,
-        "position": 1
-      },
-      {
-        "name": "ONT_IN",
-        "type": "path",
-        "description": "Positional argument [ONT_IN",
-        "positional": true,
-        "position": 2
-      },
-      {
-        "name": "DB",
-        "type": "path",
-        "description": "Positional argument DB",
-        "positional": true,
-        "position": 5
-      },
-      {
-        "name": "DB_LOOKUP",
-        "type": "path",
-        "description": "Positional argument DB_LOOKUP",
-        "positional": true,
-        "position": 7
-      }
-    ],
+    "positional_args": [],
     "subcommands": [],
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
@@ -1847,7 +2197,7 @@
       "jsonschema==4.26.0",
       "jsonschema-specifications==2025.9.1",
       "jupyter_core==5.9.1",
-      "kaptain @ file:///tmp/execute_g8aqj3wi/KAPTAIN",
+      "kaptain @ file:///tmp/execute_pdwjnlr8/KAPTAIN",
       "MarkupSafe==3.0.3",
       "nbformat==5.11.0",
       "numpy==2.4.6",
@@ -1894,8 +2244,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:36:38.855922",
-    "venv_path": "/tmp/execute_g8aqj3wi/venv",
+    "checked_at": "2026-08-15T14:06:32.539352",
+    "venv_path": "/tmp/execute_pdwjnlr8/venv",
     "venv_kept": true
   },
   {
@@ -1908,7 +2258,7 @@
     "tool": "proteindock",
     "repo_url": "https://github.com/Kimmel-Lab/proteindock",
     "status": "env_issue",
-    "reason": "`proteindock /tmp/execute_4g7wcmg3/sample.fasta` -> exit 127; `proteindock --help` -> exit 127; `backend/main /tmp/execute_4g7wcmg3/sample.fasta` -> exit 127; `backend/main --help` -> exit 127; `bash /tmp/execute_4g7wcmg3/proteindock/run.sh /tmp/execute_4g7wcmg3/sample.fasta` -> exit 1; `bash /tmp/execute_4g7wcmg3/proteindock/run.sh --help` -> exit 1; `python -c 'import proteindock'` -> exit 1",
+    "reason": "`proteindock /tmp/execute_9e_tqtam/sample.fasta` -> exit 127; `proteindock --help` -> exit 127; `backend/main /tmp/execute_9e_tqtam/sample.fasta` -> exit 127; `backend/main --help` -> exit 127; `bash /tmp/execute_9e_tqtam/proteindock/run.sh /tmp/execute_9e_tqtam/sample.fasta` -> exit 1; `bash /tmp/execute_9e_tqtam/proteindock/run.sh --help` -> exit 1; `python -c 'import proteindock'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -1958,7 +2308,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:37:03.385381"
+    "checked_at": "2026-08-15T14:06:59.096411"
   },
   {
     "tool": "mebocost_paper_scripts",
@@ -1970,7 +2320,7 @@
     "tool": "OmiXAI",
     "repo_url": "https://github.com/aameliig/OmiXAI",
     "status": "env_issue",
-    "reason": "`omixai /tmp/execute_odxmxons/sample.fasta` -> exit 127; `omixai --help` -> exit 127; `python -c 'import OmiXAI'` -> exit 1",
+    "reason": "`omixai /tmp/execute_lsap_3lg/sample.fasta` -> exit 127; `omixai --help` -> exit 127; `python -c 'import OmiXAI'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2030,7 +2380,7 @@
       "nvidia-nvjitlink==13.3.33",
       "nvidia-nvshmem-cu13==3.4.5",
       "nvidia-nvtx==13.0.85",
-      "omixai @ file:///tmp/execute_odxmxons/OmiXAI",
+      "omixai @ file:///tmp/execute_lsap_3lg/OmiXAI",
       "packaging==26.3",
       "pandas==3.0.5",
       "pillow==12.3.0",
@@ -2057,13 +2407,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:37:16.517875"
+    "checked_at": "2026-08-15T14:07:12.744669"
   },
   {
     "tool": "AstroLogics",
     "repo_url": "https://github.com/sysbio-curie/AstroLogics",
     "status": "env_issue",
-    "reason": "`astrologics /tmp/execute_1lyot2cl/sample.fasta` -> exit 127; `astrologics --help` -> exit 127; `python -c 'import AstroLogics'` -> exit 1",
+    "reason": "`astrologics /tmp/execute_wzai3vd1/sample.fasta` -> exit 127; `astrologics --help` -> exit 127; `python -c 'import AstroLogics'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2081,7 +2431,7 @@
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
     "installed_versions": [
-      "astrologics @ file:///tmp/execute_1lyot2cl/AstroLogics",
+      "astrologics @ file:///tmp/execute_wzai3vd1/AstroLogics",
       "asttokens==3.0.2",
       "beautifulsoup4==4.15.0",
       "biodivine_aeon==1.4.2",
@@ -2147,7 +2497,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:38:29.022866"
+    "checked_at": "2026-08-15T14:08:25.523998"
   },
   {
     "tool": "rapidmacs-dev",
@@ -2155,7 +2505,7 @@
     "status": "failed",
     "reason": "make failed (exit 2):  fatal error: htslib/kfunc.h: No such file or directory\n   11 | #include \"htslib/kfunc.h\"\n      |          ^~~~~~~~~~~~~~~~\ncompilation terminated.\nmake: *** [Makefile:77: build/call_peaks.o] Error 1\n",
     "install_ok": false,
-    "install_evidence": "\ng++ -std=c++11 -Wall -Wextra -O3 -fopenmp -msse4.1 -Iinclude -MMD -MP -c src/call_peaks.cc -o build/call_peaks.o\nmake: Leaving directory '/tmp/execute_umhy8c1f/rapidmacs-dev'\nsrc/call_peaks.cc:11:10: fatal error: htslib/kfunc.h: No such file or directory\n   11 | #include \"htslib/kfunc.h\"\n      |          ^~~~~~~~~~~~~~~~\ncompilation terminated.\nmake: *** [Makefile:77: build/call_peaks.o] Error 1\n",
+    "install_evidence": "\ng++ -std=c++11 -Wall -Wextra -O3 -fopenmp -msse4.1 -Iinclude -MMD -MP -c src/call_peaks.cc -o build/call_peaks.o\nmake: Leaving directory '/tmp/execute_iln05g17/rapidmacs-dev'\nsrc/call_peaks.cc:11:10: fatal error: htslib/kfunc.h: No such file or directory\n   11 | #include \"htslib/kfunc.h\"\n      |          ^~~~~~~~~~~~~~~~\ncompilation terminated.\nmake: *** [Makefile:77: build/call_peaks.o] Error 1\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2175,7 +2525,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:39:15.378656"
+    "checked_at": "2026-08-15T14:09:14.884014"
   },
   {
     "tool": "Chromap-suite",
@@ -2203,15 +2553,15 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:39:28.427882"
+    "checked_at": "2026-08-15T14:09:28.779962"
   },
   {
     "tool": "LinearCapR_ComputationalExperiments",
     "repo_url": "https://github.com/TakumiOtagaki/LinearCapR_ComputationalExperiments",
     "status": "failed",
-    "reason": "install failed (exit 1):  originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_wsfddsf7/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
+    "reason": "install failed (exit 1):  originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_lbe6wp7_/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
     "install_ok": false,
-    "install_evidence": "   3. explicitly set `py_modules` or `packages` with a list of names\n      \n      To find more information, look for \"package discovery\" on setuptools docs.\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_wsfddsf7/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
+    "install_evidence": "   3. explicitly set `py_modules` or `packages` with a list of names\n      \n      To find more information, look for \"package discovery\" on setuptools docs.\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_lbe6wp7_/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2231,7 +2581,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:39:46.045806"
+    "checked_at": "2026-08-15T14:09:47.756379"
   },
   {
     "tool": "STAR-suite",
@@ -2259,7 +2609,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:39:54.819407"
+    "checked_at": "2026-08-15T14:09:56.868625"
   },
   {
     "tool": "ERSAtool",
@@ -2293,7 +2643,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:40:03.236204"
+    "checked_at": "2026-08-15T14:10:05.652053"
   },
   {
     "tool": "Osei",
@@ -2321,7 +2671,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:43:59.924126"
+    "checked_at": "2026-08-15T14:14:14.002950"
   },
   {
     "tool": "MitoComp",
@@ -2333,7 +2683,7 @@
     "tool": "NanoSimFormer",
     "repo_url": "https://github.com/BioinfoSZU/NanoSimFormer",
     "status": "passed",
-    "reason": "`/tmp/execute_ffc422rs/venv/bin/nanosimformer --help` -> exit 0",
+    "reason": "`/tmp/execute_18uq_wst/venv/bin/nanosimformer --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "WARNING: huggingface-hub 1.27.0 does not provide the extra 'hf-transfer'\n",
     "run_ok": true,
@@ -2346,15 +2696,7 @@
     "readme_examples": [],
     "llm_call_code": "",
     "llm_call_status": "",
-    "positional_args": [
-      {
-        "name": "nano_signal_simulator",
-        "type": "path",
-        "description": "Positional argument nano_signal_simulator",
-        "positional": true,
-        "position": 1
-      }
-    ],
+    "positional_args": [],
     "subcommands": [],
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
@@ -2412,7 +2754,7 @@
       "mpmath==1.3.0",
       "multidict==6.7.1",
       "multiprocess==0.70.19",
-      "nanosimformer @ file:///tmp/execute_ffc422rs/NanoSimFormer",
+      "nanosimformer @ file:///tmp/execute_18uq_wst/NanoSimFormer",
       "narwhals==2.24.0",
       "networkx==3.6.1",
       "numpy==1.26.4",
@@ -2444,17 +2786,17 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:44:30.695605",
-    "venv_path": "/tmp/execute_ffc422rs/venv",
+    "checked_at": "2026-08-15T14:14:46.100540",
+    "venv_path": "/tmp/execute_18uq_wst/venv",
     "venv_kept": true
   },
   {
     "tool": "EXPosition",
     "repo_url": "https://github.com/shaicoh3n/EXPosition",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_uzjw0lcl/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute__qy7pm95/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_uzjw0lcl/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute__qy7pm95/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2474,7 +2816,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:47:17.773847"
+    "checked_at": "2026-08-15T14:17:50.481365"
   },
   {
     "tool": "LPA",
@@ -2486,7 +2828,7 @@
     "tool": "Crackling-AWS",
     "repo_url": "https://github.com/bmds-lab/Crackling-AWS",
     "status": "env_issue",
-    "reason": "`crackling_aws /tmp/execute_dkz121jp/sample.fasta` -> exit 127; `crackling_aws --help` -> exit 127; `python -c 'import CracklingAWS'` -> exit 1",
+    "reason": "`crackling_aws /tmp/execute_5g33vc5d/sample.fasta` -> exit 127; `crackling_aws --help` -> exit 127; `python -c 'import CracklingAWS'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2516,13 +2858,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:47:24.677964"
+    "checked_at": "2026-08-15T14:17:57.958721"
   },
   {
     "tool": "16S-Pipeline",
     "repo_url": "https://github.com/tatsu1207/16S-Pipeline",
-    "status": "failed",
-    "reason": "docker build failed (exit 1): ying...');             Sys.sleep(10);             remotes::install_github('zhouhj1994/LinDA', upgrade='never', INSTALL_opts='--no-lock')         }     )\\\"\" did not complete successfully: exit code: 1\n",
+    "status": "timeout",
+    "reason": "docker build timed out after 600s (image pull/build heavy)",
     "install_ok": false,
     "install_evidence": "",
     "run_ok": false,
@@ -2544,13 +2886,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:47:31.975577"
+    "checked_at": "2026-08-15T14:18:05.977258"
   },
   {
     "tool": "morphic-provenance",
     "repo_url": "https://github.com/morphic-bio/morphic-provenance",
     "status": "passed",
-    "reason": "`/tmp/execute_jzzg2mwf/venv/bin/morphic-provenance --help` -> exit 0",
+    "reason": "`/tmp/execute_ts5m5yxi/venv/bin/morphic-provenance --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": true,
@@ -2574,7 +2916,7 @@
       "fastapi==0.115.14",
       "h11==0.16.0",
       "idna==3.18",
-      "morphic-provenance @ file:///tmp/execute_jzzg2mwf/morphic-provenance",
+      "morphic-provenance @ file:///tmp/execute_ts5m5yxi/morphic-provenance",
       "packaging==26.3",
       "pydantic==2.13.4",
       "pydantic_core==2.46.4",
@@ -2587,8 +2929,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:53:13.383406",
-    "venv_path": "/tmp/execute_jzzg2mwf/venv",
+    "checked_at": "2026-08-15T14:28:14.520435",
+    "venv_path": "/tmp/execute_ts5m5yxi/venv",
     "venv_kept": true
   },
   {
@@ -2607,7 +2949,7 @@
     "tool": "PU-GRAIL",
     "repo_url": "https://github.com/jaeminjj/PU-GRAIL",
     "status": "env_issue",
-    "reason": "`pu_grail /tmp/execute__dw3abi_/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `pu_grail --help` -> exit 127; `code/predict /tmp/execute__dw3abi_/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `code/predict --help` -> exit 127; `python -c 'import PUGRAIL'` -> exit 1",
+    "reason": "`pu_grail /tmp/execute_9ckmf4tq/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `pu_grail --help` -> exit 127; `code/predict /tmp/execute_9ckmf4tq/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `code/predict --help` -> exit 127; `python -c 'import PUGRAIL'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2666,7 +3008,7 @@
       "pandas==3.0.5",
       "propcache==0.5.2",
       "psutil==7.2.2",
-      "pugrail @ file:///tmp/execute__dw3abi_/PU-GRAIL",
+      "pugrail @ file:///tmp/execute_9ckmf4tq/PU-GRAIL",
       "pyparsing==3.3.2",
       "python-dateutil==2.9.0.post0",
       "requests==2.34.2",
@@ -2688,7 +3030,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:53:23.351300"
+    "checked_at": "2026-08-15T14:28:31.722637"
   },
   {
     "tool": "LPA-dataset",
@@ -2722,17 +3064,17 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:54:35.710674",
-    "venv_path": "/tmp/execute_5arxuxj7/venv",
+    "checked_at": "2026-08-15T14:29:51.724230",
+    "venv_path": "/tmp/execute_bcjex1zw/venv",
     "venv_kept": true
   },
   {
     "tool": "samtools",
     "repo_url": "https://github.com/samtools/samtools",
     "status": "failed",
-    "reason": "make failed (exit 2): ols'\nmake: Leaving directory '/tmp/execute_hgj7pswa/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
+    "reason": "make failed (exit 2): ols'\nmake: Leaving directory '/tmp/execute_chd66ysz/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
     "install_ok": false,
-    "install_evidence": "make: Entering directory '/tmp/execute_hgj7pswa/samtools'\nmake: Leaving directory '/tmp/execute_hgj7pswa/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
+    "install_evidence": "make: Entering directory '/tmp/execute_chd66ysz/samtools'\nmake: Leaving directory '/tmp/execute_chd66ysz/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2752,7 +3094,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:54:57.671981"
+    "checked_at": "2026-08-15T14:30:15.997293"
   },
   {
     "tool": "deepngs-navigator-panel-app",
@@ -2780,7 +3122,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:55:04.218857"
+    "checked_at": "2026-08-15T14:30:23.003106"
   },
   {
     "tool": "MultiLociBiallelicModel",
@@ -2814,8 +3156,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:55:52.462533",
-    "venv_path": "/tmp/execute_wpf696bs/venv",
+    "checked_at": "2026-08-15T14:31:12.753185",
+    "venv_path": "/tmp/execute_pe242glg/venv",
     "venv_kept": true
   },
   {
@@ -2850,8 +3192,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-15T12:56:21.193006",
-    "venv_path": "/tmp/execute_sgzo2s49/venv",
+    "checked_at": "2026-08-15T14:31:42.849961",
+    "venv_path": "/tmp/execute_l8ghhrmo/venv",
     "venv_kept": true
   }
 ]
