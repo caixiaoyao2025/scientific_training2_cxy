@@ -11,6 +11,10 @@ pipeline is caught in seconds, not after 20 minutes of agent flailing:
                        template vars, no polluted input names, leaves exist)
   gate 4  registry   : the ACTIVE registry contains no zombie placeholder
                        entries (authoritative-only; stale tools archived)
+  gate 5  roundtrip  : every LLM function schema parameter is accepted by the
+                       SAME leaf ToolSpec the runner receives (make_leaf_spec),
+                       and renders to argv -- proving bqtools_encode(input,
+                       output) never reaches the runner as "unknown arguments".
 
 Any gate that fails prints EXACTLY where the chain broke and exits 1, so the
 workflow stops BEFORE wasting API calls / 20 minutes.
@@ -27,6 +31,7 @@ if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
 from tool_agent_test import validate_tool_schema, to_function_schemas  # noqa: E402
+from agent_connector.tool_spec import make_leaf_spec, validate_spec  # noqa: E402
 
 REGISTRY = os.environ.get("REGISTRY", "data/mcp_registry.yaml")
 
@@ -90,12 +95,75 @@ def main() -> int:
         if not schemas:
             failures.append(f"gate3 schema: {name}: produced 0 function schemas")
             continue
+        fn_by_name = {s["function"]["name"]: s["function"] for s in schemas}
         if as_ == "subcommand":
             subs = t.get("subcommands") or list((t.get("subcommand_details") or {}).keys())
             missing = [f"{name}_{s.replace('-', '_')}" for s in subs
                        if f"{name}_{s.replace('-', '_')}" not in fnmap]
             if missing:
                 failures.append(f"gate3 schema: {name} missing leaf functions: {missing}")
+                continue
+            # ---- gate 5: round-trip -- leaf LLM schema == leaf runner spec ----
+            # The failure we are killing here: LLM sees bqtools_encode(input,
+            # output) but the runner gets the RAW spec (inputs={}) and answers
+            # "unknown arguments: input, output". Validate that the leaf spec
+            # built by make_leaf_spec (which tool_agent_test now dispatches)
+            # accepts EVERY parameter of the function schema the LLM was shown.
+            for s in subs:
+                fname = f"{name}_{s.replace('-', '_')}"
+                leaf = make_leaf_spec(t, s)
+                if validate_spec(leaf):
+                    failures.append(f"gate5 roundtrip: {fname}: leaf spec invalid: "
+                                    f"{validate_spec(leaf)}")
+                    continue
+                fn = fn_by_name[fname]
+                # every schema property must be a runner-valid input of the leaf
+                props = set(fn["parameters"]["properties"])
+                leaf_inputs = set(leaf["inputs"])
+                if not props.issubset(leaf_inputs):
+                    failures.append(f"gate5 roundtrip: {fname}: function schema params "
+                                    f"{sorted(props - leaf_inputs)} NOT in leaf runner "
+                                    f"inputs (LLM would get 'unknown arguments')")
+                    continue
+                if not leaf_inputs.issubset(props):
+                    failures.append(f"gate5 roundtrip: {fname}: leaf runner inputs "
+                                    f"{sorted(leaf_inputs - props)} NOT exposed to LLM "
+                                    f"(agent cannot pass them)")
+                    continue
+                # every required schema param must be required in the leaf spec,
+                # so a legal call passes validate_arguments
+                req = set(fn["parameters"].get("required") or [])
+                leaf_req = {k for k, m in leaf["inputs"].items()
+                            if (m or {}).get("required") is True}
+                if req != leaf_req:
+                    failures.append(f"gate5 roundtrip: {fname}: required mismatch "
+                                    f"(schema {sorted(req)} vs leaf {sorted(leaf_req)})")
+                    continue
+                # positional metadata must survive into the leaf (bqtools encode
+                # INPUT is a positional, not a flag)
+                for p in (t.get("subcommand_details") or {}).get(s, {}).get("params") or []:
+                    k = p.get("name", "").lstrip("-").replace("-", "_").lower()
+                    want_pos = bool(p.get("positional"))
+                    got_pos = bool((leaf["inputs"].get(k) or {}).get("positional"))
+                    if want_pos != got_pos:
+                        failures.append(f"gate5 roundtrip: {fname}: param '{k}' positional "
+                                        f"mismatch (schema {want_pos} vs leaf {got_pos})")
+                        break
+        else:
+            # non-subcommand: single function vs its own inputs
+            fn = fn_by_name[name]
+            props = set(fn["parameters"]["properties"])
+            leaf_inputs = set((t.get("inputs") or {}))
+            if not props.issubset(leaf_inputs):
+                failures.append(f"gate5 roundtrip: {name}: function schema params "
+                                f"{sorted(props - leaf_inputs)} NOT in tool inputs")
+                continue
+            req = set(fn["parameters"].get("required") or [])
+            leaf_req = {k for k, m in (t.get("inputs") or {}).items()
+                        if (m or {}).get("required") is True}
+            if req != leaf_req:
+                failures.append(f"gate5 roundtrip: {name}: required mismatch "
+                                f"(schema {sorted(req)} vs tool {sorted(leaf_req)})")
                 continue
         n_ok += 1
 

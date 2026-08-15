@@ -271,6 +271,101 @@ def test_output_contract_inference():
     ).get("output_html", {}).get("type") == "file"
 
 
+def test_leaf_spec_roundtrip():
+    """LLM leaf schema == runner leaf spec == renders argv (P0-1/P1-3/P1-5).
+
+    The exact failure this kills: LLM sees bqtools_encode(input, output) but
+    the runner gets the RAW spec (inputs={}) and answers "unknown arguments".
+    make_leaf_spec must scope inputs to the sub, keep positional metadata, and
+    render positionals FIRST (bqtools encode <in> --output <out>).
+    """
+    from agent_connector.tool_spec import (
+        get_required_inputs, make_leaf_spec, render_spec, validate_spec,
+    )
+    from agent_connector.tool_runner import validate_arguments
+
+    bqtools = {
+        "name": "bqtools", "arg_style": "subcommand", "command": "bqtools {{subcommand}}",
+        "inputs": {},  # base tool has NO top-level inputs (P0-1 root cause)
+        "subcommands": ["encode", "info"],
+        "subcommand_details": {
+            "encode": {"params": [
+                {"name": "input", "type": "path", "positional": True, "position": 0,
+                 "required": True, "description": "Input FASTA"},
+                {"name": "--output", "type": "path", "required": True,
+                 "description": "Output BINSEQ"},
+                {"name": "--level", "type": "integer", "required": False,
+                 "description": "Compression level"},
+            ]},
+            "info": {"params": [
+                {"name": "input", "type": "path", "positional": True, "position": 0,
+                 "required": True, "description": "Input BINSEQ"},
+            ]},
+        },
+        "subcommand_discovery_complete": True,
+    }
+    # base tool alone can NEVER accept a leaf arg (this was the raw-spec bug)
+    _, err = validate_arguments(bqtools, {"input": "/tmp/in", "output": "/tmp/out"})
+    assert "unknown arguments" in err, err
+    # leaf spec scopes inputs to the subcommand
+    leaf = make_leaf_spec(bqtools, "encode")
+    assert leaf["name"] == "bqtools_encode"
+    assert set(leaf["inputs"]) == {"input", "output", "level"}, leaf["inputs"]
+    assert validate_spec(leaf) == "", validate_spec(leaf)
+    assert get_required_inputs(leaf) == ["input", "output"]
+    # LLM function schema (to_function_schemas) properties == leaf inputs
+    from tool_agent_test import to_function_schemas
+    schemas, fnmap = to_function_schemas(bqtools)
+    fn = next(s for s in schemas if s["function"]["name"] == "bqtools_encode")["function"]
+    assert set(fn["parameters"]["properties"]) == set(leaf["inputs"])
+    assert set(fn["parameters"]["required"]) == set(get_required_inputs(leaf))
+    # the SAME args the LLM would send validate + render with positionals first
+    args = {"input": "/tmp/in.fa", "output": "/tmp/out.binsq"}
+    cleaned, err = validate_arguments(leaf, args)
+    assert err == "", err
+    argv = render_spec(leaf, args)
+    assert argv[0] == "bqtools" and argv[1] == "encode", argv
+    # positional BEFORE flags: bqtools encode /tmp/in.fa --output /tmp/out.binsq
+    assert argv[2] == "/tmp/in.fa", argv
+    assert argv[3] == "--output" and argv[4] == "/tmp/out.binsq", argv
+    # integer type preserved into the LLM schema (P1-2: not all-string)
+    assert fn["parameters"]["properties"]["level"]["type"] == "integer"
+    # info leaf has only its own positional, rendered bare
+    leaf_info = make_leaf_spec(bqtools, "info")
+    assert set(leaf_info["inputs"]) == {"input"}
+    assert render_spec(leaf_info, {"input": "/tmp/x.binsq"}) == \
+        ["bqtools", "info", "/tmp/x.binsq"]
+
+
+def test_make_leaf_spec_bioemu_outputs():
+    """Subcommand leaf carries its OWN output contract (P1-5)."""
+    from agent_connector.tool_spec import make_leaf_spec
+
+    tool = {
+        "name": "bqtools", "arg_style": "subcommand",
+        "command": "bqtools {{subcommand}}", "inputs": {},
+        "outputs": {"stdout": {"type": "text", "source": "inferred"}},
+        "subcommand_details": {
+            "encode": {"params": [
+                {"name": "--output", "type": "path", "required": True,
+                 "description": "Output BINSEQ file"},
+                {"name": "input", "type": "path", "positional": True,
+                 "position": 0, "required": True, "description": "Input FASTA"},
+            ]},
+        },
+        "subcommand_discovery_complete": True,
+    }
+    leaf = make_leaf_spec(tool, "encode")
+    assert leaf["outputs"] == tool["outputs"], leaf["outputs"]  # falls back
+    from tool_agent_test import _task_output_kind
+    assert _task_output_kind(leaf) == "file" or _task_output_kind(tool, "encode") == "stdout"
+    # when the sub HAS its own outputs, leaf uses them
+    tool["subcommand_details"]["encode"]["outputs"] = {
+        "output": {"type": "file", "source": "help_parsed"}}
+    leaf2 = make_leaf_spec(tool, "encode")
+    assert leaf2["outputs"].get("output", {}).get("type") == "file"
+
+
 if __name__ == "__main__":
     import traceback
 

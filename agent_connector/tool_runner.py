@@ -492,41 +492,66 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
 def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[str]:
     """Render a subcommand-CLI invocation by dispatching to the chosen subcommand.
 
-    spec.subcommand_details[sub] = {params: [{name:'--input',...}], usage}.
-    We build `<cmd> <sub> --input <val> --output <val>` using ONLY the params
-    that subcommand declares, from the agent-passed arguments. The agent just
-    passes all params; we dispatch by the `subcommand` argument.
+    Prefers the canonical leaf spec shape (make_leaf_spec): `spec.inputs` is
+    already scoped to the active subcommand, so params render straight from it.
+    Falls back to reading subcommand_details[sub].params for legacy raw specs.
+    Positionals go FIRST in argv position order, then flags (bare for
+    store-flags), so `bqtools encode /tmp/in.fa --output out` renders exactly
+    as the tool's usage describes.
     """
     command = (spec.get("command") or "").split()[0]
-    # subcommand can come from the `subcommand` argument OR from an
-    # explicitly-dispatched call (fnmap set _active_subcommand)
     sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
-    details = (spec.get("subcommand_details") or {}).get(sub) or {}
-    params = details.get("params") or []
-    if not params:
-        # no per-sub detail: fall back to generic template
-        return _render_command(spec.get("command") or "", arguments)
+    # canonical leaf inputs (make_leaf_spec) OR raw subcommand_details params
+    if spec.get("inputs"):
+        params: list[dict[str, Any]] = []
+        for key, meta in (spec.get("inputs") or {}).items():
+            if not isinstance(meta, dict):
+                continue
+            params.append({
+                "key": key,
+                "flag": meta.get("flag") or (f"--{key.replace('_', '-')}"
+                                             if not meta.get("positional") else ""),
+                "positional": bool(meta.get("positional")),
+                "position": meta.get("position") if meta.get("position") is not None else 0,
+                "type": meta.get("type", "string"),
+                "takes_value": meta.get("takes_value"),
+            })
+    else:
+        details = (spec.get("subcommand_details") or {}).get(sub) or {}
+        raw = details.get("params") or []
+        if not raw:
+            # no per-sub detail: fall back to generic template
+            return _render_command(spec.get("command") or "", arguments)
+        params = [{
+            "key": p.get("name", "").lstrip("-").replace("-", "_").lower(),
+            "flag": p.get("name", ""),
+            "positional": bool(p.get("positional")),
+            "position": p.get("position") if p.get("position") is not None else 0,
+            "type": p.get("type", "string"),
+            "takes_value": p.get("takes_value"),
+        } for p in raw]
+    # positionals first (argv order), then flags in declared order
+    positionals = sorted([p for p in params if p["positional"]],
+                         key=lambda p: p["position"])
+    flags = [p for p in params if not p["positional"]]
     argv = [command, sub]
-    for p in params:
-        name = p.get("name", "")
-        # canonical input key (matches the registry inputs dict + function
-        # schema parameter the agent was given): --filter_samples -> filter_samples
-        key = name.lstrip("-").replace("-", "_").lower()
-        val = arguments.get(key)
-        # omit empty/None optional values entirely (don't render --flag "")
+    for p in positionals:
+        val = arguments.get(p["key"])
         if val in (None, "", False):
             continue
-        if p.get("positional"):
-            # positional arg: just the value in order, no flag. Values are NOT
-            # shlex-quoted -- this argv goes straight to subprocess (no shell),
-            # so quoting would inject literal quotes into the path.
-            argv.append(str(val))
-        elif str(p.get("type", "")).lower() in ("bool", "boolean") \
-                or p.get("takes_value") is False:
-            # store-flag: bare flag with no value slot (--filter_samples)
-            argv.append(name)
+        # NOT shlex-quoted: this argv goes straight to subprocess (no shell),
+        # so quoting would inject literal quotes into the path.
+        argv.append(str(val))
+    for p in flags:
+        val = arguments.get(p["key"])
+        if val in (None, "", False):
+            continue
+        store_flag = str(p["type"]).lower() in ("bool", "boolean") \
+            or p.get("takes_value") is False
+        if store_flag:
+            argv.append(p["flag"])
         else:
-            argv.append(name)
+            argv.append(p["flag"])
             argv.append(str(val))
     return argv
 

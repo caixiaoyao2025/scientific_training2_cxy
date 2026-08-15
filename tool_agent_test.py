@@ -28,6 +28,10 @@ if REPO not in sys.path:
 
 import yaml  # noqa: E402
 
+from agent_connector.tool_spec import (  # noqa: E402
+    canonical_key, json_schema_type, make_leaf_spec,
+)
+
 BASE_URL = (os.environ.get("WESTLAKE_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
             or os.environ.get("DEEPSEEK_BASE_URL")
             or "https://ark.cn-beijing.volces.com/api/v3")
@@ -96,25 +100,6 @@ def validate_tool_schema(tool: dict) -> str:
     return ""
 
 
-def json_schema_type(meta) -> str:
-    """Map a registry input type to an OpenAI JSON-schema type.
-
-    Auto-discovery records `integer`/`float`/`path` etc.; passing those through
-    (instead of collapsing everything to `string`) lets the LLM emit real
-    numbers (num_samples: 1) instead of strings, and file paths with the right
-    intent. Unknown/`path`/`file` stay `string` (paths are strings in JSON).
-    """
-    t = (meta or {}).get("type", "string") if isinstance(meta, dict) else "string"
-    t = str(t).lower()
-    if t in ("integer", "int"):
-        return "integer"
-    if t in ("float", "double", "number"):
-        return "number"
-    if t in ("boolean", "bool"):
-        return "boolean"
-    return "string"
-
-
 def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     """Build OpenAI function schema(s) for a tool.
 
@@ -130,7 +115,9 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
             props = {}
             required = []
             for p in (detail.get("params") or []):
-                key = p.get("name", "").lstrip("-").replace("-", "_").lower()
+                key = canonical_key(p.get("name", ""))
+                if not key:
+                    continue
                 props[key] = {"type": json_schema_type(p),
                               "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
                 # ONLY an explicit `required: true` makes a param required.
@@ -182,6 +169,14 @@ def _task_output_kind(tool: dict, sub: str = "") -> str:
     outs = (tool.get("outputs") or {}).get(sub, {}) if sub else (tool.get("outputs") or {})
     if not isinstance(outs, dict):
         outs = {}
+    if sub and not outs:
+        # subcommand output contract lives on the subcommand itself
+        # (discovery_to_registry stores it in subcommand_details[sub].outputs),
+        # so bqtools_encode's file output is validated as a FILE, not stdout.
+        detail = (tool.get("subcommand_details") or {}).get(sub) or {}
+        sub_outs = detail.get("outputs") or {}
+        if isinstance(sub_outs, dict):
+            outs = sub_outs
     for name, meta in outs.items():
         if name == "stdout":
             continue
@@ -412,9 +407,13 @@ def main() -> int:
                                   f"values or use a different tool/approach.]")
                     else:
                         tool_attempts[tool_name] = tool_attempts.get(tool_name, 0) + 1
-                        tool_spec = dict(spec_map[tool_name])
-                        if sub:
-                            tool_spec["_active_subcommand"] = sub
+                        # P0: dispatch the leaf ToolSpec (make_leaf_spec) -- its
+                        # inputs are scoped to THIS subcommand, so the LLM's
+                        # bqtools_encode(input, output) args validate against the
+                        # same schema the LLM was shown (raw spec's inputs={}
+                        # rejected every leaf arg as "unknown arguments").
+                        tool_spec = make_leaf_spec(spec_map[tool_name], sub) if sub \
+                            else spec_map[tool_name]
                         raw = run_tool_spec(tool_spec, args)
                         result = format_result(raw)
                         target_ran = True

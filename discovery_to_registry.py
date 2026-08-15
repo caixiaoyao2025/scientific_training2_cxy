@@ -224,6 +224,23 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
                        "source": "inferred"}}
 
 
+def _subcommand_outputs(subs: dict, tool_name: str) -> dict:
+    """Attach each subcommand's OWN output contract to its details.
+
+    subcommand_details[sub].params are already the merged flags+positionals,
+    so _infer_outputs can derive the output kind per sub (encode -> file,
+    info -> stdout). This is what makes leaf-task validation (P1-5) work:
+    `_task_output_kind(bqtools, 'encode')` reads THIS instead of stdout.
+    """
+    out = {}
+    for sub, detail in (subs or {}).items():
+        entry = dict(detail)
+        params = entry.get("params") or []
+        entry["outputs"] = _infer_outputs(params, [], "named")
+        out[sub] = entry
+    return out
+
+
 def tool_to_registry_entry(tool, verification=None):
     name = tool.get("name", "unknown")
     clean_name = re.sub(r'[^a-zA-Z0-9_.-]', '_', name).strip('_').lower()
@@ -451,9 +468,11 @@ def tool_to_registry_entry(tool, verification=None):
                 else None)
         ),
         # subcommand CLIs: subcommand names + per-subcommand param details so
-        # agents know how to invoke (e.g. bqtools encode <in> <out>)
+        # agents know how to invoke (e.g. bqtools encode <in> <out>). Each sub
+        # also carries its OWN output contract (inferred from that sub's params)
+        # so leaf-task validation checks a FILE/DIR, not stdout.
         "subcommands": e.get("subcommands", []),
-        "subcommand_details": e.get("subcommand_details", {}),
+        "subcommand_details": _subcommand_outputs(e.get("subcommand_details", {}), clean_name),
         "subcommand_discovery_complete": e.get("subcommand_discovery_complete", False),
         # --- environment / install contract (surfaces to downstream agents) ---
         # Tells the caller what to install before invoking, and which system

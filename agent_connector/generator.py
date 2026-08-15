@@ -90,23 +90,13 @@ def generate_wrappers(
         # --- expand subcommand CLIs into one leaf wrapper per subcommand ---
         # e.g. bqtools -> bqtools_encode(input, output), bqtools_decode(input)
         # The leaf wrapper sets _active_subcommand so the unified runner
-        # dispatches to the right subcommand's params.
+        # dispatches to the right subcommand's params. Inputs are scoped via
+        # the canonical make_leaf_spec (same source the runner + agent test use).
         if tool.get("arg_style") == "subcommand" and tool.get("subcommand_details"):
-            base = dict(tool)
-            for sub, detail in (tool.get("subcommand_details") or {}).items():
-                leaf = dict(base)
-                leaf["name"] = f"{tool['name']}_{sub.replace('-', '_')}"
-                leaf["_active_subcommand"] = sub
-                leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
-                # leaf inputs = this subcommand's params only (keep required/type)
-                leaf_inputs = {}
-                for p in (detail.get("params") or []):
-                    key = p.get("name", "").lstrip("-").replace("-", "_").lower()
-                    leaf_inputs[key] = {"type": p.get("type", "string"),
-                                        "description": p.get("description", "") or f"Argument {p.get('name')}",
-                                        "required": bool(p.get("required", False)),
-                                        "source": "help_parsed"}
-                leaf["inputs"] = leaf_inputs
+            from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
+
+            for sub in (tool.get("subcommand_details") or {}):
+                leaf = make_leaf_spec(tool, sub)
                 code = _emit_wrapper(leaf, registration_style, execution_method)
                 filename = Path(out_dir) / f"{leaf['name']}_wrapper.py"
                 filename.write_text(code, encoding="utf-8")
@@ -237,11 +227,13 @@ def load_adapter(agent_class: str, adapter_path: str = "adapter.py") -> Any:
 
 def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
     """OpenAI-style function schema entry for a ToolSpec."""
+    from agent_connector.tool_spec import json_schema_type  # noqa: PLC0415
+
     properties: dict[str, Any] = {}
     required: list[str] = []
     for name, meta in (tool.get("inputs") or {}).items():
         properties[name] = {
-            "type": "string",
+            "type": json_schema_type(meta),
             "description": meta.get("description", "") or "",
         }
         # ONLY an explicit required: true is required -- matches
@@ -273,22 +265,16 @@ def expand_subcommand_leaves(tools: list[dict[str, Any]]) -> list[dict[str, Any]
 
     Same contract as tool_agent_test.to_function_schemas: the agent sees
     bqtools_encode(input, output) instead of a bare bqtools() with no params.
+    Leaf inputs come from the SAME canonical make_leaf_spec every other
+    consumer uses (single source of truth -- no per-file re-derivation).
     """
+    from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
+
     expanded: list[dict[str, Any]] = []
     for tool in tools:
         if tool.get("arg_style") == "subcommand" and tool.get("subcommand_details"):
-            for sub, detail in (tool.get("subcommand_details") or {}).items():
-                leaf = dict(tool)
-                leaf["name"] = f"{tool['name']}_{sub.replace('-', '_')}"
-                leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
-                leaf_inputs = {}
-                for p in (detail.get("params") or []):
-                    key = p.get("name", "").lstrip("-").replace("-", "_").lower()
-                    leaf_inputs[key] = {"type": p.get("type", "string"),
-                                        "description": p.get("description", "") or f"Argument {p.get('name')}",
-                                        "required": bool(p.get("required", False))}
-                leaf["inputs"] = leaf_inputs
-                expanded.append(leaf)
+            for sub in (tool.get("subcommand_details") or {}):
+                expanded.append(make_leaf_spec(tool, sub))
         else:
             expanded.append(tool)
     return expanded
