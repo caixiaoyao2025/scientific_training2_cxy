@@ -509,6 +509,8 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
     argv = [command, sub]
     for p in params:
         name = p.get("name", "")
+        # canonical input key (matches the registry inputs dict + function
+        # schema parameter the agent was given): --filter_samples -> filter_samples
         key = name.lstrip("-").replace("-", "_").lower()
         val = arguments.get(key)
         # omit empty/None optional values entirely (don't render --flag "")
@@ -519,9 +521,10 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
             # shlex-quoted -- this argv goes straight to subprocess (no shell),
             # so quoting would inject literal quotes into the path.
             argv.append(str(val))
-        elif name.startswith("--"):
+        elif str(p.get("type", "")).lower() in ("bool", "boolean") \
+                or p.get("takes_value") is False:
+            # store-flag: bare flag with no value slot (--filter_samples)
             argv.append(name)
-            argv.append(str(val))
         else:
             argv.append(name)
             argv.append(str(val))

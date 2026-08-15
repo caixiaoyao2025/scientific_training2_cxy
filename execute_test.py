@@ -99,12 +99,112 @@ def _detect_heavy_deps(repo_dir: str) -> bool:
     return any(d in blob for d in HEAVY_DEPS)
 
 
+def _canonical_param_name(name: str) -> str:
+    """Canonical input key for any CLI token: --sequence, -s, <SEQ>, SEQ,
+    sequence -> 'sequence'. Dashes/underscores fold to '_' so the schema,
+    the registry inputs, the command template and the argv renderer all agree
+    on one key per parameter (no ONT_IN/ont_in duplicate classes)."""
+    s = str(name or "").strip().strip("<>[]{}")
+    s = s.lstrip("-")
+    if not s:
+        return ""
+    return s.lower().replace("-", "_")
+
+
+def _normalize_metavar(token: str) -> str:
+    """Strip nargs/group decorations in the RIGHT order: ellipsis BEFORE the
+    bracket/angle strip. `[INPUT]...` -> 'input' (the old code stripped the
+    trailing char first and produced `INPUT]..` garbage), `<OUTPUT_DIR>` ->
+    'output_dir', `{200M,500M}` -> '' (choices, not a metavar)."""
+    s = str(token or "").strip()
+    if not s:
+        return ""
+    if s.endswith("..."):
+        s = s[:-3].rstrip()
+    s = s.strip("<>[]{}")
+    if s in ("", ".", "..."):
+        return ""
+    return s.lower().replace("-", "_")
+
+
+def _required_flags_from_usage(help_output: str) -> set[str]:
+    """Flags OUTSIDE square brackets in the usage line are required
+    (argparse prints every required flag bare, optional ones wrapped in
+    [...]: `kaptain [-h] --ont-in ONT_IN [ONT_IN ...] --db DB` ->
+    {'--ont-in', '--db'}). ArgumentDefaultsHelpFormatter appends
+    `(default: None)` to required nargs+ flags too, so `(default: ...)` in
+    the description is NOT a reliable required signal -- the usage brackets
+    are. Returns the flag strings (e.g. '-i', '--ont-in')."""
+    if not help_output:
+        return set()
+    # NOTE: use the FULL usage line, NOT the 200-char truncated _extract_usage
+    # (truncation can slice `[--subsampling ...` in half and flip it required).
+    # argparse wraps the usage across indented continuation lines; absorb them
+    # so required flags on line 2+ (`-o OUTPUT`) are seen. STOP at a blank
+    # line or an unindented line -- otherwise the regex swallows the
+    # description's `options:` block too (kaptain_help test).
+    m = re.search(r"\busage:\s*((?:[^\n]+\n?)+)", help_output, re.IGNORECASE)
+    if not m:
+        return set()
+    raw = m.group(1)
+    lines = raw.splitlines()
+    # first line: the usage itself. following lines: keep only INDENTED
+    # continuation lines ([--threads THREADS] under the usage).
+    usage_lines = [lines[0].strip()]
+    for ln in lines[1:]:
+        stripped = ln.strip()
+        if not stripped:
+            break
+        if not ln.startswith(" ") and not ln.startswith("\t"):
+            break
+        usage_lines.append(stripped)
+    usage = re.sub(r"\s+", " ", " ".join(usage_lines))
+    # Split into bracket-groups vs outside-text with proper depth tracking
+    # (usage can nest `[... [{...} ...]]`, which a regex `\[[^\]]*\]` split
+    # mangles into a dangling `]` that looks like outside-text).
+    required: set[str] = set()
+    outside: list[str] = []
+    buf: list[str] = []
+    depth = 0
+    for ch in usage:
+        if ch == "[":
+            if depth == 0 and buf:
+                outside.append("".join(buf))
+                buf = []
+            depth += 1
+        elif ch == "]":
+            depth = max(0, depth - 1)
+            if depth == 0:
+                buf = []  # drop completed [...] group
+        elif depth == 0:
+            buf.append(ch)
+    if buf:
+        outside.append("".join(buf))
+    for part in outside:
+        for flag in re.findall(r"(?<![\w-])(-{1,2}[\w][\w-]*)", part):
+            if flag not in ("-h", "--help"):
+                required.add(flag)
+    return required
+
+
 def _extract_usage(help_output: str) -> str:
-    """Extract the usage line from --help output (first usage: ... line)."""
+    """Extract the usage line from --help output.
+
+    Sources, in priority order:
+      - argparse/click:  `usage: prog [-h] --flag VAL ...`
+      - fire:            `SYNOPSIS\\n    prog SEQUENCE NUM_SAMPLES <flags>`
+    Returns just the arg spec (binary + args), truncated to 200 chars.
+    """
     if not help_output:
         return ""
-    m = re.search(r"usage:\s*(.+)", help_output, re.IGNORECASE)
-    return m.group(1).strip()[:200] if m else ""
+    m = re.search(r"\busage:\s*(.+)", help_output, re.IGNORECASE)
+    if m:
+        return m.group(1).strip()[:200]
+    m = re.search(r"(?:^|\n)\s*SYNOPSIS\s*\n\s*([^\n]+)", help_output,
+                  re.IGNORECASE)
+    if m:
+        return m.group(1).strip()[:200]
+    return ""
 
 
 def _parse_subcommands(help_output: str) -> list[str]:
@@ -184,6 +284,32 @@ def _detect_arg_style(help_output: str) -> str:
     return "named"
 
 
+def _merge_positionals(flags: list[dict[str, str]],
+                       pos: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Merge flag params + positional args into ONE canonical params list.
+
+    Both entries are deduped by canonical input key (--sequence == sequence).
+    Positionals are marked required (an argv slot is mandatory) and keep their
+    argv `position` ordering. This is THE single schema every downstream stage
+    (registry command template, inputs, function schemas, argv renderer) reads,
+    so a flag and its positional can never be registered as two inputs.
+    """
+    merged = list(flags)
+    seen = {_canonical_param_name(p.get("name", "")) for p in flags}
+    for pa in pos:
+        key = _canonical_param_name(pa.get("name", ""))
+        if not key or key in seen:
+            continue
+        entry = dict(pa)
+        entry.setdefault("type", "path")
+        entry.setdefault("description", f"Positional argument {pa.get('name', '')}")
+        entry["required"] = True
+        entry["positional"] = True
+        merged.append(entry)
+        seen.add(key)
+    return merged
+
+
 def _probe_cli(report: dict, exe: str, env: dict | None = None) -> dict | None:
     """Run `exe --help` and fill the report with arg_style / params / subcommands.
 
@@ -206,6 +332,12 @@ def _probe_cli(report: dict, exe: str, env: dict | None = None) -> dict | None:
     report["arg_style"] = _detect_arg_style(combined)
     report["positional_args"] = _parse_positional_args(combined)
     report["subcommands"] = _parse_subcommands(combined)
+    # SINGLE SOURCE OF TRUTH: canonical schema = flags + positionals merged
+    # into one list (mirrors the python -m and subcommand branches below), so
+    # discovery_to_registry builds command + inputs from ONE list and no
+    # setdefault re-injection is needed (kaptain positional path).
+    report["params_schema"] = _merge_positionals(
+        report["params_schema"], report["positional_args"])
     if report["arg_style"] == "subcommand" and report["subcommands"]:
         subs = {}
         probed = 0
@@ -220,11 +352,7 @@ def _probe_cli(report: dict, exe: str, env: dict | None = None) -> dict | None:
                 ok += 1
                 flags = _parse_help_params(out_s or err_s)
                 pos = _parse_positional_args(out_s or err_s, skip_first=True)
-                merged = list(flags)
-                for p in pos:
-                    if p.get("positional"):
-                        p["positional"] = True
-                        merged.append(p)
+                merged = _merge_positionals(flags, pos)
                 subs[sub] = {
                     "params": merged,
                     "usage": _extract_usage(out_s or err_s),
@@ -443,7 +571,7 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
     if not help_output:
         return []
     text = re.sub(r"\x1b\[[0-9;]*m", "", help_output)  # strip ANSI
-    # source 1: argparse positional arguments: block (names + descriptions)
+    # source 1: argparse 'positional arguments:' block (names + descriptions)
     desc_map: dict[str, str] = {}
     m = re.search(r"positional arguments?\s*:\s*\n(.*?)(?:\n\s*\n|\Z)",
                   text, re.IGNORECASE | re.DOTALL)
@@ -454,8 +582,35 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
                 continue
             parts = line.split(None, 1)
             if parts:
-                key = parts[0].strip("<>[]")
+                key = _normalize_metavar(parts[0])
                 desc_map[key] = parts[1].strip() if len(parts) > 1 else ""
+
+    # source 1b: fire 'POSITIONAL ARGUMENTS' block (fire.Fire help format).
+    # Layout: `NAME` at indent 4, `Type: ...` / prose at indent 8. The header
+    # has NO trailing colon (`POSITIONAL ARGUMENTS`), unlike argparse.
+    if not m:
+        m = re.search(r"POSITIONAL ARGUMENTS\s*:?\s*\n(.*?)(?:\n\s*\n|\Z)",
+                      text, re.IGNORECASE | re.DOTALL)
+        if m:
+            pending = None
+            for line in m.group(1).splitlines():
+                line = line.rstrip()
+                if not line.strip():
+                    continue
+                indent = len(line) - len(line.lstrip())
+                if indent == 4 and not line.strip().startswith(("-", "Type")):
+                    pending = _normalize_metavar(line.strip())
+                elif indent >= 8 and pending is not None:
+                    text2 = line.strip()
+                    if text2.startswith("Type:"):
+                        continue
+                    if pending not in desc_map:
+                        desc_map[pending] = text2
+                    pending = None
+                elif pending is not None:
+                    if pending not in desc_map:
+                        desc_map[pending] = line.strip()
+                    pending = None
 
     # source 2: usage line. Accept wrapped usage (argparse indents
     # continuations); collapse the wrapping into one token stream. Stop at a
@@ -464,9 +619,9 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
     # option values (DIR_WORKING, THREADS...) leak in as fake positionals.
     m = re.search(r"(?:^|\n)\s*usage:\s*(.+?)(?=\n\s*\n|\n\S|\Z)",
                   text, re.IGNORECASE | re.DOTALL)
-    if not m:
+    usage = re.sub(r"\s+", " ", m.group(1)).strip() if m else _extract_usage(text)
+    if not usage:
         return []
-    usage = re.sub(r"\s+", " ", m.group(1)).strip()
     parts = usage.split()
     if not parts:
         return []
@@ -495,22 +650,17 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
 
     pseudo = {"options", "option", "options:", "commands", "command",
               "args", "arg", "arguments", "argument", "subcommand",
-              "subcommands", "usage:"}
+              "subcommands", "usage:", "flags"}
     out: list[dict[str, str]] = []
     position = 0
 
     def _add(candidate: str) -> None:
         nonlocal position
-        name = candidate.strip("<>[]").strip()
-        if name.endswith("..."):  # OUTPUT_DIR... -> OUTPUT_DIR (nargs)
-            name = name[:-3].rstrip()
-        if not name or name in (".", "...") or name.startswith("{"):
-            return
-        name = name.lower().replace("-", "_")
+        name = _normalize_metavar(candidate)
         if not name or name in pseudo or name.startswith("-"):
             return
         desc = (desc_map.get(name) or desc_map.get(name.upper())
-                or desc_map.get(candidate.strip("<>[]"))
+                or desc_map.get(_normalize_metavar(candidate))
                 or f"Positional argument {candidate}")
         out.append({"name": name, "type": "path", "description": desc,
                     "positional": True, "position": position})
@@ -520,14 +670,17 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
     while i < len(grouped):
         token, is_group = grouped[i]
         if is_group:
-            inner = token[1:-1].split()
+            # strip nargs ellipsis FIRST: `[INPUT]...` must become `[INPUT]`
+            # before [1:-1] slicing, or the tail dots slice off wrongly
+            # (`[INPUT]...` -> `INPUT]..` garbage -- run #37 bqtools).
+            inner_tok = token[:-3].rstrip() if token.endswith("...") else token
+            inner = inner_tok[1:-1].split() if inner_tok.startswith("[") else inner_tok.split()
             # [--flag VAL] -> optional flag + value: skip. [METAVAR ...] ->
             # optional positional (nargs): add. [] -> nothing.
             if inner and not inner[0].startswith("-"):
-                cand = inner[0].strip("<>[]")
-                if cand and cand not in ("...", ".") and cand.lower() not in pseudo \
-                        and not cand.startswith("{"):
-                    _add(cand)
+                cand = _normalize_metavar(inner[0])
+                if cand and cand not in pseudo:
+                    _add(inner[0])
             i += 1
             continue
         if token.startswith("-"):
@@ -550,6 +703,25 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
         # bare metavar (SEQUENCE, <INPUT>, output-dir, OUT...)
         _add(token)
         i += 1
+
+    # source 3: fire SYNOPSIS positionals in order (bioemu.sample.py SEQUENCE
+    # NUM_SAMPLES OUTPUT_DIR <flags>). Only fire uses SYNOPSIS, and the POSITIONAL
+    # ARGUMENTS block above already names them -- this catches name/order even if
+    # the block layout differs slightly.
+    syn_pos: list[str] = []
+    for sm in re.finditer(r"(?:^|\n)\s*SYNOPSIS\s*\n\s*[^\n]*\n?\s*([^\n<]*<[^\n]*)\s*\n?",
+                          text, re.IGNORECASE):
+        for tok in sm.group(1).replace("<flags>", "").split():
+            cand = _normalize_metavar(tok)
+            if cand and not cand.startswith("-") and cand not in pseudo:
+                if cand not in syn_pos:
+                    syn_pos.append(cand)
+    for cand in syn_pos:
+        if cand not in {p["name"] for p in out}:
+            out.append({"name": cand, "type": "path",
+                        "description": f"Positional argument {cand}",
+                        "positional": True, "position": position})
+            position += 1
 
     # dedupe by name, preserving positional order
     dedup: list[dict[str, str]] = []
@@ -580,6 +752,25 @@ def _is_flag_line(line: str) -> bool:
     flag token. NOTE: -{1,2}\\w -- a bare `-\\w` misses `--db` because the
     second dash is not a word char (kaptain lost 5/7 flags to this)."""
     return bool(re.match(r"^\s*-{1,2}\w", line))
+
+
+_SECTION_HEADER = re.compile(
+    r"^\s*(?:optional arguments|positional arguments|arguments|options|"
+    r"global options|commands|flags|usage)\s*:\s*$"
+    r"|^\s*(?:FLAGS|OPTIONS|POSITIONAL ARGUMENTS|ARGUMENTS|COMMANDS|"
+    r"GLOBAL OPTIONS)\s*:?\s*$",
+    re.IGNORECASE)
+
+
+def _is_section_header(line: str) -> bool:
+    """Section titles that delimit flag-definition regions: argparse's
+    `options:`/`positional arguments:`, clap's `Arguments:`/`Options:`,
+    fire's `FLAGS`. Flag lines only count INSIDE a section -- description /
+    usage-example blocks (RawDescriptionHelpFormatter pastes `usage: kaptain
+    --output results/ --subsampling 500M --fdr 5` under the usage) must NOT
+    be parsed as flag definitions (run #37 kaptain: --output aliases became
+    ['--subsampling','--fdr'] from exactly such an example line)."""
+    return bool(_SECTION_HEADER.match(line or ""))
 
 
 def _join_wrapped_help(help_output: str) -> list[str]:
@@ -634,9 +825,17 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
     if not help_output:
         return []
     help_output = re.sub(r"\x1b\[[0-9;]*m", "", help_output)  # strip ANSI
+    required_flags = _required_flags_from_usage(help_output)
+    joined = _join_wrapped_help(help_output)
+    # Only flag lines INSIDE a section header delimit actual flag definitions
+    # (see _is_section_header). Before the first section the text is usage +
+    # description/usage-examples -- parsing it turns example invocations into
+    # fake flags (run #37 kaptain --output aliases=['--subsampling','--fdr']).
+    section_idx = [i for i, ln in enumerate(joined) if _is_section_header(ln)]
+    start = section_idx[0] if section_idx else 0
     params: list[dict[str, str]] = []
     seen: set[str] = set()
-    for line in _join_wrapped_help(help_output):
+    for line in joined[start:]:
         if not _is_flag_line(line):
             continue
         # split flags-part from description at the first 2+ space column gap
@@ -679,27 +878,53 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
         if name in seen:
             continue
         seen.add(name)
+        # required: the usage line's brackets are authoritative (argparse
+        # prints required flags bare, optional ones in [...]; ArgumentDefaults-
+        # HelpFormatter appends `(default: None)` to required nargs+ flags too,
+        # so `(default: ...)` alone misclassifies kaptain's -i/--db/--db-lookup/
+        # -o as optional). Match the canonical flag OR any alias: usage shows
+        # `-i` while the schema names it `--ont-in`.
         takes_value = bool(metavar)
         ptype = "string"
         mv = metavar.strip("<>").lower()
-        if not metavar:
+        # fire/scopt describe the flag's type in the desc (`Type: bool`) even
+        # when a metavar is shown (`--filter_samples=FILTER_SAMPLES`); a bool
+        # type overrides the metavar -> store-flag (no value slot).
+        fire_bool = bool(re.search(r"\bType:\s*(?:bool|boolean)\b", desc,
+                                   re.IGNORECASE))
+        if not metavar or fire_bool:
             ptype = "boolean"
+            takes_value = False
         elif mv in ("path", "file", "dir", "directory", "infile", "outfile"):
             ptype = "path"
         elif mv in ("int", "integer", "n", "count", "number"):
             ptype = "integer"
         elif mv in ("float", "double"):
             ptype = "float"
+        in_usage = name in required_flags or any(a in required_flags for a in aliases)
         has_default = bool(re.search(
             r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)|\bdefault:\s*\S+",
             desc, re.IGNORECASE))
+        if in_usage:
+            is_required = True
+        elif required_flags:
+            # usage had flags but NOT this one -> explicitly optional
+            is_required = False
+        else:
+            # no usable usage line (fire SYNOPSIS, scopt, raw) -> fall back to
+            # the old heuristic: explicit default or boolean -> optional
+            is_required = not (has_default or not metavar)
         desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$",
                       "", desc).strip()
+        # fire/scopt metadata lines leaked into the description
+        # (`Type: int  Default: 10  Batch size...`) -- keep only the prose.
+        desc = re.sub(r"^\s*(?:Type:.*?(?:\s+Default:.*?)?)\s{2,}",
+                      "", desc, flags=re.IGNORECASE).strip()
         entry: dict[str, str] = {
             "name": name,
             "type": ptype,
             "description": desc or f"CLI flag {name}",
-            "required": False if (has_default or not metavar) else True,
+            "required": is_required,
             "takes_value": takes_value,
         }
         if aliases:
@@ -1491,6 +1716,8 @@ def execute_test(repo_url: str, install_method: str = "",
                 report["arg_style"] = _detect_arg_style(out or err)
                 report["positional_args"] = _parse_positional_args(out or err)
                 report["subcommands"] = _parse_subcommands(out or err)
+                report["params_schema"] = _merge_positionals(
+                    report["params_schema"], report["positional_args"])
                 # for subcommand CLIs, probe each subcommand's --help to capture
                 # its own parameters (so the schema tells agents how to call it)
                 if report["arg_style"] == "subcommand" and report["subcommands"]:
@@ -1508,11 +1735,7 @@ def execute_test(repo_url: str, install_method: str = "",
                             # positional skips the subcommand token itself
                             flags = _parse_help_params(out_s or err_s)
                             pos = _parse_positional_args(out_s or err_s, skip_first=True)
-                            merged = list(flags)
-                            for p in pos:
-                                if p.get("positional"):
-                                    p["positional"] = True
-                                    merged.append(p)
+                            merged = _merge_positionals(flags, pos)
                             subs[sub] = {
                                 "params": merged,
                                 "usage": _extract_usage(out_s or err_s),
@@ -1608,14 +1831,8 @@ def execute_test(repo_url: str, install_method: str = "",
                             help_positionals = _parse_positional_args(out_m or err_m)
                             if help_params or help_positionals:
                                 # canonical schema = flags + positionals, one list
-                                seen_p = {p.get("name") for p in help_params}
-                                merged = list(help_params)
-                                for pa in help_positionals:
-                                    if pa.get("name") and pa["name"] not in seen_p:
-                                        pa = dict(pa)
-                                        pa["required"] = True  # positional = mandatory
-                                        merged.append(pa)
-                                report["params_schema"] = merged
+                                report["params_schema"] = _merge_positionals(
+                                    help_params, help_positionals)
                                 if help_positionals:
                                     report["positional_args"] = help_positionals
                             else:

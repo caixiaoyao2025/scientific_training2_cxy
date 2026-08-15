@@ -3,6 +3,16 @@ import os
 import re
 import yaml
 
+
+def _canonical_key(name) -> str:
+    """Registry input key for a param: --ont-in / <ONT_IN> / python arg all
+    map to `ont_in`. Mirrors execute_test._canonical_param_name so the
+    command template placeholder, the `inputs` dict key and the function
+    schema parameter ALWAYS agree."""
+    if not isinstance(name, str):
+        return ""
+    return re.sub(r"^[-<>\{\}]+", "", name).lower().replace("-", "_")
+
 def _infer_python_entry(readme_examples: list, pkg: str) -> str:
     """From readme import examples, infer a module:Class/function entry point.
 
@@ -141,7 +151,7 @@ def _check_registry_contract(entry: dict) -> str:
                     return f"subcommand '{sub}' has a parameter without a name"
             cmd = details.get("command") or ""
             used_sub = set(re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd))
-            declared_sub = {p["name"].lstrip("-").replace("-", "_")
+            declared_sub = {_canonical_key(p["name"])
                             for p in params if p.get("name")}
             declared_sub |= set((details.get("inputs") or {}).keys())
             missing_sub = sorted(used_sub - declared_sub)
@@ -170,7 +180,7 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
     outputs = {}
     for p in parsed:
         name = p.get("name", "")
-        key = name.lstrip("-").replace("-", "_")
+        key = _canonical_key(name)
         plain = name.lower().strip()
         # exact `-o` / `-O` match or --out*/--output* prefix. The old
         # substring check `"-o " in "-o"` never matched a bare `-o`.
@@ -184,7 +194,7 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
     for pa in positional:
         n = pa.get("name", "").upper()
         if "OUT" in n and "OUTPUT" not in outputs:
-            outputs[pa["name"].lstrip("<>[]").replace("-", "_")] = {
+            outputs[_canonical_key(pa.get("name", ""))] = {
                 "type": "file",
                 "description": (pa.get("description") or f"Output written as {pa['name']}"),
                 "source": "help_parsed",
@@ -253,7 +263,7 @@ def tool_to_registry_entry(tool, verification=None):
                 parts = [f"{{{{{p['name']}}}}}" for p in pos_params]
                 for p in flag_params:
                     flag = _param_flag(p)
-                    key = p["name"].lstrip("-").replace("-", "_")
+                    key = _canonical_key(p["name"])
                     if str(p.get("type", "")).lower() in ("bool", "boolean") \
                             or p.get("takes_value") is False:
                         # store-flag: bare flag, no value slot
@@ -269,13 +279,15 @@ def tool_to_registry_entry(tool, verification=None):
         elif positional and arg_style == "positional":
             # positional CLI with optional flags: pgv-blast seq1 seq2 -o out.
             # Canonical template = ordered positionals FIRST, then flags --
-            # both from the same parsed schema that builds `inputs`.
-            pos_params = sorted(positional, key=lambda p: p.get("position", 0))
+            # both from the SAME parsed schema that builds `inputs`.
+            pos_params = sorted(
+                [p for p in parsed if p.get("positional")],
+                key=lambda p: p.get("position", 0))
             flag_params = [p for p in parsed if _param_flag(p)]
             parts = [f"{{{{{p['name']}}}}}" for p in pos_params]
             for p in flag_params:
                 flag = _param_flag(p)
-                key = p["name"].lstrip("-").replace("-", "_")
+                key = _canonical_key(p["name"])
                 if str(p.get("type", "")).lower() in ("bool", "boolean") \
                         or p.get("takes_value") is False:
                     parts.append(flag)
@@ -310,7 +322,7 @@ def tool_to_registry_entry(tool, verification=None):
                     flag = _param_flag(p)
                     # placeholder must match the INPUT key (flag stripped), not
                     # the raw flag name -- `--output` -> `{{output}}`
-                    key = p["name"].lstrip("-").replace("-", "_")
+                    key = _canonical_key(p["name"])
                     parts.append(f"{flag} {{{{ {key} }}}}")
                 tmpl = " ".join(parts).replace("{{ ", "{{").replace(" }}", "}}")
                 command_template = f"{base_cmd} {tmpl}"
@@ -352,7 +364,7 @@ def tool_to_registry_entry(tool, verification=None):
         for p in parsed:
             if not p.get("name"):
                 continue
-            key = p["name"].lstrip("-").replace("-", "_")
+            key = _canonical_key(p["name"])
             spec = {
                 "type": p.get("type", "string"),
                 "description": p.get("description", ""),
@@ -374,15 +386,11 @@ def tool_to_registry_entry(tool, verification=None):
         inputs_src = "placeholder"
         if not schema_pending_reason:
             schema_pending_reason = "no --help schema parsed (inputs would be a guess)"
-    # positional args (usage: cmd file1 file2 -o out) - mark them clearly
-    for pa in positional:
-        key = pa["name"].lstrip("<>[]").replace("-", "_")
-        inputs.setdefault(key, {
-            "type": "path",
-            "description": f"Positional argument {pa['name']}",
-            "source": "help_parsed",
-            "positional": True,
-        })
+    # positional args (usage: cmd file1 file2 -o out) are ALREADY part of
+    # params_schema: execute_test._merge_positionals folds flags + positionals
+    # into one canonical list, so this stage reads a SINGLE inputs source.
+    # No separate injection here -- it would only duplicate entries under a
+    # different key normalization (lstrip("<>[]") vs lstrip("-")).
     # NOTE: subcommand CLIs do NOT get a `subcommand` input here. The registry
     # keeps subcommands/subcommand_details so to_function_schemas can expand
     # each subcommand into its own LEAF function (bqtools_encode), and the
