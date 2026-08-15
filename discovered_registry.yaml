@@ -118,7 +118,7 @@ tools:
       position: 2
   outputs:
     output_dir:
-      type: file
+      type: directory
       description: Directory to save the samples. Each batch of samples will initially
         be dumped as .npz files. Once all batches are sampled, they will be converted
         to .xtc and .pdb.
@@ -142,7 +142,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_lcazkpac/bioemu
+    - bioemu @ file:///tmp/execute_k4lq598d/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -184,7 +184,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_lcazkpac/venv
+    venv_path: /tmp/execute_k4lq598d/venv
   _discovery_metadata:
     github: https://github.com/microsoft/bioemu
     stars: 866
@@ -205,7 +205,7 @@ tools:
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-15T15:48:51.739209'
+    verified_checked_at: '2026-08-15T22:11:10.163143'
     dependencies:
       system_commands: []
       readme_hint: ''
@@ -350,7 +350,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_lcazkpac/bioemu
+    - bioemu @ file:///tmp/execute_k4lq598d/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -607,6 +607,11 @@ tools:
         position: 0
         required: true
       usage: bqtools encode [OPTIONS] [INPUT]...
+      outputs:
+        output:
+          type: file
+          description: Output binseq file
+          source: help_parsed
     decode:
       params:
       - name: --span
@@ -664,6 +669,11 @@ tools:
         position: 0
         required: true
       usage: bqtools decode [OPTIONS] <INPUT>
+      outputs:
+        output:
+          type: file
+          description: Output file
+          source: help_parsed
     cat:
       params:
       - name: --output
@@ -757,6 +767,11 @@ tools:
         position: 0
         required: true
       usage: bqtools cat [OPTIONS] [INPUT]...
+      outputs:
+        output:
+          type: file
+          description: Output binseq file
+          source: help_parsed
     info:
       params:
       - name: --num
@@ -790,6 +805,11 @@ tools:
         position: 0
         required: true
       usage: bqtools info [OPTIONS] <INPUT>...
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
     grep:
       params:
       - name: --span
@@ -934,6 +954,11 @@ tools:
         position: 1
         required: true
       usage: bqtools grep [OPTIONS] <INPUT> [REG]...
+      outputs:
+        output:
+          type: file
+          description: Output file
+          source: help_parsed
     sample:
       params:
       - name: --span
@@ -1005,6 +1030,11 @@ tools:
         position: 0
         required: true
       usage: bqtools sample [OPTIONS] --fraction <FRACTION> <INPUT>
+      outputs:
+        output:
+          type: file
+          description: Output file
+          source: help_parsed
     split:
       params:
       - name: --span
@@ -1086,6 +1116,11 @@ tools:
         position: 0
         required: true
       usage: bqtools split [OPTIONS] <INPUT>
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
     pipe:
       params:
       - name: --span
@@ -1136,6 +1171,11 @@ tools:
         position: 0
         required: true
       usage: bqtools pipe [OPTIONS] <INPUT>
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
     revcomp:
       params:
       - name: --span
@@ -1242,6 +1282,11 @@ tools:
         position: 0
         required: true
       usage: bqtools revcomp [OPTIONS] <INPUT>
+      outputs:
+        output:
+          type: file
+          description: Output binseq file
+          source: help_parsed
     verify:
       params:
       - name: --span
@@ -1298,6 +1343,11 @@ tools:
         position: 0
         required: true
       usage: bqtools verify [OPTIONS] <INPUT>
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
   subcommand_discovery_complete: true
   install:
     method: cargo
@@ -1306,7 +1356,7 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_3nyv2zn3/venv
+    venv_path: /tmp/execute_pfrltgi5/venv
   _discovery_metadata:
     github: https://github.com/ArcInstitute/bqtools
     stars: 39
@@ -1326,21 +1376,21 @@ tools:
     verified_license: false
     verified_license_path: ''
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-15T15:51:32.680503'
+    verified_checked_at: '2026-08-15T22:12:35.116166'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: cargo
     exec_status: passed
-    exec_reason: '`/tmp/execute_3nyv2zn3/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_pfrltgi5/bqtools/target/release/bqtools --help` ->
       exit 0'
-    exec_install_evidence: ".4.0\n   Compiling walkdir v2.5.0\n   Compiling rand v0.10.2\n\
-      \   Compiling is-terminal v0.4.17\n   Compiling fixedbitset v0.5.7\n   Compiling\
-      \ xxhash-rust v0.8.18\n   Compiling thousands v0.2.0\n   Compiling rust-htslib\
+    exec_install_evidence: "p v4.6.3\n   Compiling csv v1.4.0\n   Compiling rand v0.10.2\n\
+      \   Compiling is-terminal v0.4.17\n   Compiling xxhash-rust v0.8.18\n   Compiling\
+      \ fixedbitset v0.5.7\n   Compiling thousands v0.2.0\n   Compiling rust-htslib\
       \ v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling\
-      \ bqtools v0.5.13 (/tmp/execute_3nyv2zn3/bqtools)\n    Finished `release` profile\
-      \ [optimized] target(s) in 2m 16s\n"
+      \ bqtools v0.5.13 (/tmp/execute_pfrltgi5/bqtools)\n    Finished `release` profile\
+      \ [optimized] target(s) in 2m 15s\n"
     exec_run_evidence: "into multiple files based on patterns provided in a pattern\
       \ file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc      \
       \ \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify \
@@ -1465,7 +1515,7 @@ tools:
     - connection_pool==0.0.3
     - docutils==0.22.4
     - dpath==2.2.0
-    - fastjsonschema==2.22.1
+    - fastjsonschema==2.22.2
     - gitdb==4.0.12
     - GitPython==3.1.59
     - greenlet==3.5.5
@@ -1481,7 +1531,7 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_cpdpu5p5/venv
+    venv_path: /tmp/execute_os4le5tb/venv
   _discovery_metadata:
     github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
     stars: 3
@@ -1502,14 +1552,14 @@ tools:
     verified_license_path: LICENSE
     verified_entry_scripts:
     - kaptain/__main__.py
-    verified_checked_at: '2026-08-15T15:52:28.558308'
+    verified_checked_at: '2026-08-15T22:13:05.652316'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_cpdpu5p5/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_os4le5tb/venv/bin/kaptain --help` -> exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "efore\n                        classification. Leave empty\
       \ or use None for no\n                        downsampling. (default: [None])\n\
@@ -1593,7 +1643,7 @@ tools:
     - connection_pool==0.0.3
     - docutils==0.22.4
     - dpath==2.2.0
-    - fastjsonschema==2.22.1
+    - fastjsonschema==2.22.2
     - gitdb==4.0.12
     - GitPython==3.1.59
     - greenlet==3.5.5
@@ -1605,7 +1655,7 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_cpdpu5p5/KAPTAIN
+    - kaptain @ file:///tmp/execute_os4le5tb/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.0
     - numpy==2.4.6

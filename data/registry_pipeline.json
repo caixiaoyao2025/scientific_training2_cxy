@@ -32,6 +32,8 @@
     "output": "FAIL (output: exit 2 (stderr: error: unrecognized subcommand 'x'\n\nUsage: bqtools <COMMAND>\n\nFor more information, try '--help'.\n))",
     "_argv": [
       "bqtools",
+      "x",
+      "--subcommand",
       "x"
     ],
     "_args": {
@@ -55,8 +57,8 @@
     "name": "kaptain",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: 2026-08-15 16:50:09,547 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 16:50:09,547 -        __init_))",
-    "output": "FAIL (output: exit 1 (stderr: 2026-08-15 16:50:09,547 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 16:50:09,547 -        __init_))",
+    "execute": "FAIL (output: exit 1 (stderr: 2026-08-15 23:21:10,694 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 23:21:10,694 -        __init_))",
+    "output": "FAIL (output: exit 1 (stderr: 2026-08-15 23:21:10,694 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 23:21:10,694 -        __init_))",
     "_argv": [
       "kaptain",
       "--ont-in",
