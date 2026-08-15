@@ -149,9 +149,21 @@ def step3_6_execute():
     _max_repos = int(_max) if _max.strip().isdigit() and int(_max) > 0 else None
     if _max_repos:
         print(f"  (limiting execute test to {_max_repos} tools)")
-    results = execute_tool_library("tool_verification.json", "tool_execution.json",
-                                   max_repos=_max_repos,
-                                   global_timeout=3300)  # 55min watchdog < step 180min
+    try:
+        results = execute_tool_library("tool_verification.json", "tool_execution.json",
+                                       max_repos=_max_repos,
+                                       global_timeout=3300)  # 55min watchdog < step 180min
+    except Exception as exc:
+        # LEVEL 2 (infrastructure) failure: one tool crashing must NOT kill
+        # the pipeline before registry generation -- partial results are
+        # already persisted by execute_tool_library's finally block, and the
+        # registry gates (pending/contract/0-tool merge guard) will decide
+        # loudly downstream whether the evidence is enough to proceed.
+        print(f"  !! execution-test infrastructure error: "
+              f"{type(exc).__name__}: {exc}")
+        print("  !! execution test aborted; partial tool_execution.json kept, "
+              "pipeline continues (registry gates will validate evidence).")
+        return
     n_pass = sum(1 for r in results if r.get("status") == "passed")
     n_env = sum(1 for r in results if r.get("status") == "env_issue")
     n_inc = sum(1 for r in results if r.get("status") == "incomplete")

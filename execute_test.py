@@ -1077,6 +1077,14 @@ def execute_test(repo_url: str, install_method: str = "",
         _run([venv_py, "-m", "pip", "install", "-q", "--upgrade",
               "pip", "setuptools", "wheel"], 180)
 
+        # PATH with the venv's bin prepended -- shared by ALL install paths.
+        # Previously `env` was defined only inside the pip smoke section, so
+        # the npm/cargo/go branches' `_probe_cli(..., env=env)` crashed with
+        # UnboundLocalError the first time a cargo tool's build actually
+        # succeeded (bqtools, CI run #34).
+        env = dict(os.environ)
+        env["PATH"] = _venv_bin(venv_dir) + os.pathsep + env.get("PATH", "")
+
         # build install args from install_method / install_cmd
         # install from the LOCAL clone (most reliable for arbitrary repos)
         if install_method in ("pip_pkg", "pip_url"):
@@ -1129,14 +1137,14 @@ def execute_test(repo_url: str, install_method: str = "",
                             env_names.append(line.split()[0])
                 env_names = ["base"] + env_names + [os.environ.get("CONDA_DEFAULT_ENV", "")]
                 seen_env = set()
-                for env in env_names:
-                    if not env or env in seen_env:
+                for conda_env_name in env_names:  # NB: don't shadow the PATH `env` dict
+                    if not conda_env_name or conda_env_name in seen_env:
                         continue
-                    seen_env.add(env)
+                    seen_env.add(conda_env_name)
                     rc_r, out_r, _ = _run(
-                        ["conda", "run", "-n", env, "which", "R"], 60)
+                        ["conda", "run", "-n", conda_env_name, "which", "R"], 60)
                     if rc_r == 0 and out_r.strip():
-                        conda_r = ["conda", "run", "-n", env, "R"]
+                        conda_r = ["conda", "run", "-n", conda_env_name, "R"]
                         break
                 if conda_r is None:
                     rc_r, out_r, _ = _run(["conda", "run", "which", "R"], 60)
@@ -1348,9 +1356,7 @@ def execute_test(repo_url: str, install_method: str = "",
                 f.write(SAMPLE_FASTA)
 
         # ---- 4. smoke-run candidate commands ----
-        bin_dir = _venv_bin(venv_dir)
-        env = dict(os.environ)
-        env["PATH"] = bin_dir + os.pathsep + env.get("PATH", "")
+        bin_dir = _venv_bin(venv_dir)  # env already built above (venv bin on PATH)
         declared = _parse_console_scripts(repo_dir)
         cands = _command_candidates(repo_url, entry_scripts, name)
         # declared console scripts (e.g. `fingerprint` for RiSpy) take priority
@@ -1573,8 +1579,8 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
         signal.signal(signal.SIGALRM, _watchdog_handler)
         signal.alarm(global_timeout)
         watchdog = signal
-    except (ImportError, ValueError):
-        pass  # no signal on Windows / main thread only -> watchdog disabled
+    except (ImportError, ValueError, AttributeError):
+        pass  # no SIGALRM on Windows / non-main thread -> watchdog disabled
 
     with open(verification_file, "r", encoding="utf-8") as f:
         verifications = json.load(f)
@@ -1594,14 +1600,31 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
                     print(f"  [{i + 1}] {tool:<20} skipped ({v.get('status', '')})")
                     continue
                 print(f"  [{i + 1}] {tool:<20} installing + smoke-running ...")
-                res = execute_test(
-                    v.get("repo_url", ""),
-                    install_method=v.get("install_method", ""),
-                    install_cmd=v.get("install_cmd", ""),
-                    entry_scripts=v.get("entry_scripts", []),
-                    repo_name=tool,
-                    external_commands=v.get("external_commands", []),
-                )
+                # LEVEL 1 vs LEVEL 2 isolation: a single tool's install/smoke
+                # failure (or even an unexpected bug in execute_test for THAT
+                # tool) is DATA -- record status=failed and keep scanning.
+                # Only the global watchdog (TimeoutError) aborts the loop, and
+                # genuinely systemic crashes propagate AFTER partial results
+                # are persisted by the finally block below.
+                try:
+                    res = execute_test(
+                        v.get("repo_url", ""),
+                        install_method=v.get("install_method", ""),
+                        install_cmd=v.get("install_cmd", ""),
+                        entry_scripts=v.get("entry_scripts", []),
+                        repo_name=tool,
+                        external_commands=v.get("external_commands", []),
+                    )
+                except TimeoutError:
+                    raise  # global watchdog hit: stop scanning, keep partials
+                except Exception as exc:
+                    res = {
+                        "tool": tool,
+                        "repo_url": v.get("repo_url", ""),
+                        "status": "failed",
+                        "reason": (f"uncaught exception in execute_test: "
+                                   f"{type(exc).__name__}: {exc}"),
+                    }
                 results.append(res)
                 print(f"        -> {res['status']}: {res['reason'][:80]}")
                 if max_repos is not None and i + 1 >= max_repos:
@@ -1613,9 +1636,11 @@ def execute_tool_library(verification_file: str = "tool_verification.json",
     finally:
         if watchdog:
             watchdog.alarm(0)
+        # ALWAYS persist what we have -- even a systemic crash must not lose
+        # the evidence already collected (step4 joins on this file).
+        with open(out_json, "w", encoding="utf-8") as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
 
-    with open(out_json, "w", encoding="utf-8") as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
     n_pass = sum(1 for r in results if r.get("status") == "passed")
     n_env = sum(1 for r in results if r.get("status") == "env_issue")
     n_inc = sum(1 for r in results if r.get("status") == "incomplete")
