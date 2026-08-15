@@ -137,6 +137,12 @@ def _parse_subcommands(help_output: str) -> list[str]:
         if not mm:
             continue
         name = mm.group(1)
+        # clap/click auto-generate meta-subcommands that are not real tool
+        # actions; probing their --help fails (or is pointless) and wrongly
+        # flips subcommand_discovery_complete to False (run #36 bqtools:
+        # 10/10 real subs probed OK but 'help' failed the completeness check)
+        if name in ("help", "completion", "version"):
+            continue
         if name and name not in cmds and not name.startswith("-"):
             cmds.append(name)
     return cmds[:20]
@@ -421,23 +427,26 @@ def _llm_attempt_call(pkg_name: str, repo_dir: str, venv_py: str,
 def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[dict[str, str]]:
     """Extract positional arguments from --help output.
 
-    Two sources:
-      - usage line:  pgv-blast [options] seq1.gbk seq2.gbk seq3.gbk -o out
-      - argparse 'positional arguments:' block with real descriptions:
-            positional arguments:
-              fasta       input FASTA file
-    Returns [{name, type, description, positional}].
-    `skip_first` skips the first token (used for subcommand usage lines where
-    the first token is the subcommand name, e.g. 'encode' in
-    'bqtools encode <INPUT> <OUTPUT>').
+    Sources:
+      - argparse 'positional arguments:' block (real names + descriptions)
+      - usage line:  pgv-blast [OPTIONS] seq1.gbk seq2.gbk -o out
+
+    Returns [{name, type, description, positional, position}]. `position`
+    is the order AMONG positional args (argv slot after the binary /
+    subcommand), NOT the raw usage-token index -- skipped [OPTIONS] groups
+    and option/value pairs must not inflate it, or the argv renderer would
+    emit arguments in the wrong order.
+
+    `skip_first` skips the first token (subcommand help lines, e.g. 'encode'
+    in 'bqtools encode <INPUT> <OUTPUT>').
     """
     if not help_output:
         return []
-    help_output = re.sub(r"\x1b\[[0-9;]*m", "", help_output)  # strip ANSI
-    # source 1: argparse positional arguments: block (real names + descriptions)
-    desc_map = {}
+    text = re.sub(r"\x1b\[[0-9;]*m", "", help_output)  # strip ANSI
+    # source 1: argparse positional arguments: block (names + descriptions)
+    desc_map: dict[str, str] = {}
     m = re.search(r"positional arguments?\s*:\s*\n(.*?)(?:\n\s*\n|\Z)",
-                  help_output, re.IGNORECASE | re.DOTALL)
+                  text, re.IGNORECASE | re.DOTALL)
     if m:
         for line in m.group(1).splitlines():
             line = line.rstrip()
@@ -445,36 +454,112 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
                 continue
             parts = line.split(None, 1)
             if parts:
-                desc_map[parts[0]] = parts[1].strip() if len(parts) > 1 else ""
-    # source 2: usage line tokens
-    m = re.search(r"usage:\s*\S+\s*(?:\[[^\]]*\]\s*)*(.+)", help_output, re.IGNORECASE)
+                key = parts[0].strip("<>[]")
+                desc_map[key] = parts[1].strip() if len(parts) > 1 else ""
+
+    # source 2: usage line. Accept wrapped usage (argparse indents
+    # continuations); collapse the wrapping into one token stream. Stop at a
+    # blank line OR an unindented line -- the options: block below usage is
+    # indented too, so without the blank-line stop the regex swallows it and
+    # option values (DIR_WORKING, THREADS...) leak in as fake positionals.
+    m = re.search(r"(?:^|\n)\s*usage:\s*(.+?)(?=\n\s*\n|\n\S|\Z)",
+                  text, re.IGNORECASE | re.DOTALL)
     if not m:
         return []
-    rest = m.group(1)
-    cut = re.search(r"\s-\w", rest)
-    if cut:
-        rest = rest[:cut.start()]
-    tokens = rest.split()
-    out = []
+    usage = re.sub(r"\s+", " ", m.group(1)).strip()
+    parts = usage.split()
+    if not parts:
+        return []
+    parts = parts[1:]  # drop the binary name
+    if skip_first and parts and _is_probable_subcommand(parts[0]):
+        parts = parts[1:]  # drop the subcommand token (bqtools encode IN OUT)
+
+    # Bracket groups may contain spaces ([ONT_IN ...], [--dir-working DIR]) so
+    # per-token startswith('[')/endswith(']') checks DO NOT work. Regroup the
+    # token stream into scalars and complete [...] groups first.
+    grouped: list[tuple[str, bool]] = []  # (token, is_group)
+    buf: list[str] = []
+    depth = 0
+    for tok in parts:
+        if depth == 0 and not tok.startswith("["):
+            grouped.append((tok, False))
+            continue
+        # inside a group (or opening one)
+        buf.append(tok)
+        depth += tok.count("[") - tok.count("]")
+        if depth <= 0:
+            grouped.append((" ".join(buf), True))
+            buf, depth = [], 0
+    if buf:  # unbalanced brackets: treat as scalars
+        grouped.extend((t, False) for t in buf)
+
     pseudo = {"options", "option", "options:", "commands", "command",
-              "args", "arg", "subcommand"}
-    for idx, t in enumerate(tokens):
-        # skip the subcommand token for subcommand usage lines
-        if idx == 0 and skip_first and _is_probable_subcommand(t):
+              "args", "arg", "arguments", "argument", "subcommand",
+              "subcommands", "usage:"}
+    out: list[dict[str, str]] = []
+    position = 0
+
+    def _add(candidate: str) -> None:
+        nonlocal position
+        name = candidate.strip("<>[]").strip()
+        if name.endswith("..."):  # OUTPUT_DIR... -> OUTPUT_DIR (nargs)
+            name = name[:-3].rstrip()
+        if not name or name in (".", "...") or name.startswith("{"):
+            return
+        name = name.lower().replace("-", "_")
+        if not name or name in pseudo or name.startswith("-"):
+            return
+        desc = (desc_map.get(name) or desc_map.get(name.upper())
+                or desc_map.get(candidate.strip("<>[]"))
+                or f"Positional argument {candidate}")
+        out.append({"name": name, "type": "path", "description": desc,
+                    "positional": True, "position": position})
+        position += 1
+
+    i = 0
+    while i < len(grouped):
+        token, is_group = grouped[i]
+        if is_group:
+            inner = token[1:-1].split()
+            # [--flag VAL] -> optional flag + value: skip. [METAVAR ...] ->
+            # optional positional (nargs): add. [] -> nothing.
+            if inner and not inner[0].startswith("-"):
+                cand = inner[0].strip("<>[]")
+                if cand and cand not in ("...", ".") and cand.lower() not in pseudo \
+                        and not cand.startswith("{"):
+                    _add(cand)
+            i += 1
             continue
-        raw = t
-        t = t.strip("<>[]").strip()
-        if not t or t.startswith("-"):
+        if token.startswith("-"):
+            # option flag outside brackets: skip it, its inline value, AND any
+            # immediately following repeat group of that value ([ONT_IN ...]
+            # after `-i ONT_IN` is the flag's nargs, NOT a positional)
+            i += 1
+            if i < len(grouped):
+                nxt, nxt_group = grouped[i]
+                if not nxt_group and not nxt.startswith("-") and not nxt.startswith("{") \
+                        and not nxt.startswith("["):
+                    i += 1
+                    # consume following [same-value ...] groups
+                    while i < len(grouped) and grouped[i][1]:
+                        i += 1
             continue
-        # skip argparse choices ({a,b,c}), ellipsis (...), and junk
-        if t.startswith("{") or t in ("...", ".") or "]" in t or t.lower() in pseudo:
+        if token.startswith("{"):
+            i += 1
             continue
-        # uppercase metavars (INPUT, OUTPUT, FILE) ARE positional args -- keep them
-        desc = desc_map.get(t, "") or desc_map.get(t.lower(), "") \
-            or f"Positional argument {raw}"
-        out.append({"name": t, "type": "path", "description": desc,
-                    "positional": True, "position": idx})
-    return out[:10]
+        # bare metavar (SEQUENCE, <INPUT>, output-dir, OUT...)
+        _add(token)
+        i += 1
+
+    # dedupe by name, preserving positional order
+    dedup: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for p in out:
+        if p["name"] in seen:
+            continue
+        seen.add(p["name"])
+        dedup.append(p)
+    return dedup[:10]
 
 
 def _is_probable_subcommand(tok: str) -> bool:
@@ -491,38 +576,42 @@ def _is_probable_subcommand(tok: str) -> bool:
 
 
 def _is_flag_line(line: str) -> bool:
-    """A new flag definition line starts with a flag token."""
-    return bool(re.match(r"^\s*-\w", line))
+    """A new flag definition line starts with a short (-x) or long (--xxx)
+    flag token. NOTE: -{1,2}\\w -- a bare `-\\w` misses `--db` because the
+    second dash is not a word char (kaptain lost 5/7 flags to this)."""
+    return bool(re.match(r"^\s*-{1,2}\w", line))
 
 
 def _join_wrapped_help(help_output: str) -> list[str]:
     """Merge wrapped description continuation lines into their parent line.
 
-    argparse/click wrap long descriptions onto following lines with deep
-    indentation:
-        -s, --section {refseq,genbank}
-                                  Select database section (default: refseq)
-    Without joining, the flag parses fine but its description is lost (or,
-    worse, the wrap point lands mid-flag and the regex mis-parses).
+    Two wrapping styles:
+      - argparse/click column layout (continuations indent ~20+ spaces)
+      - scopt/scala (flag at indent 2, `Type:`/`Default:` lines at indent 4)
+    A fixed `indent >= 8` threshold misses the scopt style, so the Default:
+    metadata never reaches the flag line and optional flags get marked
+    required. Rule: a line is a continuation when its indent is GREATER than
+    the indent of the line that started the current item.
     """
-    joined: list[str] = []
+    items: list[list] = []  # [indent_of_first_line_or_None, text]
     for raw in help_output.splitlines():
         stripped = raw.strip()
         if not stripped:
-            joined.append("")
+            items.append([None, ""])
             continue
         indent = len(raw) - len(raw.lstrip())
         is_new_item = _is_flag_line(stripped) or re.match(
             r"^[a-zA-Z][\w -]*:\s*$", stripped) or stripped.lower().startswith(
             ("usage:", "options:", "commands:", "positional"))
-        if (joined and joined[-1] and indent >= 8 and not is_new_item):
+        if (items and items[-1][0] is not None and not is_new_item
+                and indent > items[-1][0]):
             # continuation of the previous item's description. Join with 2+
             # spaces so the flags-part/description split below still finds
             # the column gap at the join point.
-            joined[-1] += "  " + stripped
+            items[-1][1] += "  " + stripped
         else:
-            joined.append(stripped)
-    return joined
+            items.append([indent, stripped])
+    return [t for _, t in items]
 
 
 def _parse_help_params(help_output: str) -> list[dict[str, str]]:
@@ -559,9 +648,28 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
         flags = re.findall(r"(?<![\w-])(-{1,2}[\w][\w-]*)", flags_part)
         if not flags:
             continue
-        metavars = [t for t in re.split(r"\s+", flags_part)
-                    if t and not t.startswith("-") and t not in (",",)]
-        metavar = metavars[-1] if metavars else ""
+        # metavar pairing: the value token belongs to the flag it FOLLOWS.
+        # For `-i ONT_IN [ONT_IN ...], --ont-in ONT_IN [ONT_IN ...]` the
+        # canonical flag is --ont-in but its metavar is the FIRST non-flag
+        # token (right after -i), NOT the last token on the line.
+        tokens = [t for t in re.split(r"\s+", flags_part) if t]
+        metavar = ""
+        for t in tokens:
+            if not t.startswith("-") and t not in (",",):
+                mt = t
+                # strip nargs decorations and short/long separator commas:
+                # [ONT_IN ...] -> ONT_IN, 'N,' -> N
+                mt = mt.strip("[]").rstrip(",").strip("[]")
+                if mt and mt not in ("...", "."):
+                    metavar = mt
+                    break
+            elif "=" in t and not t.startswith("="):
+                # scopt/scala `--base_seed=BASE_SEED` syntax: the flag and its
+                # metavar are ONE token -- a value-taking option, NOT boolean
+                mt = t.split("=", 1)[1].strip("[]")
+                if mt and mt not in ("...", "."):
+                    metavar = mt
+                    break
         # prefer the long flag as the canonical name
         long_flags = [f for f in flags if f.startswith("--")]
         name = long_flags[0] if long_flags else flags[0]
@@ -582,8 +690,9 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
             ptype = "integer"
         elif mv in ("float", "double"):
             ptype = "float"
-        has_default = bool(re.search(r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)",
-                                     desc, re.IGNORECASE))
+        has_default = bool(re.search(
+            r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)|\bdefault:\s*\S+",
+            desc, re.IGNORECASE))
         desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$",
                       "", desc).strip()
         entry: dict[str, str] = {
@@ -1491,8 +1600,24 @@ def execute_test(repo_url: str, install_method: str = "",
                             # (authoritative + current), not the README text.
                             # README is only a fallback if --help yields nothing.
                             help_params = _parse_help_params(out_m or err_m)
-                            if help_params:
-                                report["params_schema"] = help_params
+                            # Positional arguments (scopt/scala style:
+                            # `sample.py SEQUENCE NUM_SAMPLES OUTPUT_DIR`) are
+                            # REQUIRED inputs -- dropping them (run #36 bioemu)
+                            # handed the LLM a schema that could never invoke
+                            # the tool.
+                            help_positionals = _parse_positional_args(out_m or err_m)
+                            if help_params or help_positionals:
+                                # canonical schema = flags + positionals, one list
+                                seen_p = {p.get("name") for p in help_params}
+                                merged = list(help_params)
+                                for pa in help_positionals:
+                                    if pa.get("name") and pa["name"] not in seen_p:
+                                        pa = dict(pa)
+                                        pa["required"] = True  # positional = mandatory
+                                        merged.append(pa)
+                                report["params_schema"] = merged
+                                if help_positionals:
+                                    report["positional_args"] = help_positionals
                             else:
                                 flag_params = _extract_flag_params(report["readme_examples"])
                                 if flag_params:

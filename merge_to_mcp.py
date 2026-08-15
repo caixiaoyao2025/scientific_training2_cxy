@@ -35,6 +35,7 @@ def clean_tool_entry(tool):
             "verified_status": md.get("verified_status", ""),
             "inputs_source": md.get("inputs_source", ""),
             "params_schema": md.get("exec_params_schema", []),
+            "exec_positional_args": md.get("exec_positional_args", []),
             "installed_versions": md.get("exec_installed_versions", []),
         }
         evidence = {k: v for k, v in evidence.items() if v not in ("", None, [], False) or k in ("verified_license",)}

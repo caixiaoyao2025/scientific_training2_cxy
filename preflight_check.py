@@ -53,6 +53,20 @@ def main() -> int:
             failures.append(f"gate1 discovery: {name} has PLACEHOLDER inputs "
                             "(never --help-parsed) -- schema is a guess, not a contract")
             continue
+        # gate 1b: argv completeness -- every positional the REAL --help
+        # declared must be in the registry inputs. A schema can be internally
+        # consistent (every {var} declared) yet semantically incomplete
+        # (run #36 bioemu: only --filter_samples, the 3 required SEQUENCE/
+        # NUM_SAMPLES/OUTPUT_DIR slots lost) -> preflight PASS -> LLM fails
+        # at runtime with "no value for the required argument: sequence".
+        if ev.get("exec_positional_args"):
+            inp = t.get("inputs") or {}
+            for pa in ev["exec_positional_args"]:
+                pa_name = str(pa.get("name", "")).lstrip("-<>[]").replace("-", "_").lower()
+                if pa_name and pa_name not in inp:
+                    failures.append(f"gate1 argv-completeness: {name}: help declared "
+                                    f"positional '{pa_name}' missing from registry inputs "
+                                    "(schema incomplete; tool cannot be invoked correctly)")
         # ---- gate 2: subcommand tools must have complete details ----
         as_ = t.get("arg_style") or "cli"
         if as_ == "subcommand":

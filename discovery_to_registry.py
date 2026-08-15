@@ -241,27 +241,48 @@ def tool_to_registry_entry(tool, verification=None):
         base_cmd = f"python -m {mod}"
     if base_cmd:
         if arg_style == "python" and callable_via.startswith("python -m "):
-            # python -m tools: if README showed flags (--sequence/--num_samples),
-            # render them as --flag {{value}}; else generic input_file
+            # python -m tools: canonical template = ordered positionals first
+            # (SEQUENCE NUM_SAMPLES OUTPUT_DIR), then flags (--filter_samples).
+            # Both come from the SAME parsed schema that builds `inputs`, so
+            # the contract (every {{var}} declared) holds by construction.
             flag_params = [p for p in parsed if _param_flag(p)]
-            if flag_params:
-                parts = []
+            pos_params = sorted(
+                [p for p in parsed if p.get("positional")],
+                key=lambda p: p.get("position", 0))
+            if pos_params or flag_params:
+                parts = [f"{{{{{p['name']}}}}}" for p in pos_params]
                 for p in flag_params:
                     flag = _param_flag(p)
-                    # placeholder must match the INPUT key (flag stripped)
                     key = p["name"].lstrip("-").replace("-", "_")
-                    parts.append(f"{flag} {{{{ {key} }}}}")
-                # fix the double-brace placeholders: {{ name }} -> {{name}}
-                tmpl = " ".join(parts).replace("{{ ", "{{").replace(" }}", "}}")
-                command_template = f"{base_cmd} {tmpl}"
+                    if str(p.get("type", "")).lower() in ("bool", "boolean") \
+                            or p.get("takes_value") is False:
+                        # store-flag: bare flag, no value slot
+                        parts.append(flag)
+                    else:
+                        parts.append(f"{flag} {{{{{key}}}}}")
+                command_template = f"{base_cmd} {' '.join(parts)}"
             else:
-                command_template = f"{base_cmd} {{{{input_file}}}}"
+                # no grounded params at all -> pending, not a fake command
+                schema_pending_reason = ("python -m entry but no --help params "
+                                         "parsed; command would be a guess")
+                command_template = ""
         elif positional and arg_style == "positional":
-            # positional CLI: pgv-blast <seq1> <seq2> ... -o <outdir>
-            # template fills each positional arg by its name
-            ph = " ".join(f"{{{{{p['name']}}}}}" for p in positional)
-            if ph:
-                command_template = f"{base_cmd} {ph}"
+            # positional CLI with optional flags: pgv-blast seq1 seq2 -o out.
+            # Canonical template = ordered positionals FIRST, then flags --
+            # both from the same parsed schema that builds `inputs`.
+            pos_params = sorted(positional, key=lambda p: p.get("position", 0))
+            flag_params = [p for p in parsed if _param_flag(p)]
+            parts = [f"{{{{{p['name']}}}}}" for p in pos_params]
+            for p in flag_params:
+                flag = _param_flag(p)
+                key = p["name"].lstrip("-").replace("-", "_")
+                if str(p.get("type", "")).lower() in ("bool", "boolean") \
+                        or p.get("takes_value") is False:
+                    parts.append(flag)
+                else:
+                    parts.append(f"{flag} {{{{{key}}}}}")
+            if parts:
+                command_template = f"{base_cmd} {' '.join(parts)}"
             else:
                 # no positional args parsed either -> nothing grounded to
                 # render; do NOT fabricate {{input_file}}
@@ -327,16 +348,23 @@ def tool_to_registry_entry(tool, verification=None):
         inputs = {}
         inputs_src = "subcommand"
     elif parsed:
-        inputs = {
-            p["name"].lstrip("-").replace("-", "_"): {
+        inputs = {}
+        for p in parsed:
+            if not p.get("name"):
+                continue
+            key = p["name"].lstrip("-").replace("-", "_")
+            spec = {
                 "type": p.get("type", "string"),
                 "description": p.get("description", ""),
                 "required": True if p.get("required") is True else False,
                 "source": "help_parsed",
             }
-            for p in parsed
-            if p.get("name")
-        }
+            if p.get("positional"):
+                spec["positional"] = True
+                if p.get("position") is not None:
+                    spec["position"] = p["position"]
+                spec["required"] = True  # a positional argv slot is mandatory
+            inputs[key] = spec
         inputs_src = "help_parsed"
     else:
         # NO --help evidence: do NOT fabricate `input_file`. The entry is
@@ -449,6 +477,7 @@ def tool_to_registry_entry(tool, verification=None):
             "exec_install_evidence": e.get("install_evidence", ""),
             "exec_run_evidence": e.get("run_evidence", ""),
             "exec_params_schema": e.get("params_schema", []),
+            "exec_positional_args": e.get("positional_args", []),
             "exec_installed_versions": e.get("installed_versions", []),
             "exec_executable": e.get("executable", ""),
             "exec_retries": e.get("exec_retries", 0),
