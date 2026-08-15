@@ -28,6 +28,7 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 
 import execute_test as et  # noqa: E402
+from discovery_to_registry import _infer_outputs  # noqa: E402
 
 KAPTAIN_HELP = """\
 usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP
@@ -233,6 +234,41 @@ def test_bqtools_positional_and_required():
     for fl in ("--interleaved", "--skip-headers", "--archive", "--pipe"):
         p = _by_name(merged, fl)
         assert p.get("type") == "boolean" and p.get("takes_value") is False, p
+
+
+def test_output_contract_inference():
+    """Output contract (registry `outputs`) must reflect the REAL output kind.
+
+    bioemu's `output_dir` is a dash-less POSITIONAL -- after the canonical
+    merge it must be inferred as a directory output, otherwise the task check
+    reads stdout-only and flags a valid run OUTPUT_INVALID (run #36).
+    """
+    from discovery_to_registry import _infer_outputs
+
+    merged_bioemu = [
+        {"name": "sequence", "positional": True, "position": 0, "type": "path"},
+        {"name": "num_samples", "positional": True, "position": 1, "type": "int"},
+        {"name": "output_dir", "positional": True, "position": 2, "type": "path"},
+        {"name": "--filter_samples", "type": "boolean", "takes_value": False},
+    ]
+    outs = _infer_outputs(merged_bioemu, [], "python")
+    assert outs.get("output_dir", {}).get("type") == "directory", outs
+    # a lone output flag is a file, outdir-ish flag is a directory
+    assert _infer_outputs(
+        [{"name": "--output", "type": "string"}], [], "named"
+    ).get("output", {}).get("type") == "file"
+    assert _infer_outputs(
+        [{"name": "--outdir", "type": "path"}], [], "named"
+    ).get("outdir", {}).get("type") == "directory"
+    # input_file is NOT an output; nothing output-ish -> stdout contract
+    outs2 = _infer_outputs(
+        [{"name": "input_file", "positional": True, "type": "path"}], [], "named")
+    assert "input_file" not in outs2
+    assert "stdout" in outs2, outs2
+    # flags that read output (--output-html) still count as file outputs
+    assert _infer_outputs(
+        [{"name": "--output-html", "type": "string"}], [], "named"
+    ).get("output_html", {}).get("type") == "file"
 
 
 if __name__ == "__main__":

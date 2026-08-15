@@ -175,30 +175,45 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
 
     Flags whose metavar/name looks like an output (--output, --out, -o,
     --output-html, --outdir) become declared outputs so the agent knows the
-    tool writes a file there. Empty dict when nothing looks like an output.
+    tool writes a file there. Positional args with an OUTPUT-ish name (usage:
+    ... OUTPUT_DIR) count too -- after the canonical merge they live in
+    `parsed` with a dash-less name, so a separate dash-only match would drop
+    them (bioemu output_dir -> wrongly stdout-only -> OUTPUT_INVALID).
+    Empty dict when nothing looks like an output.
     """
-    outputs = {}
-    for p in parsed:
+    # dedupe: `parsed` already contains the merged flags+positionals, but the
+    # caller also passes the raw positional_args list -- scan both without
+    # double-reporting the same canonical key.
+    seen_keys: set[str] = set()
+    outputs: dict = {}
+
+    def _maybe_add(p: dict, src: str) -> None:
         name = p.get("name", "")
         key = _canonical_key(name)
         plain = name.lower().strip()
-        # exact `-o` / `-O` match or --out*/--output* prefix. The old
-        # substring check `"-o " in "-o"` never matched a bare `-o`.
-        if plain == "-o" or plain.startswith(("--output", "--out")):
-            outputs[key] = {
-                "type": "file",
-                "description": (p.get("description") or f"Output written by {name}"),
-                "source": "help_parsed",
-            }
-    # positional args with an OUTPUT-ish name (usage: ... OUTPUT)
+        if not key or key in seen_keys:
+            return
+        is_flag = plain.startswith("-")
+        # match: -o / -O, --out*, --output*, or dash-less positional
+        # containing "out" (output_dir, OUTPUT, outdir, output-html).
+        if is_flag:
+            matched = plain == "-o" or plain.startswith(("--output", "--out"))
+        else:
+            matched = "out" in plain
+        if not matched:
+            return
+        seen_keys.add(key)
+        is_dir = ("dir" in plain) or "directory" in plain
+        outputs[key] = {
+            "type": "directory" if is_dir else "file",
+            "description": (p.get("description") or f"Output written by {name}"),
+            "source": "help_parsed",
+        }
+
+    for p in parsed:
+        _maybe_add(p, "parsed")
     for pa in positional:
-        n = pa.get("name", "").upper()
-        if "OUT" in n and "OUTPUT" not in outputs:
-            outputs[_canonical_key(pa.get("name", ""))] = {
-                "type": "file",
-                "description": (pa.get("description") or f"Output written as {pa['name']}"),
-                "source": "help_parsed",
-            }
+        _maybe_add(pa, "positional")
     if outputs:
         return outputs
     # no explicit output flag found: a CLI that just prints to stdout.
