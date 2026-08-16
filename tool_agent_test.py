@@ -11,7 +11,7 @@ with an OpenAI-compatible LLM (volcengine Ark / DeepSeek). The LLM must:
 Env vars:
   WESTLAKE_API_KEY   (or OPENAI_API_KEY / DEEPSEEK_API_KEY)
   WESTLAKE_BASE_URL  (default https://ark.cn-beijing.volces.com/api/v3)
-  WESTLAKE_MODEL     (default Doubao-Seed-Evolving)
+  WESTLAKE_MODEL     (default doubao-seed-evolving)
   REGISTRY           (default data/mcp_registry.yaml)
 """
 from __future__ import annotations
@@ -36,7 +36,7 @@ BASE_URL = (os.environ.get("WESTLAKE_BASE_URL") or os.environ.get("OPENAI_BASE_U
             or os.environ.get("DEEPSEEK_BASE_URL")
             or "https://ark.cn-beijing.volces.com/api/v3")
 MODEL = (os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL")
-         or os.environ.get("DEEPSEEK_MODEL") or "Doubao-Seed-Evolving")
+         or os.environ.get("DEEPSEEK_MODEL") or "doubao-seed-evolving")
 API_KEY = (os.environ.get("WESTLAKE_API_KEY") or os.environ.get("OPENAI_API_KEY")
            or os.environ.get("DEEPSEEK_API_KEY") or "")
 REGISTRY = os.environ.get("REGISTRY", "data/mcp_registry.yaml")
