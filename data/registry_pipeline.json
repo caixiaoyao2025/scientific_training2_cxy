@@ -57,8 +57,8 @@
     "name": "kaptain",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: 2026-08-15 23:21:10,694 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 23:21:10,694 -        __init_))",
-    "output": "FAIL (output: exit 1 (stderr: 2026-08-15 23:21:10,694 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-15 23:21:10,694 -        __init_))",
+    "execute": "FAIL (output: exit 1 (stderr: 2026-08-16 01:29:16,868 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-16 01:29:16,868 -        __init_))",
+    "output": "FAIL (output: exit 1 (stderr: 2026-08-16 01:29:16,868 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-16 01:29:16,868 -        __init_))",
     "_argv": [
       "kaptain",
       "--ont-in",

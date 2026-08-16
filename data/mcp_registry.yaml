@@ -142,7 +142,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_k4lq598d/bioemu
+    - bioemu @ file:///tmp/execute_8u_h0s1v/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -184,7 +184,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_k4lq598d/venv
+    venv_path: /tmp/execute_8u_h0s1v/venv
   evidence:
     exec_status: passed
     exec_reason: 'README usage: python -m bioemu.sample --help'
@@ -323,7 +323,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_k4lq598d/bioemu
+    - bioemu @ file:///tmp/execute_8u_h0s1v/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -434,14 +434,14 @@ tools:
       - name: --format
         type: string
         description: Input file format
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -f
       - name: --batch-size
         type: string
         description: Batch size (in records) to use in parallel processing
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -b
@@ -463,7 +463,7 @@ tools:
       - name: --manifest
         type: string
         description: Path to a text file containing a list of input files to process.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -M
@@ -471,7 +471,7 @@ tools:
         type: string
         description: Maximum depth in the directory tree to process. Leaving this
           option empty will set no limit
-        required: true
+        required: false
         takes_value: true
       - name: --paired
         type: boolean
@@ -492,28 +492,28 @@ tools:
       - name: --output
         type: string
         description: Output binseq file
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -o
       - name: --mode
         type: string
         description: Defines the BINSEQ mode to use
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -m
       - name: --policy
         type: string
         description: Policy for handling Ns in sequences
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --bitsize
         type: string
         description: Encoding bitsize (2 or 4 bits per nucleotide)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -S
@@ -541,14 +541,14 @@ tools:
       - name: --block-size
         type: string
         description: Virtual block size (in bytes)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -B
       - name: --threads
         type: string
         description: Number of threads to use for parallel reading and writing.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -557,7 +557,7 @@ tools:
         description: Zstd compression level The compression level is between 1 and
           22, with 3 being the default. Higher levels provide better compression at
           the cost of speed. Level 0 disables compression.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -l
@@ -591,7 +591,7 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --output
         type: string
@@ -603,35 +603,35 @@ tools:
       - name: --prefix
         type: string
         description: Output file format prefix (required for paired BINSEQ files
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --mate
         type: string
         description: Designate which of the two mates is being processed
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -m
       - name: --format
         type: string
         description: Output file format
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -f
       - name: --compress
         type: string
         description: Compress output file
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -c
       - name: --threads
         type: string
         description: Number of threads to use for parallel compression (0 for auto)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -652,28 +652,28 @@ tools:
       - name: --output
         type: string
         description: Output binseq file
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -o
       - name: --mode
         type: string
         description: Defines the BINSEQ mode to use
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -m
       - name: --policy
         type: string
         description: Policy for handling Ns in sequences
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --bitsize
         type: string
         description: Encoding bitsize (2 or 4 bits per nucleotide)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -S
@@ -701,14 +701,14 @@ tools:
       - name: --block-size
         type: string
         description: Virtual block size (in bytes)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -B
       - name: --threads
         type: string
         description: Number of threads to use for parallel reading and writing.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -717,7 +717,7 @@ tools:
         description: Zstd compression level The compression level is between 1 and
           22, with 3 being the default. Higher levels provide better compression at
           the cost of speed. Level 0 disables compression.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -l
@@ -789,7 +789,7 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --output
         type: string
@@ -801,49 +801,49 @@ tools:
       - name: --prefix
         type: string
         description: Output file format prefix (required for paired BINSEQ files
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --mate
         type: string
         description: Designate which of the two mates is being processed
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -m
       - name: --format
         type: string
         description: Output file format
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -f
       - name: --compress
         type: string
         description: Compress output file
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -c
       - name: --threads
         type: string
         description: Number of threads to use for parallel compression (0 for auto)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
       - name: --reg1
         type: string
         description: Regex expression to search for in primary sequence
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -r
       - name: --reg2
         type: string
         description: Regex expression to search for in extended sequence
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -R
@@ -878,7 +878,7 @@ tools:
       - name: --range
         type: string
         description: Only match patterns that are within this range.
-        required: true
+        required: false
         takes_value: true
       - name: --pattern-count
         type: boolean
@@ -912,7 +912,7 @@ tools:
       - name: --color
         type: string
         description: Colorize output (auto, always, never)
-        required: true
+        required: false
         takes_value: true
       - name: input
         type: path
@@ -1014,13 +1014,13 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --basepath
         type: string
         description: Optional base path for output files. If not provided, the current
           working directory will be used
-        required: true
+        required: false
         takes_value: true
       - name: --skip-unmatched
         type: boolean
@@ -1030,12 +1030,12 @@ tools:
       - name: --unmatched-basename
         type: string
         description: Optional base name for unmatched records
-        required: true
+        required: false
         takes_value: true
       - name: --min-records
         type: string
         description: Remove output files with fewer than this many records.
-        required: true
+        required: false
         takes_value: true
       - name: --fixed
         type: boolean
@@ -1057,7 +1057,7 @@ tools:
       - name: --threads
         type: string
         description: 'Number of processing threads to use, 0: auto'
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -1070,17 +1070,17 @@ tools:
         type: path
         description: File of patterns to search for in either primary or extended
           sequence
-        required: true
+        required: false
         takes_value: true
       - name: --sfile
         type: string
         description: File of patterns to search for in primary sequence
-        required: true
+        required: false
         takes_value: true
       - name: --xfile
         type: string
         description: File of patterns to search for in extended sequence
-        required: true
+        required: false
         takes_value: true
       - name: input
         type: path
@@ -1100,40 +1100,40 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --num-pipes
         type: string
         description: 'Number of pipes to make [0: as many as threads]'
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --format
         type: string
         description: Output file format
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -f
       - name: --basepath
         type: string
         description: Base path for output files
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -b
       - name: --exec
         type: string
         description: Execute a shell command once per pipe, substituting FIFO paths.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -x
       - name: --exec-batch
         type: string
         description: Execute a single shell command with all FIFO paths substituted.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -X
@@ -1155,33 +1155,33 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --output
         type: string
         description: Output binseq file
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -o
       - name: --mode
         type: string
         description: Defines the BINSEQ mode to use
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -m
       - name: --policy
         type: string
         description: Policy for handling Ns in sequences
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -p
       - name: --bitsize
         type: string
         description: Encoding bitsize (2 or 4 bits per nucleotide)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -S
@@ -1209,14 +1209,14 @@ tools:
       - name: --block-size
         type: string
         description: Virtual block size (in bytes)
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -B
       - name: --threads
         type: string
         description: Number of threads to use for parallel reading and writing.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -1225,7 +1225,7 @@ tools:
         description: Zstd compression level The compression level is between 1 and
           22, with 3 being the default. Higher levels provide better compression at
           the cost of speed. Level 0 disables compression.
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -l
@@ -1244,7 +1244,7 @@ tools:
       - name: --mate
         type: string
         description: Which mate(s) to reverse complement
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -M
@@ -1266,7 +1266,7 @@ tools:
         type: string
         description: Span of records to process. If not specified, all records will
           be processed
-        required: true
+        required: false
         takes_value: true
       - name: --skip-seq
         type: boolean
@@ -1291,14 +1291,14 @@ tools:
       - name: --mate
         type: string
         description: Which mate(s) to include in the checksum for paired records
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -M
       - name: --threads
         type: string
         description: 'Number of threads to use [0: auto]'
-        required: true
+        required: false
         takes_value: true
         aliases:
         - -T
@@ -1329,10 +1329,10 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_pfrltgi5/venv
+    venv_path: /tmp/execute_ld59hazm/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_pfrltgi5/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_ld59hazm/bqtools/target/release/bqtools --help` ->
       exit 0'
     exec_executable: bqtools
     verified_license: false
@@ -1464,10 +1464,10 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_os4le5tb/venv
+    venv_path: /tmp/execute_p8qjali_/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_os4le5tb/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_p8qjali_/venv/bin/kaptain --help` -> exit 0'
     exec_executable: kaptain
     verified_license: true
     verified_license_path: LICENSE
@@ -1560,7 +1560,7 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_os4le5tb/KAPTAIN
+    - kaptain @ file:///tmp/execute_p8qjali_/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.0
     - numpy==2.4.6
