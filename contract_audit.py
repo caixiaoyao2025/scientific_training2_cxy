@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from agent_connector.tool_spec import (
-    get_required_inputs, make_leaf_spec, render_spec, validate_spec,
+    get_required_inputs, render_spec, validate_spec,
 )
 from agent_connector.tool_runner import validate_arguments
 from tool_agent_test import load_tools, to_function_schemas
@@ -43,10 +43,10 @@ for t in tools:
 for s in schemas:
     fn = s["function"]
     fname = fn["name"]
-    tool_name, sub = fnmap[fname]
-    t = next(x for x in tools if x["name"] == tool_name)
-    # the EXACT spec the runner receives for this function
-    leaf = make_leaf_spec(t, sub) if sub else t
+    # the EXACT spec the runner receives for this function: fnmap now maps
+    # fname -> the leaf ToolSpec itself (make_leaf_spec), so schema and runner
+    # provably share one object -- never a base-tool re-parse.
+    leaf = fnmap[fname]
     v = validate_spec(leaf)
     check(v == "", f"{fname}: leaf spec invalid: {v}")
     props = set(fn["parameters"]["properties"])
@@ -55,6 +55,19 @@ for s in schemas:
     check(props == leaf_inputs,
           f"{fname}: schema params {sorted(props)} != leaf inputs {sorted(leaf_inputs)} "
           f"(diff {sorted(props ^ leaf_inputs)})")
+    # 1b. positional/flag metadata round-trips: what the LLM schema carries is
+    # exactly what the leaf renders argv from (bqtools `input` positional,
+    # `output` --output flag).
+    for key, meta in (leaf.get("inputs") or {}).items():
+        prop = fn["parameters"]["properties"][key]
+        want_pos = bool((meta or {}).get("positional"))
+        got_pos = bool(prop.get("positional"))
+        check(want_pos == got_pos,
+              f"{fname}.{key}: positional mismatch (leaf {want_pos} vs schema {got_pos})")
+        want_flag = (meta or {}).get("flag") or ""
+        got_flag = prop.get("flag") or ""
+        check(want_flag == got_flag,
+              f"{fname}.{key}: flag mismatch (leaf {want_flag!r} vs schema {got_flag!r})")
     # 2. required set identical
     req_schema = set(fn["parameters"].get("required") or [])
     req_leaf = set(get_required_inputs(leaf))
@@ -92,6 +105,19 @@ for s in schemas:
     # 5. `subcommand` is NEVER an LLM-visible parameter
     check("subcommand" not in props,
           f"{fname}: subcommand leaked into LLM schema props!")
+    # 6. output contract closure: every declared output file/dir must be a
+    # declared input (so the runner can locate its path from the call args)
+    # and the schema's `outputs` must equal the leaf's.
+    schema_outputs = fn.get("outputs") or {}
+    check(schema_outputs == (leaf.get("outputs") or {}),
+          f"{fname}: schema outputs {sorted(schema_outputs)} != leaf outputs "
+          f"{sorted((leaf.get('outputs') or {}))}")
+    for okey, om in (leaf.get("outputs") or {}).items():
+        if okey == "stdout":
+            continue
+        check(okey in leaf_inputs,
+              f"{fname}: declared output '{okey}' is not an input param "
+              "(runner cannot locate the output path in the call args)")
 
 print(f"\n{checked} checks, {fails} failures")
 print("CONTRACT AUDIT: " + ("PASS" if fails == 0 else "FAIL"))

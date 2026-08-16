@@ -104,11 +104,11 @@ def _canonical_param_name(name: str) -> str:
     sequence -> 'sequence'. Dashes/underscores fold to '_' so the schema,
     the registry inputs, the command template and the argv renderer all agree
     on one key per parameter (no ONT_IN/ont_in duplicate classes)."""
-    s = str(name or "").strip().strip("<>[]{}")
-    s = s.lstrip("-")
-    if not s:
-        return ""
-    return s.lower().replace("-", "_")
+    # SINGLE canonicalizer: the pipeline has exactly one parameter-name
+    # definition (agent_connector.tool_spec.canonicalize_param_name), used by
+    # discovery, registry, generator, LLM schema AND runner alike.
+    from agent_connector.tool_spec import canonicalize_param_name  # noqa: PLC0415
+    return canonicalize_param_name(name)
 
 
 def _normalize_metavar(token: str) -> str:

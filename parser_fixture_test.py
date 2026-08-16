@@ -458,20 +458,26 @@ def test_leaf_spec_roundtrip():
         },
         "subcommand_discovery_complete": True,
     }
-    # base tool alone can NEVER accept a leaf arg (this was the raw-spec bug):
-    # without a subcommand the validator has nothing to resolve and must say so
+    # base tool alone can NEVER accept a leaf arg (raw spec is not a contract):
+    # the validator refuses to guess the subcommand -- resolution is the
+    # DISPATCHER's job (run_tool_spec -> make_leaf_spec), never the validator's.
+    from agent_connector.tool_runner import run_tool_spec
     _, err = validate_arguments(bqtools, {"input": "/tmp/in", "output": "/tmp/out"})
-    assert "missing subcommand" in err, err
-    # BUT with a `subcommand` key, the raw spec resolves to its canonical leaf
-    # (validator must not reject leaf args the generator just exposed -- the
-    # schema-split the audit is built to kill). No arguments.left-over
-    cleaned, err = validate_arguments(bqtools, {"subcommand": "encode",
-                                                "input": "/tmp/in", "output": "/tmp/out"})
-    assert err == "", err
-    assert cleaned.get("input") == "/tmp/in" and cleaned.get("output") == "/tmp/out"
+    assert "leaf" in err and "subcommand" in err, err
+    _, err = validate_arguments(bqtools, {"subcommand": "encode",
+                                          "input": "/tmp/in", "output": "/tmp/out"})
+    assert "leaf" in err and "subcommand" in err, err
+    # but run_tool_spec resolves the raw spec to its canonical leaf ONCE, then
+    # validates + renders + executes THAT leaf (bqtools isn't installed here,
+    # so it ends at "command not found" with the CORRECT argv -- proving the
+    # dispatcher picked encode, not a subcommand guess).
+    res = run_tool_spec(bqtools, {"subcommand": "encode",
+                                  "input": "/tmp/in", "output": "/tmp/out"})
+    assert res.get("return_code") == 127, res
+    assert res.get("argv") == ["bqtools", "encode", "/tmp/in", "--output", "/tmp/out"], res
     # unknown subcommand -> clear error, not a fake acceptance
-    _, err = validate_arguments(bqtools, {"subcommand": "nope", "input": "/tmp/in"})
-    assert "no discovered params" in err or "unknown" in err, err
+    res2 = run_tool_spec(bqtools, {"subcommand": "nope", "input": "/tmp/in"})
+    assert res2.get("status") == "validation_error", res2
     # leaf spec scopes inputs to the subcommand
     leaf = make_leaf_spec(bqtools, "encode")
     assert leaf["name"] == "bqtools_encode"

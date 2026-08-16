@@ -6,12 +6,12 @@ import yaml
 
 def _canonical_key(name) -> str:
     """Registry input key for a param: --ont-in / <ONT_IN> / python arg all
-    map to `ont_in`. Mirrors execute_test._canonical_param_name so the
-    command template placeholder, the `inputs` dict key and the function
-    schema parameter ALWAYS agree."""
-    if not isinstance(name, str):
-        return ""
-    return re.sub(r"^[-<>\{\}]+", "", name).lower().replace("-", "_")
+    map to `ont_in`. SINGLE canonicalizer (agent_connector.tool_spec
+    canonicalize_param_name), shared with execute_test, the generator, the
+    LLM schema and the runner -- the command template placeholder, the
+    `inputs` dict key and the function schema parameter ALWAYS agree."""
+    from agent_connector.tool_spec import canonicalize_param_name  # noqa: PLC0415
+    return canonicalize_param_name(name)
 
 def _infer_python_entry(readme_examples: list, pkg: str) -> str:
     """From readme import examples, infer a module:Class/function entry point.
@@ -449,6 +449,15 @@ def tool_to_registry_entry(tool, verification=None):
                 if p.get("position") is not None:
                     spec["position"] = p["position"]
                 spec["required"] = True  # a positional argv slot is mandatory
+            else:
+                # flag spelling + whether it consumes a value: preserved here
+                # so the registry carries EVERYTHING the runner needs to render
+                # argv, and no later layer has to guess the flag name.
+                flag = _param_flag(p)
+                if flag:
+                    spec["flag"] = flag
+                if p.get("takes_value") is not None:
+                    spec["takes_value"] = p["takes_value"]
             inputs[key] = spec
         inputs_src = "help_parsed"
     else:

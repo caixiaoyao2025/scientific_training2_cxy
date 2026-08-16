@@ -237,16 +237,18 @@ def load_adapter(agent_class: str, adapter_path: str = "adapter.py") -> Any:
 
 
 def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
-    """OpenAI-style function schema entry for a ToolSpec."""
-    from agent_connector.tool_spec import json_schema_type  # noqa: PLC0415
+    """OpenAI-style function schema entry for a ToolSpec.
+
+    Built EXCLUSIVELY from ToolSpec.inputs via the canonical
+    function_property (positional/flag metadata rides along), so this can
+    never produce a parameter name the runner doesn't know. The outputs
+    contract is surfaced too: the caller sees what "success" produces."""
+    from agent_connector.tool_spec import function_property  # noqa: PLC0415
 
     properties: dict[str, Any] = {}
     required: list[str] = []
     for name, meta in (tool.get("inputs") or {}).items():
-        properties[name] = {
-            "type": json_schema_type(meta),
-            "description": meta.get("description", "") or "",
-        }
+        properties[name] = function_property(meta)
         # ONLY an explicit required: true is required -- matches
         # to_function_schemas in tool_agent_test.py (forcing every param
         # required hands the LLM a fake schema).
@@ -263,6 +265,7 @@ def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
             "properties": properties,
             "required": required,
         },
+        "outputs": tool.get("outputs") or {},
     }
     if tool.get("arg_style"):
         fn["arg_style"] = tool["arg_style"]

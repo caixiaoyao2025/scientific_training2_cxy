@@ -108,31 +108,20 @@ _VALID_INPUT_TYPES = {"string", "str", "int", "integer", "float", "number",
 def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple[dict[str, Any], str]:
     """Strict argument validation (the Pydantic layer, without the dep).
 
-    Enforces: required inputs present, no unknown inputs, no pollution in the
-    input schema, and every input has a legal type. Returns (cleaned_arguments,
-    '') on success or ({}, reason) on failure so a bad tool_call is rejected
+    The spec MUST be a complete, self-contained ToolSpec -- a subcommand LEAF
+    (make_leaf_spec) or a plain CLI tool. A raw subcommand BASE spec
+    (arg_style=subcommand, inputs={}) is rejected here: choosing the
+    subcommand is the DISPATCHER's job (run_tool_spec resolves raw -> leaf ONCE
+    via make_leaf_spec), and the validator must never guess it. Enforces:
+    required inputs present, no unknown inputs, no pollution in the input
+    schema, and every input has a legal type. Returns (cleaned_arguments, '')
+    on success or ({}, reason) on failure so a bad tool_call is rejected
     before any subprocess runs.
     """
-    # subcommand CLIs: the BASE tool has inputs={} (params live in
-    # subcommand_details), so a raw spec must be resolved to its canonical
-    # leaf for the ACTIVE subcommand BEFORE validating -- otherwise the
-    # validator reads the empty top-level inputs and rejects every leaf arg
-    # the generator just exposed as "unknown arguments". make_leaf_spec is the
-    # SAME single source the generator + agent test use, so validator and
-    # generator can never disagree about a parameter name.
     if spec.get("arg_style") == "subcommand" and not spec.get("inputs"):
-        from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
-        sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
-        if not sub:
-            return {}, ("missing subcommand: raw subcommand spec has no "
-                        "_active_subcommand and no 'subcommand' argument")
-        leaf = make_leaf_spec(spec, sub)
-        if not leaf.get("inputs"):
-            return {}, f"subcommand '{sub}' has no discovered params"
-        spec = leaf
-        # `subcommand` was consumed to select the leaf; it is a dispatcher
-        # key, not a parameter of the leaf function.
-        arguments = {k: v for k, v in arguments.items() if k != "subcommand"}
+        return {}, ("raw subcommand spec must be resolved to a leaf ToolSpec "
+                    "(run_tool_spec dispatches via make_leaf_spec); inputs={} "
+                    "is not a valid execution contract")
     inputs = spec.get("inputs") or {}
     if not isinstance(inputs, dict):
         return {}, f"input schema is not a dict: {inputs!r}"
@@ -626,23 +615,24 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
     if exec_type == "python":
         ep = execution.get("entry_point")
         if ep:
-            return _run_python(ep, arguments, timeout=timeout, venv_py=venv_py if env_run else None,
-                               env=env_run)
-        return _run_cli(execution.get("command", ""), arguments, timeout=timeout,
-                        env=env_run)
-    if exec_type == "api":
-        return _run_api(execution, arguments, timeout=timeout)
-    if exec_type == "docker":
-        return _run_docker(execution, arguments, timeout=timeout)
-    # subcommand CLIs: dispatch by the `subcommand` argument to that sub's params
-    if spec.get("arg_style") == "subcommand":
+            result = _run_python(ep, arguments, timeout=timeout, venv_py=venv_py if env_run else None,
+                                 env=env_run)
+        else:
+            result = _run_cli(execution.get("command", ""), arguments, timeout=timeout,
+                              env=env_run)
+    elif exec_type == "api":
+        result = _run_api(execution, arguments, timeout=timeout)
+    elif exec_type == "docker":
+        result = _run_docker(execution, arguments, timeout=timeout)
+    # subcommand CLIs: dispatch by the leaf's concrete command (resolved above)
+    elif spec.get("arg_style") == "subcommand":
         try:
             argv = _render_subcommand(spec, arguments)
             try:
                 completed = subprocess.run(
                     argv, capture_output=True, text=True, check=False,
                     timeout=timeout, encoding="utf-8", errors="replace", env=env_run)
-                return {
+                result = {
                     "status": "ok" if completed.returncode == 0 else "command_error",
                     "return_code": completed.returncode,
                     "stdout": completed.stdout or "",
@@ -650,19 +640,59 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
                     "argv": argv,
                 }
             except FileNotFoundError:
-                return {"status": "command_error", "return_code": 127,
-                        "stdout": "", "stderr": f"command not found: {argv[0]}", "argv": argv}
+                result = {"status": "command_error", "return_code": 127,
+                          "stdout": "", "stderr": f"command not found: {argv[0]}", "argv": argv}
             except subprocess.TimeoutExpired:
-                return {"status": "command_error", "return_code": None,
-                        "stdout": "", "stderr": f"timed out after {timeout}s", "argv": argv}
+                result = {"status": "command_error", "return_code": None,
+                          "stdout": "", "stderr": f"timed out after {timeout}s", "argv": argv}
         except Exception:
-            pass  # fall through to generic template below
-    result = _run_cli(execution.get("command", ""), arguments, timeout=timeout,
-                      env=env_run)
+            # unrenderable leaf: fall through to the generic command template
+            result = _run_cli(execution.get("command", ""), arguments, timeout=timeout,
+                              env=env_run)
+    else:
+        result = _run_cli(execution.get("command", ""), arguments, timeout=timeout,
+                          env=env_run)
     # if the command still can't be found after auto-install, tell the caller
     if result.get("return_code") == 127 and install_errors:
         result["stderr"] = (result.get("stderr", "") +
                             f"\n[auto-install failed] {'; '.join(install_errors)}")
+    # output contract check: exit 0 is NOT success if the declared output
+    # file/directory doesn't exist. The runner -- not just the test harness --
+    # verifies `spec.outputs` against the actual argv/args post-execution.
+    result = _check_declared_outputs(spec, arguments, result)
+    return result
+
+
+def _check_declared_outputs(spec: dict[str, Any], arguments: dict[str, Any],
+                            result: dict[str, Any]) -> dict[str, Any]:
+    """Verify the spec's declared `outputs` contract against the filesystem.
+
+    For every declared output (file/directory) whose path parameter was passed
+    in the call, record existence on `result["outputs_checked"]` and a
+    single `result["outputs_valid"]` bool. A tool that exits 0 without
+    producing its declared output is a failed task, not a success -- the LLM
+    must see that, not just the exit code. `stdout` outputs have nothing to
+    check (the process output IS the deliverable)."""
+    outs = spec.get("outputs") or {}
+    if not isinstance(outs, dict):
+        return result
+    checks: list[dict[str, Any]] = []
+    for key, meta in outs.items():
+        if key == "stdout" or not isinstance(meta, dict):
+            continue
+        kind = str(meta.get("type", "file"))
+        if kind not in ("file", "path", "directory"):
+            continue
+        path = arguments.get(key)
+        if not path:
+            continue
+        from pathlib import Path  # noqa: PLC0415
+        p = Path(str(path))
+        exists = p.is_dir() if kind == "directory" else p.is_file()
+        checks.append({"key": key, "type": kind, "path": str(path), "exists": exists})
+    if checks:
+        result["outputs_checked"] = checks
+        result["outputs_valid"] = all(c["exists"] for c in checks)
     return result
 
 

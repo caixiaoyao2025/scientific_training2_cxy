@@ -29,7 +29,7 @@ if REPO not in sys.path:
 import yaml  # noqa: E402
 
 from agent_connector.tool_spec import (  # noqa: E402
-    canonical_key, json_schema_type, make_leaf_spec,
+    canonical_key, function_property, json_schema_type, make_leaf_spec,
 )
 
 BASE_URL = (os.environ.get("WESTLAKE_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
@@ -108,7 +108,9 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     For subcommand CLIs we expand each subcommand into its OWN function so the
     agent picks `bqtools_encode(input, output)` instead of guessing a
     `subcommand` argument. Returns (schemas, fnmap) where fnmap maps the
-    function name -> (tool_name, subcommand) for execution dispatch.
+    function name -> the EXACT leaf ToolSpec to execute -- make_leaf_spec is
+    the single source of truth, so the spec the LLM was shown and the spec
+    handed to run_tool_spec are the SAME object (never a base-tool re-parse).
     """
     fnmap: dict = {}
     if (tool.get("arg_style") == "subcommand") and tool.get("subcommand_details"):
@@ -125,8 +127,7 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
             props = {}
             required = []
             for key, meta in (leaf.get("inputs") or {}).items():
-                props[key] = {"type": json_schema_type(meta),
-                              "description": (meta or {}).get("description", "") or ""}
+                props[key] = function_property(meta)
                 # ONLY an explicit `required: true` (make_leaf_spec forces it
                 # for positionals) makes a param required. A flag with no
                 # required marker is OPTIONAL -- forcing every param required
@@ -137,17 +138,20 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
             fname = f"{tool['name']}_{sub.replace('-', '_')}"
             out.append({"type": "function", "function": {
                 "name": fname,
-                "description": (tool.get("description") or "") + f" -- subcommand {sub}",
+                "description": _function_description(leaf),
                 "parameters": {"type": "object", "properties": props, "required": required},
+                # output contract rides on the schema so the agent knows what
+                # "success" means (produce THIS directory/file) -- same object
+                # the runner checks post-execution.
+                "outputs": leaf.get("outputs") or {},
             }})
-            fnmap[fname] = (tool["name"], sub)
+            fnmap[fname] = leaf
         return out, fnmap
     # non-subcommand: single function
     props = {}
     required = []
     for name, meta in (tool.get("inputs") or {}).items():
-        props[name] = {"type": json_schema_type(meta),
-                       "description": (meta or {}).get("description", "") or ""}
+        props[name] = function_property(meta)
         # ONLY an explicit `required: true` is required. Auto-discovery cannot
         # reliably know which flags are mandatory, so defaulting to optional is
         # the honest schema (a guessed-required list is worse: the LLM invents
@@ -156,15 +160,30 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
             required.append(name)
     fn = {"type": "function", "function": {
         "name": tool["name"],
-        "description": (tool.get("description") or "")[:300],
+        "description": _function_description(tool),
         "parameters": {"type": "object", "properties": props, "required": required},
+        "outputs": tool.get("outputs") or {},
     }}
     # execution infrastructure (install/venv/command) is NOT tool-call semantics
     # for the LLM; keep only arg_style as a hint.
     if tool.get("arg_style"):
         fn["function"]["arg_style"] = tool["arg_style"]
-    fnmap[tool["name"]] = (tool["name"], "")
+    fnmap[tool["name"]] = tool
     return [fn], fnmap
+
+
+def _function_description(tool: dict) -> str:
+    """Tool description PLUS the runtime-resource contract, so the LLM knows a
+    database/index/reference path is PRECONFIGURED -- never to be guessed, and
+    it is NOT an argument it must invent."""
+    desc = (tool.get("description") or "")
+    resources = tool.get("resources") or {}
+    if resources:
+        names = ", ".join(sorted(resources))
+        desc = (desc.strip() + " "
+                + f"Runtime resources are preconfigured and must NOT be passed "
+                  f"as arguments: {names}.")
+    return desc[:600]
 
 
 def _task_output_kind(tool: dict, sub: str = "") -> str:
@@ -324,7 +343,9 @@ def main() -> int:
         schemas.extend(sch)
         fnmap.update(fm)
     schema_by_name = {s["function"]["name"]: s for s in schemas}
-    spec_map = {t["name"]: t for t in callable_tools}
+    # fnmap maps every function name -> the EXACT ToolSpec (leaf) to execute
+    # (to_function_schemas). What the LLM was shown and what run_tool_spec
+    # receives are the SAME object -- no base-tool re-derivation anywhere.
     if not callable_tools:
         print("no function-callable tools in registry; nothing to test")
         return 0
@@ -457,37 +478,29 @@ def main() -> int:
                 if fn_name not in fnmap:
                     result = f"unknown tool {fn_name}"
                 else:
-                    tool_name, sub = fnmap[fn_name]
+                    tool_spec = fnmap[fn_name]  # the EXACT leaf the LLM was shown
                     if fn_name != expected_fn:
                         # P0: calling ANY other tool must NOT count as success,
                         # and it's a test failure the agent should not repeat.
                         wrong_function = True
-                        if tool_name not in spec_map:
-                            result = f"unknown tool {tool_name}"
-                        else:
-                            result = (f"[error_type: wrong_function] This task requires the "
-                                      f"function `{expected_fn}`. You called `{fn_name}`, which "
-                                      f"is the WRONG tool for this task. Do not call it again.")
+                        result = (f"[error_type: wrong_function] This task requires the "
+                                  f"function `{expected_fn}`. You called `{fn_name}`, which "
+                                  f"is the WRONG tool for this task. Do not call it again.")
                         print(f"          result: {result[:120]}")
                         messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
                         continue
-                    if tool_name not in spec_map:
-                        result = f"unknown tool {tool_name}"
-                    elif tool_attempts.get(tool_name, 0) >= MAX_SAME_TOOL_ATTEMPTS:
+                    if tool_attempts.get(fn_name, 0) >= MAX_SAME_TOOL_ATTEMPTS:
                         # anti-tool-roulette: same tool kept failing -> tell the
                         # agent to STOP retrying it and fix the task differently.
-                        result = (f"[tool {tool_name} already tried {tool_attempts.get(tool_name, 0)} times "
-                                  f"and kept failing. STOP calling {tool_name}. Fix the argument "
+                        result = (f"[tool {fn_name} already tried {tool_attempts.get(fn_name, 0)} times "
+                                  f"and kept failing. STOP calling {fn_name}. Fix the argument "
                                   f"values or use a different tool/approach.]")
                     else:
-                        tool_attempts[tool_name] = tool_attempts.get(tool_name, 0) + 1
-                        # P0: dispatch the leaf ToolSpec (make_leaf_spec) -- its
-                        # inputs are scoped to THIS subcommand, so the LLM's
-                        # bqtools_encode(input, output) args validate against the
-                        # same schema the LLM was shown (raw spec's inputs={}
-                        # rejected every leaf arg as "unknown arguments").
-                        tool_spec = make_leaf_spec(spec_map[tool_name], sub) if sub \
-                            else spec_map[tool_name]
+                        tool_attempts[fn_name] = tool_attempts.get(fn_name, 0) + 1
+                        # P0: dispatch the SAME leaf ToolSpec that produced the
+                        # function schema the LLM saw (fnmap[fn_name]). Its inputs
+                        # are scoped to THIS subcommand, so bqtools_encode(input,
+                        # output) args validate against the exact schema shown.
                         raw = run_tool_spec(tool_spec, args)
                         result = format_result(raw)
                         target_ran = True

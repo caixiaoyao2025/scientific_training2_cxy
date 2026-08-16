@@ -105,11 +105,10 @@ def pipeline(tool: dict) -> dict:
         schemas, fnmap = to_function_schemas(tool)
         if tool.get("arg_style") == "subcommand" and tool.get("subcommand_details"):
             # render a real subcommand argv through the CANONICAL leaf spec
-            # (make_leaf_spec -> concrete command + scoped inputs), exactly the
-            # path run_tool_spec and the agent test dispatch.
-            from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
-            fn, sub = list(fnmap.values())[0]
-            argv = _render_subcommand(make_leaf_spec(tool, sub), args)
+            # (fnmap now maps fname -> the leaf itself, make_leaf_spec) --
+            # exactly the object run_tool_spec and the agent test dispatch.
+            leaf = list(fnmap.values())[0]
+            argv = _render_subcommand(leaf, args)
         else:
             argv = _render_command(tool.get("command") or "", args)
         report["render"] = "PASS"

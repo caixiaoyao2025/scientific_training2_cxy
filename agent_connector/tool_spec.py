@@ -32,17 +32,23 @@ from typing import Any
 TEMPLATE_VAR_NAME = re.compile(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}")
 
 
-def canonical_key(name: str) -> str:
-    """One input key per CLI token: --ont-in / <ONT_IN> / ont_in -> 'ont_in'.
+def canonicalize_param_name(name: str) -> str:
+    """THE single parameter-name canonicalizer for the whole pipeline.
 
-    Mirrors execute_test._canonical_param_name so the command template
-    placeholder, the `inputs` dict key and the function schema parameter
-    always agree."""
+    One key per CLI token: --ont-in / <ONT_IN> / ont_in -> 'ont_in'.
+    Every layer (discovery -> registry -> generator -> LLM schema -> runner
+    argv) uses THIS function, so a parameter can NEVER appear as `input`,
+    `input_file` and `infile` in different stages. Mirrors the historical
+    execute_test._canonical_param_name exactly."""
     s = str(name or "").strip().strip("<>[]{}")
     s = s.lstrip("-")
     if not s:
         return ""
     return s.lower().replace("-", "_")
+
+
+# backward-compatible alias used by earlier layers
+canonical_key = canonicalize_param_name
 
 
 def is_required(meta: Any) -> bool:
@@ -143,6 +149,31 @@ def get_resources(spec: dict[str, Any]) -> dict[str, Any]:
     injected by the runner from the environment, never part of the function
     schema."""
     return spec.get("resources") or {}
+
+
+def function_property(meta: Any) -> dict[str, Any]:
+    """OpenAI function-schema property for one ToolSpec input, carrying the
+    SAME positional/flag metadata the runner renders argv from -- so the LLM
+    knows `input` is a positional argv slot and `output` is the `--output`
+    flag, and the runner never has to guess or re-derive either. THE property
+    builder used by every schema emitter (to_function_schemas, generator)."""
+    prop: dict[str, Any] = {"type": json_schema_type(meta),
+                            "description": (meta or {}).get("description", "") or ""}
+    hint: list[str] = []
+    if (meta or {}).get("positional"):
+        prop["positional"] = True
+        hint.append("positional")
+        if (meta or {}).get("position") is not None:
+            prop["position"] = meta["position"]
+            hint.append(f"position {meta['position']}")
+    flag = (meta or {}).get("flag")
+    if flag:
+        prop["flag"] = flag
+        hint.append(flag)
+    if hint:
+        prop["description"] = ((prop["description"] + " ").strip()
+                               + f"[{', '.join(hint)}]").strip()
+    return prop
 
 
 def validate_spec(spec: dict[str, Any]) -> str:
