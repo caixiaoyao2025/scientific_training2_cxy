@@ -27,21 +27,21 @@
     "name": "bqtools_encode",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Could not determine BINSEQ output mode from path: /tmp/pipeline_out/sample.binseq\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Could not determine BINSEQ output mode from path: /tmp/pipeline_out/sample.binseq\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_encode",
     "_argv": [
       "bqtools",
       "encode",
       "/tmp/pipeline_sample.fa",
       "--output",
-      "/tmp/pipeline_out/sample.binseq"
+      "/tmp/pipeline_out/sample.vbq"
     ],
     "_args": {
       "input": "/tmp/pipeline_sample.fa",
-      "output": "/tmp/pipeline_out/sample.binseq"
+      "output": "/tmp/pipeline_out/sample.vbq"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_decode",
@@ -53,13 +53,16 @@
     "_argv": [
       "bqtools",
       "decode",
-      "/tmp/pipeline_sample.binseq",
+      "/tmp/pipeline_sample.vbq",
       "--output",
-      "/tmp/pipeline_out/sample.fa"
+      "/tmp/pipeline_out/sample.fa",
+      "--format",
+      "a"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq",
-      "output": "/tmp/pipeline_out/sample.fa"
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/sample.fa",
+      "format": "a"
     },
     "_return_code": 1
   },
@@ -73,13 +76,13 @@
     "_argv": [
       "bqtools",
       "cat",
-      "/tmp/pipeline_sample.binseq",
+      "/tmp/pipeline_sample.vbq",
       "--output",
-      "/tmp/pipeline_out/cat.binseq"
+      "/tmp/pipeline_out/cat.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq",
-      "output": "/tmp/pipeline_out/cat.binseq"
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/cat.vbq"
     },
     "_return_code": 1
   },
@@ -93,10 +96,10 @@
     "_argv": [
       "bqtools",
       "info",
-      "/tmp/pipeline_sample.binseq"
+      "/tmp/pipeline_sample.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq"
+      "input": "/tmp/pipeline_sample.vbq"
     },
     "_return_code": 0
   },
@@ -110,14 +113,14 @@
     "_argv": [
       "bqtools",
       "grep",
-      "/tmp/pipeline_sample.binseq",
+      "/tmp/pipeline_sample.vbq",
       "ACGT",
       "--output",
-      "/tmp/pipeline_out/grep.binseq"
+      "/tmp/pipeline_out/grep.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq",
-      "output": "/tmp/pipeline_out/grep.binseq",
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/grep.vbq",
       "reg": "ACGT"
     },
     "_return_code": 1
@@ -132,15 +135,15 @@
     "_argv": [
       "bqtools",
       "sample",
-      "/tmp/pipeline_sample.binseq",
+      "/tmp/pipeline_sample.vbq",
       "--output",
-      "/tmp/pipeline_out/sample.binseq",
+      "/tmp/pipeline_out/sample.vbq",
       "--fraction",
       "0.5"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq",
-      "output": "/tmp/pipeline_out/sample.binseq",
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/sample.vbq",
       "fraction": "0.5"
     },
     "_return_code": 1
@@ -155,10 +158,10 @@
     "_argv": [
       "bqtools",
       "split",
-      "/tmp/pipeline_sample.binseq"
+      "/tmp/pipeline_sample.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq"
+      "input": "/tmp/pipeline_sample.vbq"
     },
     "_return_code": 1
   },
@@ -172,10 +175,10 @@
     "_argv": [
       "bqtools",
       "pipe",
-      "/tmp/pipeline_sample.binseq"
+      "/tmp/pipeline_sample.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq"
+      "input": "/tmp/pipeline_sample.vbq"
     },
     "_return_code": 1
   },
@@ -189,13 +192,13 @@
     "_argv": [
       "bqtools",
       "revcomp",
-      "/tmp/pipeline_sample.binseq",
+      "/tmp/pipeline_sample.vbq",
       "--output",
-      "/tmp/pipeline_out/revcomp.binseq"
+      "/tmp/pipeline_out/revcomp.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq",
-      "output": "/tmp/pipeline_out/revcomp.binseq"
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/revcomp.vbq"
     },
     "_return_code": 1
   },
@@ -209,10 +212,10 @@
     "_argv": [
       "bqtools",
       "verify",
-      "/tmp/pipeline_sample.binseq"
+      "/tmp/pipeline_sample.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.binseq"
+      "input": "/tmp/pipeline_sample.vbq"
     },
     "_return_code": 1
   },
