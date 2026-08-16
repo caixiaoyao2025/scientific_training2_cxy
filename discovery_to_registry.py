@@ -215,6 +215,11 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
         outputs[key] = {
             "type": "directory" if is_dir else "file",
             "description": (p.get("description") or f"Output written by {name}"),
+            # explicit link back to the input parameter that CARRIES this output
+            # path: the task harness reads outputs[out].input (not a guess that
+            # the output key name matches an input) to know where the LLM's
+            # output path lives.
+            "input": key,
             "source": "help_parsed",
         }
 

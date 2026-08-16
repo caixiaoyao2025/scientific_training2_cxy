@@ -118,15 +118,30 @@ def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
     # concrete command: the tool's command with {{subcommand}} replaced by the
     # chosen sub -- NEVER just the first token (split()[0] would turn
     # `python -m nano_signal_simulator {{subcommand}}` into `python simulate`).
+    # Accept BOTH brace conventions: discovery emits Jinja-style {{subcommand}},
+    # the merged MCP registry rewrites it to server-native {subcommand}
+    # (merge_to_mcp.clean_tool_entry). Either form MUST become the concrete sub
+    # -- a literal `{subcommand}` leaking into leaf argv is a hard error.
     # Base tools with a bare command (older registries) get the sub appended.
-    cmd_tmpl = (tool.get("command") or "").strip()
-    if "{{subcommand}}" in cmd_tmpl:
-        leaf_cmd = cmd_tmpl.replace("{{subcommand}}", sub)
+    cmd_tmpl = (tool.get("command") or "").strip().replace("{{subcommand}}", "{subcommand}")
+    if "{subcommand}" in cmd_tmpl:
+        leaf_cmd = cmd_tmpl.replace("{subcommand}", sub)
     elif cmd_tmpl:
         leaf_cmd = f"{cmd_tmpl} {sub}"
     else:
         leaf_cmd = f"{tool.get('name') or ''} {sub}"
     leaf["command"] = leaf_cmd.strip()
+    if "{subcommand}" in leaf["command"] or "{{subcommand}}" in leaf["command"]:
+        raise ValueError(
+            f"leaf {leaf['name']} command still contains subcommand placeholder: "
+            f"{leaf['command']!r}")
+    # execution must carry the SAME concrete command: run_tool_spec reads
+    # execution.command for the cli/docker fallbacks, and a stale template here
+    # is exactly the command/execution drift that put `{subcommand}` back into
+    # argv. Fresh dict so we never mutate the BASE object's execution.
+    leaf["execution"] = dict(tool.get("execution") or {})
+    leaf["execution"].setdefault("type", tool.get("type", "cli"))
+    leaf["execution"]["command"] = leaf["command"]
     leaf["inputs"] = {canonical_key(p.get("name", "")): _param_input(p)
                       for p in params if canonical_key(p.get("name", ""))}
     leaf["outputs"] = details.get("outputs") or tool.get("outputs") or {}
@@ -217,6 +232,8 @@ def validate_spec(spec: dict[str, Any]) -> str:
             return f"input {k!r}: unknown type {t!r}"
     declared = set(inputs) | set(get_resources(spec))
     cmd = spec.get("command") or ""
+    if spec.get("_active_subcommand") and ("{subcommand}" in cmd or "{{subcommand}}" in cmd):
+        return "leaf command still contains subcommand placeholder"
     used = TEMPLATE_VAR_NAME.findall(cmd)
     if spec.get("arg_style") == "subcommand":
         used = [v for v in used if v != "subcommand"]

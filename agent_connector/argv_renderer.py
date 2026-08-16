@@ -76,11 +76,18 @@ def render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[s
     `bqtools encode /tmp/in.fa --output out` renders exactly as the tool's
     usage describes.
     """
-    argv = [t for t in (spec.get("command") or "").split() if t]
+    # normalize EITHER brace convention ({subcommand} / {{subcommand}}) and
+    # inline the active sub into its slot. make_leaf_spec already produces a
+    # concrete `bqtools encode`; this is defense-in-depth so a raw base spec
+    # can never leak a literal `{subcommand}` token into argv.
+    sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
+    cmd = (spec.get("command") or "").replace("{{subcommand}}", "{subcommand}")
+    if "{subcommand}" in cmd:
+        cmd = cmd.replace("{subcommand}", sub)
+    argv = [t for t in cmd.split() if t]
     if len(argv) < 2:
         # defensive: not a concrete leaf; keep base exe + active sub
         exe = argv[0] if argv else (spec.get("name") or "").split("_")[0]
-        sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
         argv = [exe] + ([sub] if sub else [])
     params: list[dict[str, Any]] = []
     for key, meta in (spec.get("inputs") or {}).items():

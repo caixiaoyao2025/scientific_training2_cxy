@@ -392,6 +392,9 @@ def test_output_contract_inference():
     ]
     outs = _infer_outputs(merged_bioemu, [], "python")
     assert outs.get("output_dir", {}).get("type") == "directory", outs
+    # explicit input association: the task harness reads outputs[out].input to
+    # find which LLM argument carries the output path (never a name-guess).
+    assert outs.get("output_dir", {}).get("input") == "output_dir", outs
     # a lone output flag is a file, outdir-ish flag is a directory
     assert _infer_outputs(
         [{"name": "--output", "type": "string"}], [], "named"

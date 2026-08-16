@@ -247,15 +247,17 @@ def _task_output_param(tool: dict, sub: str = "") -> str:
             continue
         t = (meta or {}).get("type", "")
         if t in ("file", "path", "directory"):
-            # outputs keys are the canonical input keys (output_dir/output);
-            # confirm the name is a real parameter of this tool/leaf
+            # prefer the explicit outputs[out].input link (the parameter that
+            # carries the output path); fall back to the output key itself when
+            # an older registry has no explicit association.
+            param = (meta or {}).get("input") or name
             inputs = (tool.get("inputs") or {})
             if sub:
                 detail = (tool.get("subcommand_details") or {}).get(sub) or {}
                 inputs = {canonical_key(p.get("name", "")): p
                           for p in (detail.get("params") or [])}
-            if name in inputs:
-                return name
+            if param in inputs:
+                return param
     return ""
 
 

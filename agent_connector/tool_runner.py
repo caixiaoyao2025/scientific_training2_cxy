@@ -108,6 +108,8 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
     # _active_subcommand), it is NOT a user-supplied input.
     import re as _re
     cmd = spec.get("command") or ""
+    if spec.get("_active_subcommand") and ("{subcommand}" in cmd or "{{subcommand}}" in cmd):
+        return "leaf command still contains subcommand placeholder"
     used = _re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
     if spec.get("arg_style") == "subcommand":
         used = [v for v in used if v != "subcommand"]
@@ -596,7 +598,9 @@ def _check_declared_outputs(spec: dict[str, Any], arguments: dict[str, Any],
         kind = str(meta.get("type", "file"))
         if kind not in ("file", "path", "directory"):
             continue
-        path = arguments.get(key)
+        # explicit outputs[out].input is the parameter carrying the output path
+        # (fallback: the output key itself on older registries)
+        path = arguments.get(meta.get("input") or key)
         if not path:
             continue
         from pathlib import Path  # noqa: PLC0415
