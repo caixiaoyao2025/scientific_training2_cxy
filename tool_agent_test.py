@@ -86,10 +86,12 @@ def validate_tool_schema(tool: dict) -> str:
     if not cmd.strip():
         return "NO_CMD"
     # template variable <-> input schema consistency: every {{var}} in the
-    # command must have a matching input, or the rendered argv is undefined.
+    # command must have a matching input OR declared resource (resources are
+    # injected by the runner, not LLM args -- kaptain's {{db}} is a KMA
+    # database path), or the rendered argv is undefined.
     vars_used = _TEMPLATE_VAR_NAME.findall(cmd)
-    input_names = set(inputs.keys())
-    unknown = [v for v in vars_used if v not in input_names]
+    declared_names = set(inputs.keys()) | set((tool.get("resources") or {}).keys())
+    unknown = [v for v in vars_used if v not in declared_names]
     if unknown:
         return f"SCHEMA_INVALID: unknown template variable {sorted(set(unknown))} (command {cmd[:60]})"
     # R package / python_import without -m: not directly callable as a command
@@ -321,6 +323,7 @@ def main() -> int:
         sch, fm = to_function_schemas(t)
         schemas.extend(sch)
         fnmap.update(fm)
+    schema_by_name = {s["function"]["name"]: s for s in schemas}
     spec_map = {t["name"]: t for t in callable_tools}
     if not callable_tools:
         print("no function-callable tools in registry; nothing to test")
@@ -360,9 +363,20 @@ def main() -> int:
     outdir = os.path.join(tempfile.gettempdir(), "agent_task_out")
     os.makedirs(outdir, exist_ok=True)
     tasks = []
+    skip_reasons = []
     for t in callable_tools:
         name = t["name"]
         as_ = t.get("arg_style") or "cli"
+        # runtime resources (kaptain's KMA DB): the LLM must NEVER guess a
+        # database path. A tool whose required resources have no environment
+        # path is not executable -- skip its task with a clear reason instead
+        # of sending the agent in to flail (previously WRONG_FUNCTION 7/12).
+        missing_res = [k for k, r in (t.get("resources") or {}).items()
+                       if (r or {}).get("required") and not (r or {}).get("path")]
+        if missing_res:
+            skip_reasons.append(f"{name}: required runtime resource(s) "
+                                f"{sorted(missing_res)} have no environment path")
+            continue
         if as_ == "subcommand" and t.get("subcommand_details"):
             # one task PER leaf subcommand function (bqtools_encode / _decode /
             # _info ...), not just the first. Each task is bound to its exact
@@ -403,6 +417,8 @@ def main() -> int:
             tasks.append((label, prompt, expected_fn, out, out_kind))
 
     print(f"\n== {len(tasks)} concrete per-tool tasks ==")
+    for r in skip_reasons:
+        print(f"  [skip-task] {r}")
     stats = {"selected": 0, "wrong_function": 0, "started": 0,
              "process_ok": 0, "output_valid": 0, "succeeded": 0}
     per_tool = {}
@@ -421,9 +437,13 @@ def main() -> int:
         target_exited_0 = False   # the TARGET function exited 0 (process-level)
         target_ran = False        # the TARGET function was actually called
         raw_log = []              # full (fn, argv, rc, stdout, stderr) per call
+        # TASK-SCOPED tool selection (P0): the LLM only sees the ONE function
+        # this task is about. Exposing every schema lets it pick a random
+        # unrelated tool (bqtools_info on a kaptain task -> WRONG_FUNCTION).
+        task_tools = [schema_by_name[expected_fn]] if expected_fn in schema_by_name else schemas
         for turn in range(MAX_TURNS):
             resp = client.chat.completions.create(
-                model=MODEL, messages=messages, tools=schemas, tool_choice="auto")
+                model=MODEL, messages=messages, tools=task_tools, tool_choice="auto")
             msg = resp.choices[0].message
             if not getattr(msg, "tool_calls", None):
                 final = msg.content

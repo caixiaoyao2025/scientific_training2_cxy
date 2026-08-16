@@ -83,8 +83,10 @@ def check_tool(tool: dict, sub: str = "", fixture: dict | None = None) -> bool:
     print(f"  FIXTURE: {json.dumps(fixture)}")
     try:
         if sub:
-            spec = dict(tool, _active_subcommand=sub)
-            argv = _render_subcommand(spec, fixture)
+            # render through the CANONICAL leaf spec (concrete command +
+            # scoped inputs), matching what run_tool_spec dispatches.
+            from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
+            argv = _render_subcommand(make_leaf_spec(tool, sub), fixture)
         else:
             argv = _render_command(tool.get("command") or "", fixture)
     except Exception as e:  # noqa: BLE001

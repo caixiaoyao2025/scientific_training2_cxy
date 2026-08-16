@@ -85,10 +85,13 @@ def _param_input(p: dict[str, Any]) -> dict[str, Any]:
 def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
     """Canonical leaf ToolSpec for a subcommand-CLI leaf function.
 
-    Scopes `inputs` to THIS subcommand's params (the base tool's inputs are
-    empty for subcommand CLIs), carries positional metadata, and attaches the
-    sub's OWN outputs contract. Used identically by generator + agent test +
-    runner, so `bqtools_encode(input, output)` is a real contract everywhere.
+    The leaf is a COMPLETE, self-contained ToolSpec -- NOT a base tool plus a
+    `_active_subcommand` hint. Its `command` is the concrete invocation
+    (`bqtools encode`), its `inputs` are scoped to THIS subcommand (positional
+    metadata + flag spelling preserved), and it carries the sub's OWN outputs
+    contract. Every consumer (generator wrappers, agent test, runner,
+    preflight) runs on THIS spec; none of them re-derive a subcommand or
+    re-read `subcommand_details` -- there is exactly one schema source.
     """
     details = (tool.get("subcommand_details") or {}).get(sub) or {}
     params = details.get("params") or []
@@ -96,9 +99,15 @@ def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
     leaf["name"] = f"{tool.get('name', '')}_{sub.replace('-', '_')}"
     leaf["_active_subcommand"] = sub
     leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
+    # concrete command: base executable + the chosen subcommand, NOT a
+    # `{{subcommand}}` template the runner must interpret later.
+    exe = (tool.get("command") or "").split()[0] if (tool.get("command") or "").strip() \
+        else (tool.get("name") or "")
+    leaf["command"] = f"{exe} {sub}".strip()
     leaf["inputs"] = {canonical_key(p.get("name", "")): _param_input(p)
                       for p in params if canonical_key(p.get("name", ""))}
     leaf["outputs"] = details.get("outputs") or tool.get("outputs") or {}
+    leaf["resources"] = tool.get("resources") or {}
     return leaf
 
 
@@ -128,6 +137,14 @@ def json_schema_type(meta: Any) -> str:
     return "string"
 
 
+def get_resources(spec: dict[str, Any]) -> dict[str, Any]:
+    """Runtime resources (paths to pre-existing DBs/indexes) declared on the
+    spec, keyed by canonical_key. These are NOT LLM-inventable: they are
+    injected by the runner from the environment, never part of the function
+    schema."""
+    return spec.get("resources") or {}
+
+
 def validate_spec(spec: dict[str, Any]) -> str:
     """Contract validation of a (leaf) ToolSpec; '' means valid.
 
@@ -135,6 +152,8 @@ def validate_spec(spec: dict[str, Any]) -> str:
     subcommand-leaf shape, so preflight can run it on the EXACT spec the
     runner receives. For subcommand leaves the `{{subcommand}}` placeholder is
     injected by the dispatcher (fnmap -> _active_subcommand), NOT an input.
+    A command placeholder is satisfied by an `inputs` key OR a declared
+    `resources` key (resources are injected by the runner, not LLM args).
     """
     inputs = get_input_schema(spec)
     if not isinstance(inputs, dict):
@@ -146,11 +165,12 @@ def validate_spec(spec: dict[str, Any]) -> str:
         if t not in ("string", "str", "int", "integer", "float", "number",
                      "bool", "boolean", "path", "file", "list", "array", "json"):
             return f"input {k!r}: unknown type {t!r}"
+    declared = set(inputs) | set(get_resources(spec))
     cmd = spec.get("command") or ""
     used = TEMPLATE_VAR_NAME.findall(cmd)
     if spec.get("arg_style") == "subcommand":
         used = [v for v in used if v != "subcommand"]
-    missing = sorted({v for v in used if v not in inputs})
+    missing = sorted({v for v in used if v not in declared})
     if missing:
         return f"command references undeclared inputs: {missing} (command {cmd[:60]})"
     return ""

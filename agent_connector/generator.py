@@ -112,9 +112,20 @@ def generate_wrappers(
 def _emit_wrapper(tool: dict, registration_style: str, execution_method: str) -> str:
     class_name = make_class_name(tool["name"])
     if registration_style == "function":
+        # Only REQUIRED inputs are mandatory in the generated signature; every
+        # other declared input gets a `= None` default, matching the
+        # required-semantics in the LLM function schema (is_required). An
+        # optional input generated as `name: str` (no default) would be
+        # uncallable without it -- a contract the runner does not enforce.
+        from agent_connector.tool_spec import is_required  # noqa: PLC0415
+
         inputs = tool.get("inputs", {})
         func_name = _safe_identifier(tool["name"])
-        signature = ", ".join(f"{name}: str" for name in inputs) or "**kwargs"
+        required = [n for n, m in inputs.items() if is_required(m)]
+        optional = [n for n in inputs if n not in required]
+        sig_parts = [f"{n}: str" for n in required]
+        sig_parts += [f"{n}: str = None" for n in optional]
+        signature = ", ".join(sig_parts) or "**kwargs"
         if inputs:
             kwargs_dict = "{" + ", ".join(f"{name!r}: {name}" for name in inputs) + "}"
         else:

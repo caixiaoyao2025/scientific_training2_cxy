@@ -150,23 +150,35 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
         return {}, f"unknown arguments: {sorted(unknown)}"
     # ONLY an explicit `required: true` is enforced here, matching the function
     # schema (to_function_schemas). Defaulting to required would reject calls
-    # the LLM legitimately makes with only the params it needs.
+    # the LLM legitimately makes with only the params it needs. Runtime
+    # resources (spec.resources) are NEVER required from the LLM: they are
+    # injected by the runner from the environment (see below).
     missing = [k for k, m in inputs.items() if (m or {}).get("required") is True
                and (arguments.get(k) in (None, ""))]
     if missing:
         return {}, f"missing required inputs: {missing}"
     # unknown template vars in the command would render to garbage argv.
-    # EXCEPT subcommand CLIs: `{{subcommand}}` is injected by the dispatcher
-    # (fnmap -> _active_subcommand), it is NOT a user-supplied input.
+    # A placeholder is bound by an input OR a declared resource (resources are
+    # injected by the runner, not user-supplied). EXCEPT subcommand CLIs:
+    # `{{subcommand}}` is injected by the dispatcher (fnmap ->
+    # _active_subcommand), it is NOT a user-supplied input.
     import re as _re
     cmd = spec.get("command") or ""
     used = _re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
     if spec.get("arg_style") == "subcommand":
         used = [v for v in used if v != "subcommand"]
-    unbound = sorted({v for v in used if v not in known})
+    declared = known | set(spec.get("resources") or {})
+    unbound = sorted({v for v in used if v not in declared})
     if unbound:
         return {}, f"command template references undeclared inputs: {unbound}"
     cleaned = {k: v for k, v in arguments.items() if k in known}
+    # inject runtime resources: a declared `path` (e.g. the KMA database
+    # location) is filled in by the environment, NOT left to the LLM to guess.
+    for rkey, rmeta in (spec.get("resources") or {}).items():
+        if rkey not in cleaned or cleaned.get(rkey) in (None, ""):
+            path = (rmeta or {}).get("path") if isinstance(rmeta, dict) else None
+            if path:
+                cleaned[rkey] = str(path)
     return _coerce_arguments(spec, cleaned), ""
 
 
@@ -510,51 +522,39 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
 
 
 def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[str]:
-    """Render a subcommand-CLI invocation by dispatching to the chosen subcommand.
+    """Render a subcommand-CLI invocation from the CANONICAL leaf ToolSpec.
 
-    Prefers the canonical leaf spec shape (make_leaf_spec): `spec.inputs` is
-    already scoped to the active subcommand, so params render straight from it.
-    Falls back to reading subcommand_details[sub].params for legacy raw specs.
-    Positionals go FIRST in argv position order, then flags (bare for
-    store-flags), so `bqtools encode /tmp/in.fa --output out` renders exactly
-    as the tool's usage describes.
+    The leaf (make_leaf_spec) already carries a concrete command
+    (`bqtools encode`) and inputs scoped to that subcommand, so the argv is
+    built straight from `spec.inputs` -- the runner NEVER re-reads
+    subcommand_details as a second schema source. Positionals go FIRST in
+    argv position order, then flags (bare for store-flags), so
+    `bqtools encode /tmp/in.fa --output out` renders exactly as the tool's
+    usage describes.
     """
-    command = (spec.get("command") or "").split()[0]
-    sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
-    # canonical leaf inputs (make_leaf_spec) OR raw subcommand_details params
-    if spec.get("inputs"):
-        params: list[dict[str, Any]] = []
-        for key, meta in (spec.get("inputs") or {}).items():
-            if not isinstance(meta, dict):
-                continue
-            params.append({
-                "key": key,
-                "flag": meta.get("flag") or (f"--{key.replace('_', '-')}"
-                                             if not meta.get("positional") else ""),
-                "positional": bool(meta.get("positional")),
-                "position": meta.get("position") if meta.get("position") is not None else 0,
-                "type": meta.get("type", "string"),
-                "takes_value": meta.get("takes_value"),
-            })
-    else:
-        details = (spec.get("subcommand_details") or {}).get(sub) or {}
-        raw = details.get("params") or []
-        if not raw:
-            # no per-sub detail: fall back to generic template
-            return _render_command(spec.get("command") or "", arguments)
-        params = [{
-            "key": p.get("name", "").lstrip("-").replace("-", "_").lower(),
-            "flag": p.get("name", ""),
-            "positional": bool(p.get("positional")),
-            "position": p.get("position") if p.get("position") is not None else 0,
-            "type": p.get("type", "string"),
-            "takes_value": p.get("takes_value"),
-        } for p in raw]
+    argv = [t for t in (spec.get("command") or "").split() if t]
+    if len(argv) < 2:
+        # defensive: not a concrete leaf; keep base exe + active sub
+        exe = argv[0] if argv else (spec.get("name") or "").split("_")[0]
+        sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
+        argv = [exe] + ([sub] if sub else [])
+    params: list[dict[str, Any]] = []
+    for key, meta in (spec.get("inputs") or {}).items():
+        if not isinstance(meta, dict):
+            continue
+        params.append({
+            "key": key,
+            "flag": meta.get("flag") or (f"--{key.replace('_', '-')}"
+                                         if not meta.get("positional") else ""),
+            "positional": bool(meta.get("positional")),
+            "position": meta.get("position") if meta.get("position") is not None else 0,
+            "type": meta.get("type", "string"),
+            "takes_value": meta.get("takes_value"),
+        })
     # positionals first (argv order), then flags in declared order
     positionals = sorted([p for p in params if p["positional"]],
                          key=lambda p: p["position"])
     flags = [p for p in params if not p["positional"]]
-    argv = [command, sub]
     for p in positionals:
         val = arguments.get(p["key"])
         if val in (None, "", False):
@@ -568,10 +568,8 @@ def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[
             continue
         store_flag = str(p["type"]).lower() in ("bool", "boolean") \
             or p.get("takes_value") is False
-        if store_flag:
-            argv.append(p["flag"])
-        else:
-            argv.append(p["flag"])
+        argv.append(p["flag"])
+        if not store_flag:
             argv.append(str(val))
     return argv
 
@@ -583,6 +581,25 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
         execution = {"type": spec.get("type", "cli"), "command": spec.get("command", "")}
     exec_type = execution.get("type", "cli")
     timeout = int(spec.get("timeout_seconds", 600))
+    # A raw subcommand base spec (inputs={}) is resolved to its canonical leaf
+    # ONCE here, so validation AND rendering both operate on the SAME
+    # self-contained spec -- the runner never re-derives the subcommand later.
+    if spec.get("arg_style") == "subcommand" and not spec.get("inputs"):
+        from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
+        sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
+        if not sub:
+            return {"status": "validation_error", "return_code": None,
+                    "stdout": "", "stderr": "[validation] missing subcommand: "
+                    "raw subcommand spec has no _active_subcommand and no "
+                    "'subcommand' argument", "argv": []}
+        spec = make_leaf_spec(spec, sub)
+        if not spec.get("inputs"):
+            return {"status": "validation_error", "return_code": None,
+                    "stdout": "", "stderr": f"[validation] subcommand "
+                    f"'{sub}' has no discovered params", "argv": []}
+        # `subcommand` was consumed to select the leaf; it is a dispatcher
+        # key, not a parameter of the leaf function.
+        arguments = {k: v for k, v in arguments.items() if k != "subcommand"}
     arguments, arg_err = validate_arguments(spec, arguments)
     if arg_err:
         return {"status": "validation_error", "return_code": None,

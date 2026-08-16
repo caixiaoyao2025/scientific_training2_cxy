@@ -160,11 +160,15 @@ def _check_registry_contract(entry: dict) -> str:
                         f"inputs: {missing_sub}")
     cmd = entry.get("command") or ""
     inputs = entry.get("inputs") or {}
+    # runtime resources satisfy command placeholders too (injected by the
+    # runner, not LLM args) -- a template may reference {{db}} with db declared
+    # only under `resources` (kaptain's KMA database).
+    declared = set(inputs) | set(entry.get("resources") or {})
     used = re.findall(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}", cmd)
     if entry.get("arg_style") == "subcommand":
         # `{{subcommand}}` is injected by the dispatcher (fnmap), not an input
         used = [v for v in used if v != "subcommand"]
-    missing = sorted({v for v in used if v not in inputs})
+    missing = sorted({v for v in used if v not in declared})
     if missing:
         return f"command references undeclared inputs: {missing} (command {cmd[:60]})"
     return ""
@@ -242,6 +246,39 @@ def _subcommand_outputs(subs: dict, tool_name: str) -> dict:
         params = entry.get("params") or []
         entry["outputs"] = _infer_outputs(params, [], "named")
         out[sub] = entry
+    return out
+
+
+_RESOURCE_HINTS = re.compile(
+    r"(?:^|[\s_-])(db|database|index|lookup|ref|reference|kma)(?:$|[\s_-])",
+    re.IGNORECASE)
+
+
+def _infer_resources(parsed: list) -> dict:
+    """Runtime resources (paths to pre-existing DBs/indexes) among parsed params.
+
+    Auto-discovery cannot know the ACTUAL location of a KMA database or BLAST
+    index, and the LLM must never guess one -- so such params are moved OUT of
+    `inputs` (they would otherwise look like required LLM arguments) into a
+    `resources` contract the runner injects from the environment (kaptain's
+    `--db` "Basename of KMA database", `--db-lookup` "Lookup file of KMA
+    database"). Detected by name/help-text hints.
+    """
+    out: dict = {}
+    for p in parsed:
+        name = str(p.get("name", ""))
+        key = _canonical_key(name)
+        if not key or key in out:
+            continue
+        plain = name.lower().strip()
+        desc = (p.get("description") or "").lower()
+        if not (_RESOURCE_HINTS.search(plain) or _RESOURCE_HINTS.search(desc)):
+            continue
+        out[key] = {
+            "required": bool(p.get("required")),
+            "source": "help_parsed",
+            "description": p.get("description") or f"Runtime resource {name}",
+        }
     return out
 
 
@@ -422,6 +459,15 @@ def tool_to_registry_entry(tool, verification=None):
         inputs_src = "placeholder"
         if not schema_pending_reason:
             schema_pending_reason = "no --help schema parsed (inputs would be a guess)"
+    # runtime resources (pre-existing DBs/indexes like kaptain's KMA database):
+    # moved OUT of `inputs` so the LLM is never asked to supply (guess) a
+    # database path, and declared under `resources` for the runner to inject
+    # from the environment. Command templates still reference them via
+    # {{db}}/{{db_lookup}} -- the contract check counts resources as declared.
+    resources = _infer_resources(parsed) if arg_style != "subcommand" else {}
+    if resources:
+        for rkey in resources:
+            inputs.pop(rkey, None)
     # positional args (usage: cmd file1 file2 -o out) are ALREADY part of
     # params_schema: execute_test._merge_positionals folds flags + positionals
     # into one canonical list, so this stage reads a SINGLE inputs source.
@@ -459,6 +505,9 @@ def tool_to_registry_entry(tool, verification=None):
             "max_preview_lines": 50,
         },
         "inputs": inputs,
+        # runtime resources (pre-existing DB/index paths) the runner injects
+        # from the environment; never part of the LLM function schema.
+        "resources": resources,
         # output contract: tells agents what the tool produces and where, so
         # they know what "success" looks like (output file exists). Auto-disco
         # can't always know the exact path, so this is best-effort + honest.
