@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import tempfile
+import time
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 if REPO not in sys.path:
@@ -42,6 +43,12 @@ API_KEY = (os.environ.get("WESTLAKE_API_KEY") or os.environ.get("OPENAI_API_KEY"
 REGISTRY = os.environ.get("REGISTRY", "data/mcp_registry.yaml")
 MAX_TURNS = 6
 MAX_SAME_TOOL_ATTEMPTS = 3  # anti-tool-roulette: cap retries per tool per task
+# A tool that HANGS (bioemu waiting on an unreachable model hub) must fail fast
+# and let the agent move on -- otherwise a single hung subprocess eats the
+# spec default 600s per call and the whole step times out (run #31941212195).
+AGENT_CALL_TIMEOUT = 150   # seconds per tool invocation in the agent harness
+AGENT_TASK_BUDGET = 180    # seconds per task (all turns combined)
+AGENT_LLM_TIMEOUT = 90     # seconds per chat.completions call (SDK timeout)
 
 
 def load_tools(path: str) -> list[dict]:
@@ -312,7 +319,8 @@ def main() -> int:
 
     from openai import OpenAI
     from agent_connector.tool_runner import run_tool_spec, format_result
-    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    client = OpenAI(api_key=API_KEY, base_url=BASE_URL,
+                    timeout=AGENT_LLM_TIMEOUT, max_retries=1)
     # Only test tools the agent can actually invoke via function-calling:
     # those with a real command (named/positional/subcommand CLI or `python -m`).
     # python_import / python-API tools without a -m entry can't be invoked by a
@@ -475,7 +483,13 @@ def main() -> int:
         # this task is about. Exposing every schema lets it pick a random
         # unrelated tool (bqtools_info on a kaptain task -> WRONG_FUNCTION).
         task_tools = [schema_by_name[expected_fn]] if expected_fn in schema_by_name else schemas
+        task_start = time.time()
+        budget_exceeded = False
         for turn in range(MAX_TURNS):
+            if time.time() - task_start > AGENT_TASK_BUDGET:
+                budget_exceeded = True
+                print(f"[task budget {AGENT_TASK_BUDGET}s exceeded after turn {turn}; stopping task]")
+                break
             resp = client.chat.completions.create(
                 model=MODEL, messages=messages, tools=task_tools, tool_choice="auto")
             msg = resp.choices[0].message
@@ -514,7 +528,8 @@ def main() -> int:
                         # function schema the LLM saw (fnmap[fn_name]). Its inputs
                         # are scoped to THIS subcommand, so bqtools_encode(input,
                         # output) args validate against the exact schema shown.
-                        raw = run_tool_spec(tool_spec, args)
+                        raw = run_tool_spec(tool_spec, args,
+                                            timeout_override=AGENT_CALL_TIMEOUT)
                         result = format_result(raw)
                         target_ran = True
                         # full raw capture (P1: never truncate the real error)

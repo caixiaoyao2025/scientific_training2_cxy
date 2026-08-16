@@ -121,8 +121,12 @@ jobs:
           WESTLAKE_BASE_URL: ${{ secrets.WESTLAKE_BASE_URL }}
           WESTLAKE_MODEL: ${{ secrets.WESTLAKE_MODEL }}
           REGISTRY: data/mcp_registry.yaml
-        run: python tool_agent_test.py
-        timeout-minutes: 20
+        # `python -u`: unbuffered stdout so the runner streams progress in
+        # real time (a timeout mid-run must show HOW FAR it got, not a blank log).
+        # Per-call tool timeout is capped inside tool_agent_test.py
+        # (AGENT_CALL_TIMEOUT=150s) so a hung tool can't burn 600s per call.
+        run: python -u tool_agent_test.py
+        timeout-minutes: 45
 
       - name: Commit and push results
         run: |

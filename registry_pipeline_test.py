@@ -52,6 +52,11 @@ def _sample_inputs(tool: dict) -> dict:
     for var in TEMPLATE_VAR_NAME.findall(cmd):
         out[var] = vals.get(var, "x")
     for name, meta in (tool.get("inputs") or {}).items():
+        # the base `subcommand` selector is the DISPATCHER's job: leaves carry
+        # a concrete `_active_subcommand`, so feeding `subcommand` into a leaf
+        # call makes the validator reject it as unknown.
+        if tool.get("arg_style") == "subcommand" and name == "subcommand":
+            continue
         if name not in out and (meta or {}).get("required"):
             out[name] = vals.get(name, "x")
     return out
@@ -129,7 +134,9 @@ def pipeline(tool: dict) -> dict:
         # render step produced) -- a base spec would be rejected by the runner.
         exec_spec = leaf if (tool.get("arg_style") == "subcommand"
                              and tool.get("subcommand_details")) else tool
-        result = run_tool_spec(exec_spec, args)
+        # tight per-call cap: a tool that HANGS on an unreachable hub (bioemu)
+        # must fail in ~2 min, not eat the 600s spec default (run #31941212195).
+        result = run_tool_spec(exec_spec, args, timeout_override=120)
         err = _check_output(result, tool)
         report["execute"] = "PASS" if not err else f"FAIL ({err})"
         report["output"] = "PASS" if not err else f"FAIL ({err})"

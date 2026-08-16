@@ -491,13 +491,21 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
     return actions, errors
 
 
-def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
-    """Execute a ToolSpec (registry.yaml entry) with the given arguments."""
+def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any],
+                  timeout_override: int | None = None) -> dict[str, Any]:
+    """Execute a ToolSpec (registry.yaml entry) with the given arguments.
+
+    `timeout_override` caps the per-call subprocess timeout (seconds). The
+    agent harness passes a tight cap so a tool that HANGS (e.g. bioemu waiting
+    on an unreachable model hub) fails in ~2 minutes instead of eating the
+    spec default (600s) and burning the whole workflow step.
+    """
     execution = spec.get("execution")
     if not isinstance(execution, dict) or not execution.get("type"):
         execution = {"type": spec.get("type", "cli"), "command": spec.get("command", "")}
     exec_type = execution.get("type", "cli")
-    timeout = int(spec.get("timeout_seconds", 600))
+    timeout = (timeout_override if timeout_override is not None
+               else int(spec.get("timeout_seconds", 600)))
     # NO base-spec auto-resolution here. A subcommand BASE tool (arg_style=
     # subcommand, inputs={}) is NOT executable: choosing the subcommand is the
     # DISPATCHER's job, which ALREADY happened when the caller looked up the
