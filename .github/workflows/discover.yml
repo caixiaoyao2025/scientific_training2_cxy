@@ -1,9 +1,7 @@
 name: Daily Tool Discovery
 
 on:
-  schedule:
-    - cron: '0 8 * * *'  # 每天 UTC 08:00 (北京 16:00)
-  workflow_dispatch:       # 手动触发
+  workflow_dispatch:       # 手动触发（原每天 UTC 08:00 的定时触发已移除）
 
 permissions:
   contents: write          # 允许 commit + push
