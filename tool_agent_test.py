@@ -19,6 +19,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -49,6 +51,16 @@ MAX_SAME_TOOL_ATTEMPTS = 3  # anti-tool-roulette: cap retries per tool per task
 AGENT_CALL_TIMEOUT = 150   # seconds per tool invocation in the agent harness
 AGENT_TASK_BUDGET = 180    # seconds per task (all turns combined)
 AGENT_LLM_TIMEOUT = 90     # seconds per chat.completions call (SDK timeout)
+
+# bqtools derives the output MODE from the -o path EXTENSION (*.bq/*.vbq/*.cbq),
+# so file-producing subcommand outputs need a real extension (.binseq errors
+# "Could not determine BINSEQ output mode from path"). BINSEQ-consuming
+# subcommands need a *.vbq input, NOT the FASTA sample (a FASTA fed to decode/
+# grep/etc fails "Unable to determine BINSEQ format from magic bytes").
+_BQ_OUT_EXT = {"encode": ".vbq", "cat": ".vbq", "grep": ".vbq",
+               "sample": ".vbq", "revcomp": ".vbq", "decode": ".fa"}
+_BQ_INPUT_BINSEQ = ("decode", "cat", "info", "grep", "sample", "split",
+                    "pipe", "revcomp", "verify")
 
 
 def load_tools(path: str) -> list[dict]:
@@ -396,6 +408,16 @@ def main() -> int:
     sample = os.path.join(tempfile.gettempdir(), "agent_test_sample.fasta")
     with open(sample, "w", encoding="utf-8") as f:
         f.write(">seq1\nACGT\nACGT\n>seq2\nTTTTTT\n>seq3\nCCCGGG\n>seq4\nAAAAT\n>seq5\nGATAC\n")
+    # real *.vbq fixture for the BINSEQ-consuming subcommands (encode's input is
+    # the FASTA). Best-effort: if the binary is missing the binseq tasks fail
+    # honestly on a missing file instead of a fake format mismatch.
+    binseq_sample = os.path.join(tempfile.gettempdir(), "agent_test_sample.vbq")
+    if not os.path.exists(binseq_sample) and shutil.which("bqtools"):
+        try:
+            subprocess.run(["bqtools", "encode", sample, "--output", binseq_sample],
+                           timeout=60, capture_output=True, text=True, check=False)
+        except Exception:  # noqa: BLE001
+            pass
 
     # --- per-tool concrete tasks with specified params + output validation ---
     # Each task tells the agent the tool, the input file, and a concrete output
@@ -425,19 +447,20 @@ def main() -> int:
             # function name so the test can distinguish WRONG_FUNCTION.
             for sub, detail in (t.get("subcommand_details") or {}).items():
                 expected_fn = f"{name}_{sub.replace('-', '_')}"
-                out = os.path.join(outdir, f"{name}_{sub}_out")
+                out = os.path.join(outdir, f"{name}_{sub}_out{_BQ_OUT_EXT.get(sub, '')}")
                 out_kind = _task_output_kind(t, sub)
                 out_param = _task_output_param(t, sub)
+                inp = binseq_sample if sub in _BQ_INPUT_BINSEQ else sample
                 label = f"{name}: {sub} on sample -> {os.path.basename(out)}"
                 if out_param:
                     prompt = (f"Call the function {expected_fn} (NOT {name} directly) to "
-                              f"process the input file {sample}. Write the output to "
+                              f"process the input file {inp}. Write the output to "
                               f"{out} by passing it as the '{out_param}' parameter. "
                               "Pass the input file as the function's input parameter. "
                               "After running, the output must exist.")
                 else:
                     prompt = (f"Call the function {expected_fn} (NOT {name} directly) to "
-                              f"process the input file {sample}. Pass the arguments "
+                              f"process the input file {inp}. Pass the arguments "
                               "the function's schema requires. After running, report "
                               "what it printed.")
                 tasks.append((label, prompt, expected_fn, out, out_kind))

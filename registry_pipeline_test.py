@@ -61,7 +61,11 @@ def _prepare_fixtures() -> dict:
     fasta.write_text(
         ">seq1\nACGTACGT\n>seq2\nTTTTTT\n>seq3\nCCCGGG\n>seq4\nAAAAT\n>seq5\nGATAC\n",
         encoding="utf-8")
-    binseq = tmp / "pipeline_sample.binseq"
+    # BINSEQ variants are *.bq / *.vbq / *.cbq: `bqtools encode` derives the
+    # output MODE from the -o path EXTENSION, so a `.binseq` path errors with
+    # "Could not determine BINSEQ output mode from path". `.vbq` (variable-length,
+    # the encode default) matches our variable-length FASTA fixture.
+    binseq = tmp / "pipeline_sample.vbq"
     exe = shutil.which("bqtools")
     if exe and not binseq.exists():
         for attempt in (
@@ -89,19 +93,20 @@ def _leaf_fixture(leaf: dict) -> dict:
     outdir = Path(tempfile.gettempdir()) / "pipeline_out"
     outdir.mkdir(parents=True, exist_ok=True)
     base = {"encode": {"input": _FIXTURES["fasta"],
-                       "output": str(outdir / "sample.binseq")},
+                       "output": str(outdir / "sample.vbq")},
             "decode": {"input": _FIXTURES["binseq"],
-                       "output": str(outdir / "sample.fa")},
+                       "output": str(outdir / "sample.fa"),
+                       "format": "a"},
             "cat": {"input": _FIXTURES["binseq"],
-                    "output": str(outdir / "cat.binseq")},
+                    "output": str(outdir / "cat.vbq")},
             "grep": {"input": _FIXTURES["binseq"],
-                     "output": str(outdir / "grep.binseq"),
+                     "output": str(outdir / "grep.vbq"),
                      "reg": "ACGT"},
             "sample": {"input": _FIXTURES["binseq"],
-                       "output": str(outdir / "sample.binseq"),
+                       "output": str(outdir / "sample.vbq"),
                        "fraction": "0.5"},
             "revcomp": {"input": _FIXTURES["binseq"],
-                        "output": str(outdir / "revcomp.binseq")},
+                        "output": str(outdir / "revcomp.vbq")},
             "info": {"input": _FIXTURES["binseq"]},
             "verify": {"input": _FIXTURES["binseq"]},
             "split": {"input": _FIXTURES["binseq"]},
