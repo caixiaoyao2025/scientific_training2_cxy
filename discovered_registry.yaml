@@ -145,6 +145,7 @@ tools:
       description: Directory to save the samples. Each batch of samples will initially
         be dumped as .npz files. Once all batches are sampled, they will be converted
         to .xtc and .pdb.
+      input: output_dir
       source: help_parsed
   execution: null
   subcommands: []
@@ -165,7 +166,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute__vt9q94h/bioemu
+    - bioemu @ file:///tmp/execute_olfmzi9l/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -207,7 +208,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute__vt9q94h/venv
+    venv_path: /tmp/execute_olfmzi9l/venv
   _discovery_metadata:
     github: https://github.com/microsoft/bioemu
     stars: 866
@@ -228,7 +229,7 @@ tools:
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-16T08:15:58.078203'
+    verified_checked_at: '2026-08-16T10:18:53.155474'
     dependencies:
       system_commands: []
       readme_hint: ''
@@ -376,7 +377,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute__vt9q94h/bioemu
+    - bioemu @ file:///tmp/execute_olfmzi9l/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -638,6 +639,7 @@ tools:
         output:
           type: file
           description: Output binseq file
+          input: output
           source: help_parsed
     decode:
       params:
@@ -700,6 +702,7 @@ tools:
         output:
           type: file
           description: Output file
+          input: output
           source: help_parsed
     cat:
       params:
@@ -798,6 +801,7 @@ tools:
         output:
           type: file
           description: Output binseq file
+          input: output
           source: help_parsed
     info:
       params:
@@ -985,6 +989,7 @@ tools:
         output:
           type: file
           description: Output file
+          input: output
           source: help_parsed
     sample:
       params:
@@ -1061,6 +1066,7 @@ tools:
         output:
           type: file
           description: Output file
+          input: output
           source: help_parsed
     split:
       params:
@@ -1313,6 +1319,7 @@ tools:
         output:
           type: file
           description: Output binseq file
+          input: output
           source: help_parsed
     verify:
       params:
@@ -1383,7 +1390,7 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_d7r0jak1/venv
+    venv_path: /tmp/execute_3yrzojqf/venv
   _discovery_metadata:
     github: https://github.com/ArcInstitute/bqtools
     stars: 39
@@ -1403,21 +1410,21 @@ tools:
     verified_license: false
     verified_license_path: ''
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-16T08:18:58.307968'
+    verified_checked_at: '2026-08-16T10:20:45.991908'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: cargo
     exec_status: passed
-    exec_reason: '`/tmp/execute_d7r0jak1/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_3yrzojqf/bqtools/target/release/bqtools --help` ->
       exit 0'
-    exec_install_evidence: " v3.0.1\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
+    exec_install_evidence: " v2.5.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
       \   Compiling is-terminal v0.4.17\n   Compiling xxhash-rust v0.8.18\n   Compiling\
       \ fixedbitset v0.5.7\n   Compiling thousands v0.2.0\n   Compiling rust-htslib\
       \ v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling\
-      \ bqtools v0.5.13 (/tmp/execute_d7r0jak1/bqtools)\n    Finished `release` profile\
-      \ [optimized] target(s) in 2m 14s\n"
+      \ bqtools v0.5.13 (/tmp/execute_3yrzojqf/bqtools)\n    Finished `release` profile\
+      \ [optimized] target(s) in 2m 09s\n"
     exec_run_evidence: "into multiple files based on patterns provided in a pattern\
       \ file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc      \
       \ \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify \
@@ -1535,10 +1542,12 @@ tools:
     output:
       type: directory
       description: 'Output directory (default: None)'
+      input: output
       source: help_parsed
     output_html:
       type: file
       description: 'Output report name (default: report.html)'
+      input: output_html
       source: help_parsed
   execution: null
   subcommands: []
@@ -1577,7 +1586,7 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_vpb0czmd/venv
+    venv_path: /tmp/execute_dnu9fbf1/venv
   _discovery_metadata:
     github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
     stars: 3
@@ -1598,14 +1607,14 @@ tools:
     verified_license_path: LICENSE
     verified_entry_scripts:
     - kaptain/__main__.py
-    verified_checked_at: '2026-08-16T08:19:59.381231'
+    verified_checked_at: '2026-08-16T10:21:25.962960'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_vpb0czmd/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_dnu9fbf1/venv/bin/kaptain --help` -> exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "efore\n                        classification. Leave empty\
       \ or use None for no\n                        downsampling. (default: [None])\n\
@@ -1701,7 +1710,7 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_vpb0czmd/KAPTAIN
+    - kaptain @ file:///tmp/execute_dnu9fbf1/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.0
     - numpy==2.4.6

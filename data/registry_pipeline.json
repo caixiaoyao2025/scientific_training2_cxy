@@ -3,8 +3,8 @@
     "name": "bioemu",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: DEBUG:httpcore.connection:connect_tcp.started host='huggingface.co' port=443 local_address=None timeout=3 socket_options))",
-    "output": "FAIL (output: exit 1 (stderr: DEBUG:httpcore.connection:connect_tcp.started host='huggingface.co' port=443 local_address=None timeout=3 socket_options))",
+    "execute": "FAIL (output: exit None (stderr: timed out after 600s))",
+    "output": "FAIL (output: exit None (stderr: timed out after 600s))",
     "_argv": [
       "python",
       "-m",
@@ -21,7 +21,7 @@
     "_functions": [
       "bioemu"
     ],
-    "_return_code": 1
+    "_return_code": null
   },
   {
     "name": "bqtools",
