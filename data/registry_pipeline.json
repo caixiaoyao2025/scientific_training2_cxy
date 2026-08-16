@@ -11,8 +11,7 @@
       "bioemu.sample",
       "MKT",
       "1",
-      "/tmp/out",
-      "--filter_samples"
+      "/tmp/out"
     ],
     "_args": {
       "sequence": "MKT",
@@ -28,14 +27,9 @@
     "name": "bqtools",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: error: unrecognized subcommand 'x'\n\nUsage: bqtools <COMMAND>\n\nFor more information, try '--help'.\n))",
-    "output": "FAIL (output: exit 2 (stderr: error: unrecognized subcommand 'x'\n\nUsage: bqtools <COMMAND>\n\nFor more information, try '--help'.\n))",
-    "_argv": [
-      "bqtools",
-      "x",
-      "--subcommand",
-      "x"
-    ],
+    "execute": "FAIL (output: exit None (stderr: [validation] unknown arguments: ['subcommand']))",
+    "output": "FAIL (output: exit None (stderr: [validation] unknown arguments: ['subcommand']))",
+    "_argv": [],
     "_args": {
       "subcommand": "x"
     },
@@ -51,34 +45,28 @@
       "bqtools_revcomp",
       "bqtools_verify"
     ],
-    "_return_code": 2
+    "_return_code": null
   },
   {
     "name": "kaptain",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: 2026-08-16 01:29:16,868 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-16 01:29:16,868 -        __init_))",
-    "output": "FAIL (output: exit 1 (stderr: 2026-08-16 01:29:16,868 -        __init__ -    INFO - Starting KAPTAIN workflow\n2026-08-16 01:29:16,868 -        __init_))",
+    "execute": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
+    "output": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
     "_argv": [
       "kaptain",
       "--ont-in",
-      "x",
-      "--db",
-      "x",
-      "--db-lookup",
       "x",
       "--output",
       "/tmp/out.tsv"
     ],
     "_args": {
       "ont_in": "x",
-      "db": "x",
-      "db_lookup": "x",
       "output": "/tmp/out.tsv"
     },
     "_functions": [
       "kaptain"
     ],
-    "_return_code": 1
+    "_return_code": 2
   }
 ]

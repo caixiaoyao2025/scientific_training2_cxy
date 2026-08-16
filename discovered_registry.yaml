@@ -5,7 +5,7 @@ tools:
     {{batch_size_100}} --model_name {{model_name}} --ckpt_path {{ckpt_path}} --model_config_path
     {{model_config_path}} --denoiser_type {{denoiser_type}} --denoiser_config {{denoiser_config}}
     --cache_embeds_dir {{cache_embeds_dir}} --cache_so3_dir {{cache_so3_dir}} --msa_host_url
-    {{msa_host_url}} --filter_samples --base_seed {{base_seed}}
+    {{msa_host_url}} --filter_samples {{filter_samples}} --base_seed {{base_seed}}
   arg_style: python
   callable_via: python -m bioemu.sample
   readme_examples:
@@ -20,75 +20,97 @@ tools:
     max_preview_lines: 50
   inputs:
     batch_size_100:
-      type: string
+      type: int
       description: Batch size you'd use for a sequence of length 100. The batch size
         will be calculated from this, assuming that the memory requirement to compute
         each sample scales quadratically with the sequence length.
       required: false
       source: help_parsed
+      flag: --batch_size_100
+      takes_value: true
     model_name:
-      type: string
+      type: path
       description: Name of pretrained model to use. If this is set, you do not need
         to provide `ckpt_path` or `model_config_path`.
       required: false
       source: help_parsed
+      flag: --model_name
+      takes_value: true
     ckpt_path:
-      type: string
+      type: path
       description: Path to the model checkpoint. If this is set, `model_name` will
         be ignored.
       required: false
       source: help_parsed
+      flag: --ckpt_path
+      takes_value: true
     model_config_path:
-      type: string
+      type: path
       description: Path to the model config, defining score model architecture and
         the corruption process the model was trained with. Only required if `ckpt_path`
         is set.
       required: false
       source: help_parsed
+      flag: --model_config_path
+      takes_value: true
     denoiser_type:
       type: string
       description: Denoiser to use for sampling, if `denoiser_config` not specified.
         Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
       required: false
       source: help_parsed
+      flag: --denoiser_type
+      takes_value: true
     denoiser_config:
-      type: string
+      type: path
       description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
         a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
         which includes the denoiser target, potentials, and steering parameters in
         one file.
       required: false
       source: help_parsed
+      flag: --denoiser_config
+      takes_value: true
     cache_embeds_dir:
-      type: string
+      type: path
       description: Directory to store MSA embeddings. If not set, this defaults to
         `COLABFOLD_DIR/embeds_cache`.
       required: false
       source: help_parsed
+      flag: --cache_embeds_dir
+      takes_value: true
     cache_so3_dir:
-      type: string
+      type: path
       description: Directory to store SO3 precomputations. If not set, this defaults
         to `~/sampling_so3_cache`.
       required: false
       source: help_parsed
+      flag: --cache_so3_dir
+      takes_value: true
     msa_host_url:
-      type: string
+      type: path
       description: MSA server URL. If not set, this defaults to colabfold's remote
         server. If sequence is an a3m file, this is ignored.
       required: false
       source: help_parsed
+      flag: --msa_host_url
+      takes_value: true
     filter_samples:
       type: boolean
       description: Filter out unphysical samples with e.g. long bond distances or
         steric clashes.
       required: false
       source: help_parsed
+      flag: --filter_samples
+      takes_value: false
     base_seed:
-      type: string
+      type: int
       description: Base random seed for sampling. If set, each batch's seed will be
         set to base_seed + (num samples already generated).
       required: false
       source: help_parsed
+      flag: --base_seed
+      takes_value: true
     sequence:
       type: path
       description: Amino acid sequence for which to generate samples, or a path to
@@ -99,7 +121,7 @@ tools:
       positional: true
       position: 0
     num_samples:
-      type: path
+      type: int
       description: Number of samples to generate. If `output_dir` already contains
         samples, this function will only generate additional samples necessary to
         reach the specified `num_samples`.
@@ -116,6 +138,7 @@ tools:
       source: help_parsed
       positional: true
       position: 2
+  resources: {}
   outputs:
     output_dir:
       type: directory
@@ -142,7 +165,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_8u_h0s1v/bioemu
+    - bioemu @ file:///tmp/execute_yh2kj101/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -184,7 +207,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_8u_h0s1v/venv
+    venv_path: /tmp/execute_yh2kj101/venv
   _discovery_metadata:
     github: https://github.com/microsoft/bioemu
     stars: 866
@@ -205,7 +228,7 @@ tools:
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-16T00:14:40.025239'
+    verified_checked_at: '2026-08-16T07:00:30.247259'
     dependencies:
       system_commands: []
       readme_hint: ''
@@ -222,26 +245,26 @@ tools:
       \ POSITIONAL ARGUMENTS\n"
     exec_params_schema:
     - name: --batch_size_100
-      type: string
+      type: int
       description: Batch size you'd use for a sequence of length 100. The batch size
         will be calculated from this, assuming that the memory requirement to compute
         each sample scales quadratically with the sequence length.
       required: false
       takes_value: true
     - name: --model_name
-      type: string
+      type: path
       description: Name of pretrained model to use. If this is set, you do not need
         to provide `ckpt_path` or `model_config_path`.
       required: false
       takes_value: true
     - name: --ckpt_path
-      type: string
+      type: path
       description: Path to the model checkpoint. If this is set, `model_name` will
         be ignored.
       required: false
       takes_value: true
     - name: --model_config_path
-      type: string
+      type: path
       description: Path to the model config, defining score model architecture and
         the corruption process the model was trained with. Only required if `ckpt_path`
         is set.
@@ -254,7 +277,7 @@ tools:
       required: false
       takes_value: true
     - name: --denoiser_config
-      type: string
+      type: path
       description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
         a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
         which includes the denoiser target, potentials, and steering parameters in
@@ -262,19 +285,19 @@ tools:
       required: false
       takes_value: true
     - name: --cache_embeds_dir
-      type: string
+      type: path
       description: Directory to store MSA embeddings. If not set, this defaults to
         `COLABFOLD_DIR/embeds_cache`.
       required: false
       takes_value: true
     - name: --cache_so3_dir
-      type: string
+      type: path
       description: Directory to store SO3 precomputations. If not set, this defaults
         to `~/sampling_so3_cache`.
       required: false
       takes_value: true
     - name: --msa_host_url
-      type: string
+      type: path
       description: MSA server URL. If not set, this defaults to colabfold's remote
         server. If sequence is an a3m file, this is ignored.
       required: false
@@ -288,7 +311,7 @@ tools:
       aliases:
       - -f
     - name: --base_seed
-      type: string
+      type: int
       description: Base random seed for sampling. If set, each batch's seed will be
         set to base_seed + (num samples already generated).
       required: false
@@ -298,38 +321,40 @@ tools:
       description: Amino acid sequence for which to generate samples, or a path to
         a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
         then colabfold will be used to generate an MSA and embedding.
+      required: true
       positional: true
       position: 0
-      required: true
     - name: num_samples
-      type: path
+      type: int
       description: Number of samples to generate. If `output_dir` already contains
         samples, this function will only generate additional samples necessary to
         reach the specified `num_samples`.
+      required: true
       positional: true
       position: 1
-      required: true
     - name: output_dir
       type: path
       description: Directory to save the samples. Each batch of samples will initially
         be dumped as .npz files. Once all batches are sampled, they will be converted
         to .xtc and .pdb.
+      required: true
       positional: true
       position: 2
-      required: true
     exec_positional_args:
     - name: sequence
       type: path
       description: Amino acid sequence for which to generate samples, or a path to
         a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
         then colabfold will be used to generate an MSA and embedding.
+      required: true
       positional: true
       position: 0
     - name: num_samples
-      type: path
+      type: int
       description: Number of samples to generate. If `output_dir` already contains
         samples, this function will only generate additional samples necessary to
         reach the specified `num_samples`.
+      required: true
       positional: true
       position: 1
     - name: output_dir
@@ -337,6 +362,7 @@ tools:
       description: Directory to save the samples. Each batch of samples will initially
         be dumped as .npz files. Once all batches are sampled, they will be converted
         to .xtc and .pdb.
+      required: true
       positional: true
       position: 2
     exec_installed_versions:
@@ -350,7 +376,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_8u_h0s1v/bioemu
+    - bioemu @ file:///tmp/execute_yh2kj101/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -438,6 +464,7 @@ tools:
     intercept_large_output: true
     max_preview_lines: 50
   inputs: {}
+  resources: {}
   outputs:
     stdout:
       type: text
@@ -459,14 +486,14 @@ tools:
     encode:
       params:
       - name: --format
-        type: string
+        type: path
         description: Input file format
         required: false
         takes_value: true
         aliases:
         - -f
       - name: --batch-size
-        type: string
+        type: int
         description: Batch size (in records) to use in parallel processing
         required: false
         takes_value: true
@@ -488,14 +515,14 @@ tools:
         aliases:
         - -r
       - name: --manifest
-        type: string
+        type: path
         description: Path to a text file containing a list of input files to process.
         required: false
         takes_value: true
         aliases:
         - -M
       - name: --depth
-        type: string
+        type: int
         description: Maximum depth in the directory tree to process. Leaving this
           option empty will set no limit
         required: false
@@ -517,7 +544,7 @@ tools:
         aliases:
         - -C
       - name: --output
-        type: string
+        type: path
         description: Output binseq file
         required: false
         takes_value: true
@@ -566,21 +593,21 @@ tools:
         aliases:
         - -Q
       - name: --block-size
-        type: string
+        type: int
         description: Virtual block size (in bytes)
         required: false
         takes_value: true
         aliases:
         - -B
       - name: --threads
-        type: string
+        type: int
         description: Number of threads to use for parallel reading and writing.
         required: false
         takes_value: true
         aliases:
         - -T
       - name: --level
-        type: string
+        type: int
         description: Zstd compression level The compression level is between 1 and
           22, with 3 being the default. Higher levels provide better compression at
           the cost of speed. Level 0 disables compression.
@@ -603,9 +630,9 @@ tools:
       - name: input
         type: path
         description: Positional argument INPUT
+        required: false
         positional: true
         position: 0
-        required: true
       usage: bqtools encode [OPTIONS] [INPUT]...
       outputs:
         output:
@@ -621,14 +648,14 @@ tools:
         required: false
         takes_value: true
       - name: --output
-        type: string
+        type: path
         description: Output file
         required: false
         takes_value: true
         aliases:
         - -o
       - name: --prefix
-        type: string
+        type: path
         description: Output file format prefix (required for paired BINSEQ files
         required: false
         takes_value: true
@@ -642,21 +669,21 @@ tools:
         aliases:
         - -m
       - name: --format
-        type: string
+        type: path
         description: Output file format
         required: false
         takes_value: true
         aliases:
         - -f
       - name: --compress
-        type: string
+        type: path
         description: Compress output file
         required: false
         takes_value: true
         aliases:
         - -c
       - name: --threads
-        type: string
+        type: int
         description: Number of threads to use for parallel compression (0 for auto)
         required: false
         takes_value: true
@@ -665,9 +692,9 @@ tools:
       - name: input
         type: path
         description: Positional argument <INPUT>
+        required: true
         positional: true
         position: 0
-        required: true
       usage: bqtools decode [OPTIONS] <INPUT>
       outputs:
         output:
@@ -677,7 +704,7 @@ tools:
     cat:
       params:
       - name: --output
-        type: string
+        type: path
         description: Output binseq file
         required: false
         takes_value: true
@@ -726,21 +753,21 @@ tools:
         aliases:
         - -Q
       - name: --block-size
-        type: string
+        type: int
         description: Virtual block size (in bytes)
         required: false
         takes_value: true
         aliases:
         - -B
       - name: --threads
-        type: string
+        type: int
         description: Number of threads to use for parallel reading and writing.
         required: false
         takes_value: true
         aliases:
         - -T
       - name: --level
-        type: string
+        type: int
         description: Zstd compression level The compression level is between 1 and
           22, with 3 being the default. Higher levels provide better compression at
           the cost of speed. Level 0 disables compression.
@@ -763,9 +790,9 @@ tools:
       - name: input
         type: path
         description: Positional argument INPUT
+        required: false
         positional: true
         position: 0
-        required: true
       usage: bqtools cat [OPTIONS] [INPUT]...
       outputs:
         output:
@@ -801,9 +828,9 @@ tools:
       - name: input
         type: path
         description: Positional argument <INPUT>...
+        required: true
         positional: true
         position: 0
-        required: true
       usage: bqtools info [OPTIONS] <INPUT>...
       outputs:
         stdout:
@@ -819,14 +846,14 @@ tools:
         required: false
         takes_value: true
       - name: --output
-        type: string
+        type: path
         description: Output file
         required: false
         takes_value: true
         aliases:
         - -o
       - name: --prefix
-        type: string
+        type: path
         description: Output file format prefix (required for paired BINSEQ files
         required: false
         takes_value: true
@@ -840,21 +867,21 @@ tools:
         aliases:
         - -m
       - name: --format
-        type: string
+        type: path
         description: Output file format
         required: false
         takes_value: true
         aliases:
         - -f
       - name: --compress
-        type: string
+        type: path
         description: Compress output file
         required: false
         takes_value: true
         aliases:
         - -c
       - name: --threads
-        type: string
+        type: int
         description: Number of threads to use for parallel compression (0 for auto)
         required: false
         takes_value: true
@@ -944,15 +971,15 @@ tools:
       - name: input
         type: path
         description: Positional argument <INPUT>
+        required: true
         positional: true
         position: 0
-        required: true
       - name: reg
-        type: path
+        type: string
         description: Positional argument REG
+        required: false
         positional: true
         position: 1
-        required: true
       usage: bqtools grep [OPTIONS] <INPUT> [REG]...
       outputs:
         output:
@@ -968,14 +995,14 @@ tools:
         required: false
         takes_value: true
       - name: --output
-        type: string
+        type: path
         description: Output file
         required: false
         takes_value: true
         aliases:
         - -o
       - name: --prefix
-        type: string
+        type: path
         description: Output file format prefix (required for paired BINSEQ files
         required: false
         takes_value: true
@@ -989,35 +1016,35 @@ tools:
         aliases:
         - -m
       - name: --format
-        type: string
+        type: path
         description: Output file format
         required: false
         takes_value: true
         aliases:
         - -f
       - name: --compress
-        type: string
+        type: path
         description: Compress output file
         required: false
         takes_value: true
         aliases:
         - -c
       - name: --threads
-        type: string
+        type: int
         description: Number of threads to use for parallel compression (0 for auto)
         required: false
         takes_value: true
         aliases:
         - -T
       - name: --fraction
-        type: string
+        type: float
         description: Fraction of the input reads to sample
         required: true
         takes_value: true
         aliases:
         - -F
       - name: --seed
-        type: string
+        type: int
         description: Seed to use for random sampling
         required: false
         takes_value: true
@@ -1026,9 +1053,9 @@ tools:
       - name: input
         type: path
         description: Positional argument <INPUT>
+        required: true
         positional: true
         position: 0
-        required: true
       usage: bqtools sample [OPTIONS] --fraction <FRACTION> <INPUT>
       outputs:
         output:
@@ -1044,7 +1071,7 @@ tools:
         required: false
         takes_value: true
       - name: --basepath
-        type: string
+        type: path
         description: Optional base path for output files. If not provided, the current
           working directory will be used
         required: false
@@ -1082,7 +1109,7 @@ tools:
         required: false
         takes_value: false
       - name: --threads
-        type: string
+        type: int
         description: 'Number of processing threads to use, 0: auto'
         required: false
         takes_value: true
@@ -1100,21 +1127,21 @@ tools:
         required: false
         takes_value: true
       - name: --sfile
-        type: string
+        type: path
         description: File of patterns to search for in primary sequence
         required: false
         takes_value: true
       - name: --xfile
-        type: string
+        type: path
         description: File of patterns to search for in extended sequence
         required: false
         takes_value: true
       - name: input
         type: path
         description: Positional argument <INPUT>
+        required: true
         positional: true
         position: 0
-        required: true
       usage: bqtools split [OPTIONS] <INPUT>
       outputs:
         stdout:
@@ -1130,21 +1157,21 @@ tools:
         required: false
         takes_value: true
       - name: --num-pipes
-        type: string
+        type: int
         description: 'Number of pipes to make [0: as many as threads]'
         required: false
         takes_value: true
         aliases:
         - -p
       - name: --format
-        type: string
+        type: path
         description: Output file format
         required: false
         takes_value: true
         aliases:
         - -f
       - name: --basepath
-        type: string
+        type: path
         description: Base path for output files
         required: false
         takes_value: true
@@ -1158,7 +1185,7 @@ tools:
         aliases:
         - -x
       - name: --exec-batch
-        type: string
+        type: int
         description: Execute a single shell command with all FIFO paths substituted.
         required: false
         takes_value: true
@@ -1167,9 +1194,9 @@ tools:
       - name: input
         type: path
         description: Positional argument <INPUT>
+        required: true
         positional: true
         position: 0
-        required: true
       usage: bqtools pipe [OPTIONS] <INPUT>
       outputs:
         stdout:
@@ -1185,7 +1212,7 @@ tools:
         required: false
         takes_value: true
       - name: --output
-        type: string
+        type: path
         description: Output binseq file
         required: false
         takes_value: true
@@ -1234,21 +1261,21 @@ tools:
         aliases:
         - -Q
       - name: --block-size
-        type: string
+        type: int
         description: Virtual block size (in bytes)
         required: false
         takes_value: true
         aliases:
         - -B
       - name: --threads
-        type: string
+        type: int
         description: Number of threads to use for parallel reading and writing.
         required: false
         takes_value: true
         aliases:
         - -T
       - name: --level
-        type: string
+        type: int
         description: Zstd compression level The compression level is between 1 and
           22, with 3 being the default. Higher levels provide better compression at
           the cost of speed. Level 0 disables compression.
@@ -1278,9 +1305,9 @@ tools:
       - name: input
         type: path
         description: Positional argument <INPUT>
+        required: true
         positional: true
         position: 0
-        required: true
       usage: bqtools revcomp [OPTIONS] <INPUT>
       outputs:
         output:
@@ -1323,7 +1350,7 @@ tools:
         aliases:
         - -M
       - name: --threads
-        type: string
+        type: int
         description: 'Number of threads to use [0: auto]'
         required: false
         takes_value: true
@@ -1339,9 +1366,9 @@ tools:
       - name: input
         type: path
         description: Positional argument <INPUT>
+        required: true
         positional: true
         position: 0
-        required: true
       usage: bqtools verify [OPTIONS] <INPUT>
       outputs:
         stdout:
@@ -1356,7 +1383,7 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_ld59hazm/venv
+    venv_path: /tmp/execute_28105skw/venv
   _discovery_metadata:
     github: https://github.com/ArcInstitute/bqtools
     stars: 39
@@ -1376,21 +1403,21 @@ tools:
     verified_license: false
     verified_license_path: ''
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-16T00:17:36.710589'
+    verified_checked_at: '2026-08-16T07:03:23.855299'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: cargo
     exec_status: passed
-    exec_reason: '`/tmp/execute_ld59hazm/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_28105skw/bqtools/target/release/bqtools --help` ->
       exit 0'
-    exec_install_evidence: "v0.17.1\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
+    exec_install_evidence: " v1.4.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
       \   Compiling is-terminal v0.4.17\n   Compiling thousands v0.2.0\n   Compiling\
-      \ fixedbitset v0.5.7\n   Compiling xxhash-rust v0.8.18\n   Compiling rust-htslib\
+      \ xxhash-rust v0.8.18\n   Compiling fixedbitset v0.5.7\n   Compiling rust-htslib\
       \ v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling\
-      \ bqtools v0.5.13 (/tmp/execute_ld59hazm/bqtools)\n    Finished `release` profile\
-      \ [optimized] target(s) in 2m 12s\n"
+      \ bqtools v0.5.13 (/tmp/execute_28105skw/bqtools)\n    Finished `release` profile\
+      \ [optimized] target(s) in 2m 11s\n"
     exec_run_evidence: "into multiple files based on patterns provided in a pattern\
       \ file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc      \
       \ \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify \
@@ -1429,65 +1456,84 @@ tools:
     max_preview_lines: 50
   inputs:
     ont_in:
-      type: string
+      type: path
       description: 'ONT input FASTA/Q file (default: None)'
       required: true
       source: help_parsed
-    db:
-      type: string
-      description: 'Basename of KMA database. Database exists of four  files named
-        *.{comp.b, length.b, name, seq.b}  (default: None)'
-      required: true
-      source: help_parsed
-    db_lookup:
-      type: string
-      description: 'Lookup file of KMA database (default: None)'
-      required: true
-      source: help_parsed
+      flag: --ont-in
+      takes_value: true
     dir_working:
-      type: string
+      type: path
       description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
       source: help_parsed
+      flag: --dir-working
+      takes_value: true
     output:
-      type: string
+      type: path
       description: 'Output directory (default: None)'
       required: true
       source: help_parsed
+      flag: --output
+      takes_value: true
     output_html:
-      type: string
+      type: path
       description: 'Output report name (default: report.html)'
       required: false
       source: help_parsed
+      flag: --output-html
+      takes_value: true
     subsampling:
-      type: string
+      type: int
       description: 'Subsample input to number of bases before  classification. Leave
         empty or use None for no  downsampling. (default: [None])'
       required: false
       source: help_parsed
+      flag: --subsampling
+      takes_value: true
     fdr:
       type: string
       description: 'FDR setting. (default: [5])'
       required: false
       source: help_parsed
+      flag: --fdr
+      takes_value: true
     threads:
-      type: string
+      type: int
       description: 'Number of threads (default: 4)'
       required: false
       source: help_parsed
+      flag: --threads
+      takes_value: true
     version:
       type: boolean
       description: Print version and exit
       required: false
       source: help_parsed
+      flag: --version
+      takes_value: false
     log:
       type: boolean
       description: 'Write out log information to file (default: False)'
       required: false
       source: help_parsed
+      flag: --log
+      takes_value: false
+  resources:
+    db:
+      required: true
+      required_by: runtime
+      source: help_parsed
+      description: 'Basename of KMA database. Database exists of four  files named
+        *.{comp.b, length.b, name, seq.b}  (default: None)'
+    db_lookup:
+      required: true
+      required_by: runtime
+      source: help_parsed
+      description: 'Lookup file of KMA database (default: None)'
   outputs:
     output:
-      type: file
+      type: directory
       description: 'Output directory (default: None)'
       source: help_parsed
     output_html:
@@ -1531,7 +1577,7 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_p8qjali_/venv
+    venv_path: /tmp/execute_i2oz7kq_/venv
   _discovery_metadata:
     github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
     stars: 3
@@ -1552,14 +1598,14 @@ tools:
     verified_license_path: LICENSE
     verified_entry_scripts:
     - kaptain/__main__.py
-    verified_checked_at: '2026-08-16T00:18:29.977190'
+    verified_checked_at: '2026-08-16T07:04:23.015055'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_p8qjali_/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_i2oz7kq_/venv/bin/kaptain --help` -> exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "efore\n                        classification. Leave empty\
       \ or use None for no\n                        downsampling. (default: [None])\n\
@@ -1569,42 +1615,42 @@ tools:
       \ out log information to file (default: False)\n"
     exec_params_schema:
     - name: --ont-in
-      type: string
+      type: path
       description: 'ONT input FASTA/Q file (default: None)'
       required: true
       takes_value: true
       aliases:
       - -i
     - name: --db
-      type: string
+      type: path
       description: 'Basename of KMA database. Database exists of four  files named
         *.{comp.b, length.b, name, seq.b}  (default: None)'
       required: true
       takes_value: true
     - name: --db-lookup
-      type: string
+      type: path
       description: 'Lookup file of KMA database (default: None)'
       required: true
       takes_value: true
     - name: --dir-working
-      type: string
+      type: path
       description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
       takes_value: true
     - name: --output
-      type: string
+      type: path
       description: 'Output directory (default: None)'
       required: true
       takes_value: true
       aliases:
       - -o
     - name: --output-html
-      type: string
+      type: path
       description: 'Output report name (default: report.html)'
       required: false
       takes_value: true
     - name: --subsampling
-      type: string
+      type: int
       description: 'Subsample input to number of bases before  classification. Leave
         empty or use None for no  downsampling. (default: [None])'
       required: false
@@ -1615,7 +1661,7 @@ tools:
       required: false
       takes_value: true
     - name: --threads
-      type: string
+      type: int
       description: 'Number of threads (default: 4)'
       required: false
       takes_value: true
@@ -1655,7 +1701,7 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_p8qjali_/KAPTAIN
+    - kaptain @ file:///tmp/execute_i2oz7kq_/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.0
     - numpy==2.4.6
