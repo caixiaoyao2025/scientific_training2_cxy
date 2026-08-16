@@ -112,31 +112,19 @@ def generate_wrappers(
 def _emit_wrapper(tool: dict, registration_style: str, execution_method: str) -> str:
     class_name = make_class_name(tool["name"])
     if registration_style == "function":
-        # Only REQUIRED inputs are mandatory in the generated signature; every
-        # other declared input gets a `= None` default, matching the
-        # required-semantics in the LLM function schema (is_required). An
-        # optional input generated as `name: str` (no default) would be
-        # uncallable without it -- a contract the runner does not enforce.
-        from agent_connector.tool_spec import is_required  # noqa: PLC0415
-
-        inputs = tool.get("inputs", {})
-        func_name = _safe_identifier(tool["name"])
-        required = [n for n, m in inputs.items() if is_required(m)]
-        optional = [n for n in inputs if n not in required]
-        sig_parts = [f"{n}: str" for n in required]
-        sig_parts += [f"{n}: str = None" for n in optional]
-        signature = ", ".join(sig_parts) or "**kwargs"
-        if inputs:
-            kwargs_dict = "{" + ", ".join(f"{name!r}: {name}" for name in inputs) + "}"
-        else:
-            kwargs_dict = "dict(kwargs)"
+        # The wrapper's Python signature is a CONVENIENCE, never a schema: the
+        # canonical type/required semantics live in the ToolSpec (json_schema_
+        # type / is_required) and in run_tool_spec's _coerce_arguments. A typed
+        # `def tool(input: str, threads: str = None)` would re-declare types
+        # (1 vs "1") as a THIRD schema source, so every function wrapper is
+        # `def tool(**kwargs)` and the ToolSpec stays the only type definition.
         return FUNCTION_WRAPPER_TEMPLATE.format(
             name=tool["name"],
-            func_name=func_name,
-            signature=signature,
+            func_name=_safe_identifier(tool["name"]),
+            signature="**kwargs",
             desc=tool.get("description", ""),
             spec_repr=repr(tool),
-            kwargs_dict=kwargs_dict,
+            kwargs_dict="dict(kwargs)",
         )
     return WRAPPER_TEMPLATE.format(
         class_name=class_name,
@@ -265,7 +253,6 @@ def _tool_to_function_schema(tool: dict[str, Any]) -> dict[str, Any]:
             "properties": properties,
             "required": required,
         },
-        "outputs": tool.get("outputs") or {},
     }
     if tool.get("arg_style"):
         fn["arg_style"] = tool["arg_style"]

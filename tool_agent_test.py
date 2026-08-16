@@ -140,10 +140,6 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
                 "name": fname,
                 "description": _function_description(leaf),
                 "parameters": {"type": "object", "properties": props, "required": required},
-                # output contract rides on the schema so the agent knows what
-                # "success" means (produce THIS directory/file) -- same object
-                # the runner checks post-execution.
-                "outputs": leaf.get("outputs") or {},
             }})
             fnmap[fname] = leaf
         return out, fnmap
@@ -162,7 +158,6 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
         "name": tool["name"],
         "description": _function_description(tool),
         "parameters": {"type": "object", "properties": props, "required": required},
-        "outputs": tool.get("outputs") or {},
     }}
     # execution infrastructure (install/venv/command) is NOT tool-call semantics
     # for the LLM; keep only arg_style as a hint.
@@ -173,9 +168,14 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
 
 
 def _function_description(tool: dict) -> str:
-    """Tool description PLUS the runtime-resource contract, so the LLM knows a
-    database/index/reference path is PRECONFIGURED -- never to be guessed, and
-    it is NOT an argument it must invent."""
+    """Tool description PLUS the runtime-resource contract and the output
+    contract, so the LLM knows (a) a database/index path is PRECONFIGURED --
+    never guessed, never an argument it must invent -- and (b) what the tool
+    produces and where (output_dir -> directory). The `outputs` contract stays
+    in the ToolSpec (the runner validates it); this text is its LLM-facing
+    projection, kept inside the standard `description` field (a custom
+    `outputs` key on the function object is not OpenAI function-calling JSON
+    and strict providers may reject or ignore it)."""
     desc = (tool.get("description") or "")
     resources = tool.get("resources") or {}
     if resources:
@@ -183,6 +183,17 @@ def _function_description(tool: dict) -> str:
         desc = (desc.strip() + " "
                 + f"Runtime resources are preconfigured and must NOT be passed "
                   f"as arguments: {names}.")
+    outs = tool.get("outputs") or {}
+    if isinstance(outs, dict) and outs:
+        bits = []
+        for name, meta in outs.items():
+            if name == "stdout":
+                bits.append("stdout (console output)")
+                continue
+            kind = (meta or {}).get("type", "file") if isinstance(meta, dict) else "file"
+            bits.append(f"{name} ({kind})")
+        if bits:
+            desc = (desc.strip() + " " + f"Produces: {', '.join(bits)}.").strip()
     return desc[:600]
 
 
@@ -535,10 +546,11 @@ def main() -> int:
             elif out_kind == "file":
                 output_ok = (os.path.isfile(out_path)
                              and os.path.getsize(out_path) > 4)
-            else:  # stdout-only tool: exit 0 + some output is the bar
+            else:  # stdout-only tool: exit 0 + real STDOUT output is the bar
                 last = raw_log[-1] if raw_log else {}
-                output_ok = bool((last.get("stdout") or "").strip()
-                                 or (last.get("stderr") or "").strip())
+                # stderr logs ("INFO: done") are NOT the deliverable when the
+                # contract says stdout -- exit 0 + empty stdout is OUTPUT_INVALID
+                output_ok = bool((last.get("stdout") or "").strip())
         else:
             process_ok = False
             output_ok = False

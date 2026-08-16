@@ -26,6 +26,7 @@ Central pieces:
 """
 from __future__ import annotations
 
+import copy
 import re
 from typing import Any
 
@@ -74,7 +75,12 @@ def _param_input(p: dict[str, Any]) -> dict[str, Any]:
     }
     if p.get("positional"):
         meta["positional"] = True
-        meta["required"] = True  # a positional argv slot is mandatory
+        # required semantics from the PARSER, not forced: a bare metavar
+        # (SEQUENCE, <INPUT>) is a mandatory argv slot, but a bracketed
+        # `[INPUT]` / `[FILES ...]` is OPTIONAL (reads stdin / zero-or-more).
+        # Forcing every positional required would demand an arg the CLI usage
+        # itself marks optional.
+        meta["required"] = p.get("required") is True
         if p.get("position") is not None:
             meta["position"] = p["position"]
     else:
@@ -101,7 +107,11 @@ def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
     """
     details = (tool.get("subcommand_details") or {}).get(sub) or {}
     params = details.get("params") or []
-    leaf = dict(tool)
+    # DEEP copy: the leaf is a fresh, immutable contract. `dict(tool)` would
+    # keep sharing subcommand_details/install/execution with the BASE registry
+    # object, so a later `spec["execution"][...] = ...` would mutate another
+    # tool's (or the base's) spec. The leaf must never alias the base.
+    leaf = copy.deepcopy(tool)
     leaf["name"] = f"{tool.get('name', '')}_{sub.replace('-', '_')}"
     leaf["_active_subcommand"] = sub
     leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
@@ -159,24 +169,26 @@ def get_resources(spec: dict[str, Any]) -> dict[str, Any]:
 
 
 def function_property(meta: Any) -> dict[str, Any]:
-    """OpenAI function-schema property for one ToolSpec input, carrying the
-    SAME positional/flag metadata the runner renders argv from -- so the LLM
-    knows `input` is a positional argv slot and `output` is the `--output`
-    flag, and the runner never has to guess or re-derive either. THE property
-    builder used by every schema emitter (to_function_schemas, generator)."""
+    """OpenAI function-schema property for one ToolSpec input.
+
+    STRICT JSON Schema only: `type` + `description`. The CLI shape
+    (positional slot / flag spelling) is runner metadata that lives EXCLUSIVELY
+    in ToolSpec.inputs (and argv_renderer reads it from there) -- it is never
+    emitted as a custom JSON-Schema field, because strict providers reject or
+    drop non-standard properties, and the LLM should not be deciding how argv
+    is rendered. The shape is surfaced as a plain-text hint in the description
+    instead, so the model still knows `input` is an argv slot and `output`
+    takes the `--output` flag."""
     prop: dict[str, Any] = {"type": json_schema_type(meta),
                             "description": (meta or {}).get("description", "") or ""}
     hint: list[str] = []
     if (meta or {}).get("positional"):
-        prop["positional"] = True
-        hint.append("positional")
+        hint.append("CLI positional argument")
         if (meta or {}).get("position") is not None:
-            prop["position"] = meta["position"]
             hint.append(f"position {meta['position']}")
     flag = (meta or {}).get("flag")
     if flag:
-        prop["flag"] = flag
-        hint.append(flag)
+        hint.append(f"CLI flag: {flag}")
     if hint:
         prop["description"] = ((prop["description"] + " ").strip()
                                + f"[{', '.join(hint)}]").strip()

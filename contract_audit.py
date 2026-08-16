@@ -55,19 +55,38 @@ for s in schemas:
     check(props == leaf_inputs,
           f"{fname}: schema params {sorted(props)} != leaf inputs {sorted(leaf_inputs)} "
           f"(diff {sorted(props ^ leaf_inputs)})")
-    # 1b. positional/flag metadata round-trips: what the LLM schema carries is
-    # exactly what the leaf renders argv from (bqtools `input` positional,
-    # `output` --output flag).
+    # 1b. the LLM schema is STRICT JSON Schema: no custom positional/flag/
+    # position/outputs fields (strict function-calling providers reject or
+    # drop them). CLI shape is runner metadata that lives ONLY in
+    # ToolSpec.inputs; the schema carries it as a description hint instead.
     for key, meta in (leaf.get("inputs") or {}).items():
         prop = fn["parameters"]["properties"][key]
-        want_pos = bool((meta or {}).get("positional"))
-        got_pos = bool(prop.get("positional"))
-        check(want_pos == got_pos,
-              f"{fname}.{key}: positional mismatch (leaf {want_pos} vs schema {got_pos})")
-        want_flag = (meta or {}).get("flag") or ""
-        got_flag = prop.get("flag") or ""
-        check(want_flag == got_flag,
-              f"{fname}.{key}: flag mismatch (leaf {want_flag!r} vs schema {got_flag!r})")
+        check("positional" not in prop and "flag" not in prop and "position" not in prop,
+              f"{fname}.{key}: CLI metadata leaked into JSON Schema: {sorted(set(prop) - {'type', 'description'})}")
+    check("outputs" not in fn,
+          f"{fname}: `outputs` leaked into the function object (strict providers reject it)")
+    # 1c. leaf metadata is internally consistent: non-positionals carry a flag
+    # (or a legal default spelling), positionals have integer positions.
+    for key, meta in (leaf.get("inputs") or {}).items():
+        meta = meta or {}
+        if meta.get("positional"):
+            pos = meta.get("position")
+            check(isinstance(pos, int),
+                  f"{fname}.{key}: positional without integer position: {pos!r}")
+        else:
+            flag = meta.get("flag")
+            if flag:
+                check(str(flag).startswith("-"),
+                      f"{fname}.{key}: flag {flag!r} must start with '-'")
+    # 1d. the description hint tells the LLM the CLI shape (flag / positional)
+    for key, meta in (leaf.get("inputs") or {}).items():
+        meta = meta or {}
+        if meta.get("positional"):
+            check("CLI positional" in (fn["parameters"]["properties"][key]["description"] or ""),
+                  f"{fname}.{key}: positional hint missing from schema description")
+        elif meta.get("flag"):
+            check(f"CLI flag: {meta['flag']}" in (fn["parameters"]["properties"][key]["description"] or ""),
+                  f"{fname}.{key}: flag hint missing from schema description")
     # 2. required set identical
     req_schema = set(fn["parameters"].get("required") or [])
     req_leaf = set(get_required_inputs(leaf))
@@ -106,18 +125,38 @@ for s in schemas:
     check("subcommand" not in props,
           f"{fname}: subcommand leaked into LLM schema props!")
     # 6. output contract closure: every declared output file/dir must be a
-    # declared input (so the runner can locate its path from the call args)
-    # and the schema's `outputs` must equal the leaf's.
-    schema_outputs = fn.get("outputs") or {}
-    check(schema_outputs == (leaf.get("outputs") or {}),
-          f"{fname}: schema outputs {sorted(schema_outputs)} != leaf outputs "
-          f"{sorted((leaf.get('outputs') or {}))}")
+    # declared input (so the runner can locate its path from the call args).
     for okey, om in (leaf.get("outputs") or {}).items():
         if okey == "stdout":
             continue
         check(okey in leaf_inputs,
               f"{fname}: declared output '{okey}' is not an input param "
               "(runner cannot locate the output path in the call args)")
+    # 7. #55: the argv the RUNNER builds must equal the canonical render.
+    # run_tool_spec reads the command from execution.command (falling back to
+    # spec.command) and dispatches per exec_type, so audit the REAL dispatch
+    # path -- render_spec alone would not catch a command/execution drift.
+    from agent_connector.argv_renderer import (  # noqa: PLC0415
+        render_command as _audit_rc, render_subcommand as _audit_rs,
+    )
+    execution = leaf.get("execution")
+    if not isinstance(execution, dict) or not execution.get("type"):
+        execution = {"type": leaf.get("type", "cli"), "command": leaf.get("command", "")}
+    etype = execution.get("type", "cli")
+    runner_argv = None
+    if etype == "python" and execution.get("entry_point"):
+        runner_argv = None  # python-import execution path has no argv
+    elif etype == "api":
+        runner_argv = None  # API path renders a URL, not argv
+    elif leaf.get("arg_style") == "subcommand":
+        runner_argv = _audit_rs(leaf, cleaned)
+    else:
+        runner_argv = _audit_rc(execution.get("command", ""), cleaned)
+    if runner_argv is not None:
+        canon_argv = render_spec(leaf, cleaned)
+        check(runner_argv == canon_argv,
+              f"{fname}: runner argv {runner_argv} != canonical render_spec "
+              f"{canon_argv} (command/execution drift)")
 
 print(f"\n{checked} checks, {fails} failures")
 print("CONTRACT AUDIT: " + ("PASS" if fails == 0 else "FAIL"))

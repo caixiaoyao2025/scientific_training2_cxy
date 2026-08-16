@@ -349,10 +349,13 @@ def _merge_positionals(flags: list[dict[str, str]],
     """Merge flag params + positional args into ONE canonical params list.
 
     Both entries are deduped by canonical input key (--sequence == sequence).
-    Positionals are marked required (an argv slot is mandatory) and keep their
-    argv `position` ordering. This is THE single schema every downstream stage
-    (registry command template, inputs, function schemas, argv renderer) reads,
-    so a flag and its positional can never be registered as two inputs.
+    A positional keeps the parser's OWN required marker -- bare metavars
+    (SEQUENCE, <INPUT>) are mandatory argv slots, but a bracketed `[INPUT]` /
+    `[FILES ...]` is OPTIONAL, so it must NOT be forced required (a forced
+    required would make the LLM schema demand an arg the CLI usage marks
+    optional). This is THE single schema every downstream stage (registry
+    command template, inputs, function schemas, argv renderer) reads, so a
+    flag and its positional can never be registered as two inputs.
     """
     merged = list(flags)
     seen = {_canonical_param_name(p.get("name", "")) for p in flags}
@@ -363,7 +366,9 @@ def _merge_positionals(flags: list[dict[str, str]],
         entry = dict(pa)
         entry.setdefault("type", "path")
         entry.setdefault("description", f"Positional argument {pa.get('name', '')}")
-        entry["required"] = True
+        # parser's explicit marker wins; missing marker defaults to required
+        # (a bare metavar is a mandatory argv slot, e.g. legacy/direct callers)
+        entry["required"] = bool(entry.get("required", True))
         entry["positional"] = True
         merged.append(entry)
         seen.add(key)
@@ -714,7 +719,7 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
     out: list[dict[str, str]] = []
     position = 0
 
-    def _add(candidate: str) -> None:
+    def _add(candidate: str, required: bool = True) -> None:
         nonlocal position
         name = _normalize_metavar(candidate)
         if not name or name in pseudo or name.startswith("-"):
@@ -723,7 +728,7 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
                 or desc_map.get(_normalize_metavar(candidate))
                 or f"Positional argument {candidate}")
         out.append({"name": name, "type": _infer_scalar_type(name, desc),
-                    "description": desc,
+                    "description": desc, "required": required,
                     "positional": True, "position": position})
         position += 1
 
@@ -737,11 +742,13 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
             inner_tok = token[:-3].rstrip() if token.endswith("...") else token
             inner = inner_tok[1:-1].split() if inner_tok.startswith("[") else inner_tok.split()
             # [--flag VAL] -> optional flag + value: skip. [METAVAR ...] ->
-            # optional positional (nargs): add. [] -> nothing.
+            # OPTIONAL positional (nargs): add (required False -- the brackets
+            # mean the CLI can run without it, and forced-required would make
+            # the LLM schema demand an arg the usage marks optional).
             if inner and not inner[0].startswith("-"):
                 cand = _normalize_metavar(inner[0])
                 if cand and cand not in pseudo:
-                    _add(inner[0])
+                    _add(inner[0], required=False)
             i += 1
             continue
         if token.startswith("-"):
@@ -781,6 +788,7 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
         if cand not in {p["name"] for p in out}:
             out.append({"name": cand, "type": _infer_scalar_type(cand),
                         "description": f"Positional argument {cand}",
+                        "required": True,  # bare SYNOPSIS metavar = mandatory slot
                         "positional": True, "position": position})
             position += 1
 

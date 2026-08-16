@@ -242,11 +242,14 @@ def test_bioemu_positionals_and_boolean():
 
 
 def test_bqtools_positional_and_required():
-    """clap: `[INPUT]...` variadic -> one required positional `input`."""
+    """clap: `[INPUT]...` variadic -> one OPTIONAL positional `input`."""
     flags, pos, merged = _run(BQTOOLS_HELP, skip_first=True)
     input_p = _by_name(merged, "input")
     assert input_p.get("positional") is True, input_p
-    assert input_p.get("required") is True, input_p
+    # brackets in the usage mean the CLI can run without it (stdin fallback):
+    # NOT forced required (a forced required would demand an arg the usage
+    # marks optional -- P0-4 required-semantics)
+    assert input_p.get("required") is False, input_p
     assert input_p.get("name") == "input", input_p
     # `encode` (the subcommand token) must not appear as a positional
     assert all(p.get("name") != "encode" for p in merged), merged
@@ -279,7 +282,9 @@ def test_clap_flags_not_required():
     flags, pos, merged = _run(CLAP_HELP, skip_first=True)
     input_p = _by_name(merged, "input")
     assert input_p.get("positional") is True, input_p
-    assert input_p.get("required") is True, input_p  # positional slot mandatory
+    # `[INPUT]...` is a bracketed (optional) positional -- "reads stdin when
+    # omitted", so it must NOT be forced required
+    assert input_p.get("required") is False, input_p
     for fl in ("--format", "--batch-size", "--manifest", "--output", "--mode",
                "--policy", "--threads"):
         assert _by_name(merged, fl)["required"] is False, \
@@ -291,29 +296,21 @@ def test_clap_flags_not_required():
 
 
 def test_real_bqtools_encode_required_contract():
-    """The EXACT bqtools encode registry contract after re-parse: only the
-    positional `input` is required; all flags optional.
-
-    Uses the real usage line (`bqtools encode [OPTIONS] [INPUT]...`) + clap
-    option blocks (no `[required]` markers) that bqtools's --help emits, and
-    asserts the leaf LLM schema + runner both end up with input-only required
-    -- so the agent's `{"input": ..., "output": ...}` validates and renders
+    """The EXACT bqtools encode registry contract after re-parse: EVERYTHING
+    optional (`[INPUT]...` reads stdin when omitted; clap options carry no
+    required marker), so the LLM schema is honest and a real call
+    `{"input": ..., "output": ...}` still validates + renders
     `bqtools encode <in> --output <out>`.
     """
     from agent_connector.tool_spec import make_leaf_spec, render_spec
     from agent_connector.tool_runner import validate_arguments
 
     flags, pos, merged = _run(CLAP_HELP, skip_first=True)
-    # simulate the subcommand_details execute_test would store after re-parse:
-    # positional input (required) + optional flags
+    # the params exactly as execute_test._probe_cli would store them after
+    # re-parse: input is a bracketed OPTIONAL positional, all flags optional
     params = [dict(p) for p in merged]
     for p in params:
-        if p.get("name") == "input":
-            p["positional"] = True
-            p["position"] = 0
-            p["required"] = True
-        else:
-            p["required"] = False
+        p["required"] = p.get("required") is True and p.get("positional") is not True
     bqtools = {
         "name": "bqtools", "arg_style": "subcommand",
         "command": "bqtools {{subcommand}}", "inputs": {},
@@ -323,7 +320,7 @@ def test_real_bqtools_encode_required_contract():
     }
     leaf = make_leaf_spec(bqtools, "encode")
     req = [k for k, m in leaf["inputs"].items() if m.get("required") is True]
-    assert req == ["input"], f"only input required, got {req}"
+    assert req == [], f"input is [INPUT]... optional; nothing required, got {req}"
     # the agent's real call validates + renders
     args = {"input": "/tmp/agent_test_sample.fasta", "output": "/tmp/out.binsq"}
     cleaned, err = validate_arguments(leaf, args)
