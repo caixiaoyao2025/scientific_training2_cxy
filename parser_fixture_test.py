@@ -136,6 +136,31 @@ Options:
   -h, --help                     Print help
 """
 
+# real-world clap help: `Usage: ... [OPTIONS]` with NO `[required]` markers
+# (bqtools's actual --help). Every option is OPTIONAL; only the positional is
+# required. The old "metavar -> required" fallback marked all of these
+# required and polluted the LLM schema.
+CLAP_HELP = """\
+Encode reads to BINSEQ format
+
+Usage: bqtools encode [OPTIONS] [INPUT]...
+
+Arguments:
+  [INPUT]...  Input file(s), or stdin when omitted
+
+Options:
+  -f, --format <FORMAT>          Output format
+  -b, --batch-size <BATCH_SIZE>  Records per batch
+      --interleaved              Input is interleaved paired-end
+  -m, --manifest <MANIFEST>      Manifest file
+  -o, --output <OUTPUT>          Output BINSEQ file
+      --mode <MODE>              Compression mode
+      --policy <POLICY>          Error policy
+      --threads <THREADS>        Number of threads
+      --archive                  Archive mode
+  -h, --help                     Print help
+"""
+
 
 def _by_name(params: list[dict], name: str) -> dict:
     for p in params:
@@ -230,10 +255,127 @@ def test_bqtools_positional_and_required():
     assert _by_name(merged, "--output")["required"] is True
     assert _by_name(merged, "--format")["required"] is False
     assert _by_name(merged, "--batch-size")["required"] is False
+    # a bare metavar is NOT a required signal: --threads/--policy/--bitsize
+    # have no [required] marker and no default -> must be OPTIONAL (the old
+    # "not metavar -> required" fallback marked them required and polluted the
+    # LLM schema into filling garbage values).
+    for fl in ("--threads", "--policy", "--bitsize", "--mode"):
+        assert _by_name(merged, fl)["required"] is False, fl
     # store-flag booleans (clap flags without value)
     for fl in ("--interleaved", "--skip-headers", "--archive", "--pipe"):
         p = _by_name(merged, fl)
         assert p.get("type") == "boolean" and p.get("takes_value") is False, p
+
+
+def test_clap_flags_not_required():
+    """Real-world clap `[OPTIONS]` help: NO flag may be required by default.
+
+    bqtools's actual --help has no `[required]` markers -- the old
+    `is_required = not (has_default or not metavar)` fallback marked every
+    value-taking flag required, so bqtools_encode's schema demanded
+    format/batch_size/manifest/depth/... and the LLM filled garbage. A bare
+    metavar proves the flag takes a VALUE, not that the CLI requires it.
+    """
+    flags, pos, merged = _run(CLAP_HELP, skip_first=True)
+    input_p = _by_name(merged, "input")
+    assert input_p.get("positional") is True, input_p
+    assert input_p.get("required") is True, input_p  # positional slot mandatory
+    for fl in ("--format", "--batch-size", "--manifest", "--output", "--mode",
+               "--policy", "--threads"):
+        assert _by_name(merged, fl)["required"] is False, \
+            f"{fl} must be optional (clap [OPTIONS], no [required] marker)"
+    assert _by_name(merged, "--archive")["required"] is False
+    # store-flag booleans still recognized
+    assert _by_name(merged, "--interleaved").get("type") == "boolean"
+    assert _by_name(merged, "--interleaved").get("takes_value") is False
+
+
+def test_real_bqtools_encode_required_contract():
+    """The EXACT bqtools encode registry contract after re-parse: only the
+    positional `input` is required; all flags optional.
+
+    Uses the real usage line (`bqtools encode [OPTIONS] [INPUT]...`) + clap
+    option blocks (no `[required]` markers) that bqtools's --help emits, and
+    asserts the leaf LLM schema + runner both end up with input-only required
+    -- so the agent's `{"input": ..., "output": ...}` validates and renders
+    `bqtools encode <in> --output <out>`.
+    """
+    from agent_connector.tool_spec import make_leaf_spec, render_spec
+    from agent_connector.tool_runner import validate_arguments
+
+    flags, pos, merged = _run(CLAP_HELP, skip_first=True)
+    # simulate the subcommand_details execute_test would store after re-parse:
+    # positional input (required) + optional flags
+    params = [dict(p) for p in merged]
+    for p in params:
+        if p.get("name") == "input":
+            p["positional"] = True
+            p["position"] = 0
+            p["required"] = True
+        else:
+            p["required"] = False
+    bqtools = {
+        "name": "bqtools", "arg_style": "subcommand",
+        "command": "bqtools {{subcommand}}", "inputs": {},
+        "subcommands": ["encode"],
+        "subcommand_details": {"encode": {"params": params}},
+        "subcommand_discovery_complete": True,
+    }
+    leaf = make_leaf_spec(bqtools, "encode")
+    req = [k for k, m in leaf["inputs"].items() if m.get("required") is True]
+    assert req == ["input"], f"only input required, got {req}"
+    # the agent's real call validates + renders
+    args = {"input": "/tmp/agent_test_sample.fasta", "output": "/tmp/out.binsq"}
+    cleaned, err = validate_arguments(leaf, args)
+    assert err == "", err
+    argv = render_spec(leaf, args)
+    assert argv == ["bqtools", "encode", "/tmp/agent_test_sample.fasta",
+                    "--output", "/tmp/out.binsq"], argv
+
+
+def test_output_param_resolution():
+    """Task prompt must name the EXACT parameter that carries the output path.
+
+    bioemu's output contract is output_dir (directory); bqtools.encode's is
+    output (file). If the prompt only says "write to {path}" the LLM guesses
+    which parameter to use. _task_output_param resolves it from the same
+    outputs contract the validator checks, so prompt & validation agree.
+    """
+    from tool_agent_test import _task_output_kind, _task_output_param
+
+    bioemu = {
+        "name": "bioemu", "arg_style": "python",
+        "inputs": {"sequence": {}, "num_samples": {}, "output_dir": {}},
+        "outputs": {"output_dir": {"type": "directory", "source": "help_parsed"}},
+    }
+    assert _task_output_kind(bioemu) == "directory"
+    assert _task_output_param(bioemu) == "output_dir"
+    # stdout-only tool: no output param to name
+    stdout_tool = {"name": "x", "arg_style": "cli",
+                   "inputs": {"input": {}},
+                   "outputs": {"stdout": {"type": "text"}}}
+    assert _task_output_kind(stdout_tool) == "stdout"
+    assert _task_output_param(stdout_tool) == ""
+    # subcommand leaf: output param scoped to the sub
+    bqtools = {
+        "name": "bqtools", "arg_style": "subcommand", "inputs": {},
+        "outputs": {"stdout": {"type": "text"}},
+        "subcommand_details": {
+            "encode": {"params": [
+                {"name": "input", "type": "path", "positional": True,
+                 "position": 0, "required": True},
+                {"name": "--output", "type": "path", "required": False},
+            ], "outputs": {"output": {"type": "file", "source": "help_parsed"}}},
+            "info": {"params": [
+                {"name": "input", "type": "path", "positional": True,
+                 "position": 0, "required": True},
+            ], "outputs": {"stdout": {"type": "text"}}},
+        },
+    }
+    assert _task_output_kind(bqtools, "encode") == "file"
+    assert _task_output_param(bqtools, "encode") == "output"
+    assert _task_output_kind(bqtools, "info") == "stdout"
+    assert _task_output_param(bqtools, "info") == ""
 
 
 def test_output_contract_inference():

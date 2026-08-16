@@ -188,6 +188,39 @@ def _task_output_kind(tool: dict, sub: str = "") -> str:
     return "stdout"
 
 
+def _task_output_param(tool: dict, sub: str = "") -> str:
+    """The input parameter name that CARRIES the task's output path.
+
+    Returns the canonical input key whose flag/positional the tool writes to
+    (bioemu -> 'output_dir', bqtools_encode -> 'output'), or '' if the tool's
+    output contract is stdout-only. The task prompt uses this name so the LLM
+    passes the output path to the RIGHT parameter instead of guessing.
+    """
+    outs = (tool.get("outputs") or {}).get(sub, {}) if sub else (tool.get("outputs") or {})
+    if not isinstance(outs, dict):
+        outs = {}
+    if sub and not outs:
+        detail = (tool.get("subcommand_details") or {}).get(sub) or {}
+        sub_outs = detail.get("outputs") or {}
+        if isinstance(sub_outs, dict):
+            outs = sub_outs
+    for name, meta in outs.items():
+        if name == "stdout":
+            continue
+        t = (meta or {}).get("type", "")
+        if t in ("file", "path", "directory"):
+            # outputs keys are the canonical input keys (output_dir/output);
+            # confirm the name is a real parameter of this tool/leaf
+            inputs = (tool.get("inputs") or {})
+            if sub:
+                detail = (tool.get("subcommand_details") or {}).get(sub) or {}
+                inputs = {canonical_key(p.get("name", "")): p
+                          for p in (detail.get("params") or [])}
+            if name in inputs:
+                return name
+    return ""
+
+
 def ensure_repo() -> None:
     """Make sure the repo + agent_connector are importable and the registry exists.
 
@@ -332,20 +365,35 @@ def main() -> int:
                 expected_fn = f"{name}_{sub.replace('-', '_')}"
                 out = os.path.join(outdir, f"{name}_{sub}_out")
                 out_kind = _task_output_kind(t, sub)
+                out_param = _task_output_param(t, sub)
                 label = f"{name}: {sub} on sample -> {os.path.basename(out)}"
-                prompt = (f"Call the function {expected_fn} (NOT {name} directly) to "
-                          f"process the input file {sample}. Write the output to {out}. "
-                          "Pass the arguments the function's schema requires (input "
-                          "file and output path). After running, the output file must exist.")
+                if out_param:
+                    prompt = (f"Call the function {expected_fn} (NOT {name} directly) to "
+                              f"process the input file {sample}. Write the output to "
+                              f"{out} by passing it as the '{out_param}' parameter. "
+                              "Pass the input file as the function's input parameter. "
+                              "After running, the output must exist.")
+                else:
+                    prompt = (f"Call the function {expected_fn} (NOT {name} directly) to "
+                              f"process the input file {sample}. Pass the arguments "
+                              "the function's schema requires. After running, report "
+                              "what it printed.")
                 tasks.append((label, prompt, expected_fn, out, out_kind))
         else:
             expected_fn = name
             out = os.path.join(outdir, f"{name}_out")
             out_kind = _task_output_kind(t)
+            out_param = _task_output_param(t)
             label = f"{name}: process sample -> {os.path.basename(out)}"
-            prompt = (f"Call the {name} tool to process the input file {sample}. "
-                      "Pass the arguments its schema requires. If it has an output "
-                      "parameter, write to " + out + ". Aim for exit code 0.")
+            if out_param:
+                prompt = (f"Call the {name} tool to process the input file {sample}. "
+                          f"Write the output to {out} by passing it as the "
+                          f"'{out_param}' parameter. Pass the input file as the "
+                          "input parameter. Aim for exit code 0.")
+            else:
+                prompt = (f"Call the {name} tool to process the input file {sample}. "
+                          "Pass the arguments its schema requires. Aim for exit code 0 "
+                          "and report what it prints.")
             tasks.append((label, prompt, expected_fn, out, out_kind))
 
     print(f"\n== {len(tasks)} concrete per-tool tasks ==")

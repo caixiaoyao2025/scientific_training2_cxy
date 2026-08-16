@@ -905,6 +905,12 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
         has_default = bool(re.search(
             r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)|\bdefault:\s*\S+",
             desc, re.IGNORECASE))
+        # explicit `[required]`/`(required)` marker in the help description is
+        # REAL evidence the flag is mandatory (argparse/clap help often writes
+        # "Manifest file [required]"). A bare metavar is NOT: `--threads
+        # THREADS` proves the flag takes a value, not that the CLI demands it.
+        explicit_required = bool(re.search(r"\[required\]|\(required\)",
+                                           desc, re.IGNORECASE))
         if in_usage:
             is_required = True
         elif required_flags:
@@ -912,8 +918,12 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
             is_required = False
         else:
             # no usable usage line (fire SYNOPSIS, scopt, raw) -> fall back to
-            # the old heuristic: explicit default or boolean -> optional
-            is_required = not (has_default or not metavar)
+            # EXPLICIT evidence only. A metavar alone never implies required
+            # (the old `not metavar` heuristic marked every bqtools flag
+            # required and polluted the LLM schema into filling garbage for
+            # --threads/--policy/--bitsize). Positionals are made required
+            # separately by the positional merger (an argv slot is mandatory).
+            is_required = explicit_required
         desc = re.sub(r"\s*\[(required|default|choices|count|append|nargs)[^\]]*\]\s*$",
                       "", desc).strip()
         # fire/scopt metadata lines leaked into the description
