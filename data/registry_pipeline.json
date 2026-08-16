@@ -3,8 +3,8 @@
     "name": "bioemu",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit None (stderr: timed out after 600s))",
-    "output": "FAIL (output: exit None (stderr: timed out after 600s))",
+    "execute": "FAIL (output: exit None (stderr: timed out after 120s))",
+    "output": "FAIL (output: exit None (stderr: timed out after 120s))",
     "_argv": [
       "python",
       "-m",
@@ -27,12 +27,13 @@
     "name": "bqtools",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit None (stderr: [validation] unknown arguments: ['subcommand']))",
-    "output": "FAIL (output: exit None (stderr: [validation] unknown arguments: ['subcommand']))",
-    "_argv": [],
-    "_args": {
-      "subcommand": "x"
-    },
+    "execute": "FAIL (output: exit 1 (stderr: [2026-08-16T13:17:39.056Z ERROR bqtools::cli::encode] Output path must be provided if using stdin\nError: Output path mus))",
+    "output": "FAIL (output: exit 1 (stderr: [2026-08-16T13:17:39.056Z ERROR bqtools::cli::encode] Output path must be provided if using stdin\nError: Output path mus))",
+    "_argv": [
+      "bqtools",
+      "encode"
+    ],
+    "_args": {},
     "_functions": [
       "bqtools_encode",
       "bqtools_decode",
@@ -45,7 +46,7 @@
       "bqtools_revcomp",
       "bqtools_verify"
     ],
-    "_return_code": null
+    "_return_code": 1
   },
   {
     "name": "kaptain",
