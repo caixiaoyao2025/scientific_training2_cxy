@@ -113,6 +113,26 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
     '') on success or ({}, reason) on failure so a bad tool_call is rejected
     before any subprocess runs.
     """
+    # subcommand CLIs: the BASE tool has inputs={} (params live in
+    # subcommand_details), so a raw spec must be resolved to its canonical
+    # leaf for the ACTIVE subcommand BEFORE validating -- otherwise the
+    # validator reads the empty top-level inputs and rejects every leaf arg
+    # the generator just exposed as "unknown arguments". make_leaf_spec is the
+    # SAME single source the generator + agent test use, so validator and
+    # generator can never disagree about a parameter name.
+    if spec.get("arg_style") == "subcommand" and not spec.get("inputs"):
+        from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
+        sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
+        if not sub:
+            return {}, ("missing subcommand: raw subcommand spec has no "
+                        "_active_subcommand and no 'subcommand' argument")
+        leaf = make_leaf_spec(spec, sub)
+        if not leaf.get("inputs"):
+            return {}, f"subcommand '{sub}' has no discovered params"
+        spec = leaf
+        # `subcommand` was consumed to select the leaf; it is a dispatcher
+        # key, not a parameter of the leaf function.
+        arguments = {k: v for k, v in arguments.items() if k != "subcommand"}
     inputs = spec.get("inputs") or {}
     if not isinstance(inputs, dict):
         return {}, f"input schema is not a dict: {inputs!r}"

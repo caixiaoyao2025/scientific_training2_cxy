@@ -458,9 +458,20 @@ def test_leaf_spec_roundtrip():
         },
         "subcommand_discovery_complete": True,
     }
-    # base tool alone can NEVER accept a leaf arg (this was the raw-spec bug)
+    # base tool alone can NEVER accept a leaf arg (this was the raw-spec bug):
+    # without a subcommand the validator has nothing to resolve and must say so
     _, err = validate_arguments(bqtools, {"input": "/tmp/in", "output": "/tmp/out"})
-    assert "unknown arguments" in err, err
+    assert "missing subcommand" in err, err
+    # BUT with a `subcommand` key, the raw spec resolves to its canonical leaf
+    # (validator must not reject leaf args the generator just exposed -- the
+    # schema-split the audit is built to kill). No arguments.left-over
+    cleaned, err = validate_arguments(bqtools, {"subcommand": "encode",
+                                                "input": "/tmp/in", "output": "/tmp/out"})
+    assert err == "", err
+    assert cleaned.get("input") == "/tmp/in" and cleaned.get("output") == "/tmp/out"
+    # unknown subcommand -> clear error, not a fake acceptance
+    _, err = validate_arguments(bqtools, {"subcommand": "nope", "input": "/tmp/in"})
+    assert "no discovered params" in err or "unknown" in err, err
     # leaf spec scopes inputs to the subcommand
     leaf = make_leaf_spec(bqtools, "encode")
     assert leaf["name"] == "bqtools_encode"
