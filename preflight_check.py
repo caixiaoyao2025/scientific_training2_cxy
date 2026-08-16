@@ -15,6 +15,10 @@ pipeline is caught in seconds, not after 20 minutes of agent flailing:
                        SAME leaf ToolSpec the runner receives (make_leaf_spec),
                        and renders to argv -- proving bqtools_encode(input,
                        output) never reaches the runner as "unknown arguments".
+  gate 6  audit      : whole-registry contract audit (contract_audit.py) --
+                       LLM schema names == runner inputs == rendered argv for
+                       EVERY function, no per-file re-derivation, no leaked
+                       `subcommand` parameter.
 
 Any gate that fails prints EXACTLY where the chain broke and exits 1, so the
 workflow stops BEFORE wasting API calls / 20 minutes.
@@ -173,6 +177,16 @@ def main() -> int:
     if n_placeholder:
         failures.append(f"gate4 registry: {n_placeholder} placeholder entries are STILL in "
                         "the active registry (should have been archived by authoritative merge)")
+
+    # ---- gate 6: whole-registry contract audit (no per-file re-derivation) ----
+    # Runs the FULL to_function_schemas -> make_leaf_spec -> validate -> render
+    # loop over every function the LLM would be shown, proving schema names ==
+    # runner input names == rendered argv, and `subcommand` never leaks.
+    import subprocess as _sp
+    audit = _sp.run([sys.executable, os.path.join(REPO, "contract_audit.py")],
+                    capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if audit.returncode != 0:
+        failures.append("gate6 contract-audit:\n" + (audit.stdout or audit.stderr)[-1200:])
 
     print(f"\n[preflight] {REGISTRY}: {len(tools)} tools, {n_ok} pass all gates")
     if failures:

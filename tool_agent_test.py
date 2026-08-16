@@ -112,19 +112,25 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
     if (tool.get("arg_style") == "subcommand") and tool.get("subcommand_details"):
         out = []
         for sub, detail in (tool.get("subcommand_details") or {}).items():
+            # P0: build the leaf spec FIRST (make_leaf_spec is the SINGLE
+            # source of truth for a subcommand's inputs -- positional metadata,
+            # flag spelling, required semantics, outputs contract) and derive
+            # the function schema from ITS `inputs`. Deriving props straight
+            # from `subcommand_details[sub].params` re-infers the contract and
+            # can drift (e.g. a positional marked required by make_leaf_spec
+            # but optional here -> the LLM schema and the validator disagree).
+            leaf = make_leaf_spec(tool, sub)
             props = {}
             required = []
-            for p in (detail.get("params") or []):
-                key = canonical_key(p.get("name", ""))
-                if not key:
-                    continue
-                props[key] = {"type": json_schema_type(p),
-                              "description": (p.get("description") or "") or f"Argument {p.get('name')}"}
-                # ONLY an explicit `required: true` makes a param required.
-                # A flag with no required marker is OPTIONAL -- forcing every
-                # param required would hand the LLM a fake schema (e.g. kaptain
-                # with all 15 flags required -> LLM fills garbage -> CLI error).
-                if p.get("required") is True:
+            for key, meta in (leaf.get("inputs") or {}).items():
+                props[key] = {"type": json_schema_type(meta),
+                              "description": (meta or {}).get("description", "") or ""}
+                # ONLY an explicit `required: true` (make_leaf_spec forces it
+                # for positionals) makes a param required. A flag with no
+                # required marker is OPTIONAL -- forcing every param required
+                # would hand the LLM a fake schema (e.g. kaptain with all 15
+                # flags required -> LLM fills garbage -> CLI error).
+                if (meta or {}).get("required") is True:
                     required.append(key)
             fname = f"{tool['name']}_{sub.replace('-', '_')}"
             out.append({"type": "function", "function": {

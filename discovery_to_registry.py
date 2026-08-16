@@ -203,7 +203,11 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
         if not matched:
             return
         seen_keys.add(key)
-        is_dir = ("dir" in plain) or "directory" in plain
+        # a flag may name --output while its HELP TEXT says "Output directory"
+        # (kaptain --output). Classify by BOTH the token and the description so
+        # the task validates a real directory, not a missing file.
+        desc = (p.get("description") or "").lower()
+        is_dir = ("dir" in plain) or "directory" in plain or "directory" in desc
         outputs[key] = {
             "type": "directory" if is_dir else "file",
             "description": (p.get("description") or f"Output written by {name}"),

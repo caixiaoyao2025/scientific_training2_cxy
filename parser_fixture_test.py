@@ -411,6 +411,18 @@ def test_output_contract_inference():
     assert _infer_outputs(
         [{"name": "--output-html", "type": "string"}], [], "named"
     ).get("output_html", {}).get("type") == "file"
+    # a flag named --output whose HELP TEXT says "directory" (kaptain) is a
+    # DIRECTORY output -- otherwise the task checks isfile on a real dir and
+    # flags a successful run OUTPUT_INVALID.
+    assert _infer_outputs(
+        [{"name": "--output", "type": "path",
+          "description": "Output directory (default: None)"}], [], "named"
+    ).get("output", {}).get("type") == "directory"
+    # ...but a --output flag whose text says "file"/"name" stays a file
+    assert _infer_outputs(
+        [{"name": "--output", "type": "path",
+          "description": "Output report name (default: report.html)"}], [], "named"
+    ).get("output", {}).get("type") == "file"
 
 
 def test_leaf_spec_roundtrip():
