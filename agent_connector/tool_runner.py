@@ -17,61 +17,15 @@ from __future__ import annotations
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 from typing import Any
 
-
-def _render_command(command_template: str, arguments: dict[str, Any]) -> list[str]:
-    # drop empty-string / None args so `--flag ""` never renders
-    filtered = {k: v for k, v in arguments.items() if v not in (None, "", False)}
-    # values are NOT pre-quoted: we tokenize the template, then substitute
-    # each value verbatim into its own argv slot, so spaces stay inside a
-    # single token and shell metachars are never re-interpreted.
-    values = {key: str(value) for key, value in filtered.items()}
-    # templates may use either Jinja-style {{x}} or Python-style {x} placeholders
-    template = re.sub(r"\{\{(\w+)\}\}", r"{\1}", command_template)
-    # tokenize the template (shlex keeps {x} placeholders intact since they
-    # have no spaces), then drop any token that references a MISSING arg --
-    # including the flag that precedes it, so `--pdb-path {{pdb_path}}` with
-    # pdb_path unset renders to NOTHING, not a bare `--pdb-path`.
-    tokens = shlex.split(template, posix=True)
-    out: list[str] = []
-    i = 0
-    while i < len(tokens):
-        tok = tokens[i]
-        if tok.startswith("{") and tok.endswith("}"):
-            var = tok[1:-1]
-            if var in values:
-                # boolean store-flag: the flag itself IS the value's
-                # rendering (`--verbose True` would make argparse fail with
-                # "unrecognized arguments"). True -> keep the bare flag
-                # (already appended); False was filtered out above.
-                if filtered.get(var) is True:
-                    pass
-                else:
-                    out.append(values[var])
-                i += 1
-            else:
-                # missing value: also drop the preceding flag token if any
-                if out and out[-1].startswith("-") and " " not in out[-1]:
-                    out.pop()
-                i += 1
-        else:
-            # flag token: peek ahead - if the next token is a missing
-            # placeholder, drop BOTH (flag + its unset value)
-            nxt = tokens[i + 1] if i + 1 < len(tokens) else None
-            if (tok.startswith("-") and nxt and nxt.startswith("{") and nxt.endswith("}")
-                    and nxt[1:-1] not in values):
-                i += 2
-            else:
-                out.append(tok)
-                i += 1
-    argv = [a for a in out if a != ""]
-    if not argv:
-        raise ValueError("Rendered command is empty.")
-    return argv
+# Pure argv rendering lives in argv_renderer.py (single renderer shared by the
+# schema/contract layer tool_spec.render_spec and this executor). Aliases keep
+# historical `from tool_runner import _render_command` callers working.
+from agent_connector.argv_renderer import render_command as _render_command  # noqa: N814
+from agent_connector.argv_renderer import render_subcommand as _render_subcommand  # noqa: N814
 
 
 def _coerce_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
@@ -119,9 +73,10 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
     before any subprocess runs.
     """
     if spec.get("arg_style") == "subcommand" and not spec.get("inputs"):
-        return {}, ("raw subcommand spec must be resolved to a leaf ToolSpec "
-                    "(run_tool_spec dispatches via make_leaf_spec); inputs={} "
-                    "is not a valid execution contract")
+        return {}, ("base subcommand spec cannot be executed directly (it has "
+                    "no leaf inputs); resolve it to a leaf ToolSpec via "
+                    "make_leaf_spec first (to_function_schemas dispatches "
+                    "fnmap -> leaf). The runner never guesses the subcommand.")
     inputs = spec.get("inputs") or {}
     if not isinstance(inputs, dict):
         return {}, f"input schema is not a dict: {inputs!r}"
@@ -161,14 +116,38 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
     if unbound:
         return {}, f"command template references undeclared inputs: {unbound}"
     cleaned = {k: v for k, v in arguments.items() if k in known}
-    # inject runtime resources: a declared `path` (e.g. the KMA database
-    # location) is filled in by the environment, NOT left to the LLM to guess.
+    # inject runtime resources (kaptain's KMA db/db_lookup): resolved from the
+    # environment -- NEVER left to the LLM to guess. Resolution order:
+    #   1. declared `path` in the registry (explicitly provisioned);
+    #   2. env var <TOOL>_<KEY> (KAPTAIN_DB) -- the task environment injects
+    #      the actual database location here;
+    #   3. a conventional working-directory file/dir if it exists.
+    # An unresolvable resource is simply NOT injected: the flag drops out of
+    # argv and the CLI reports the missing required arg honestly.
     for rkey, rmeta in (spec.get("resources") or {}).items():
-        if rkey not in cleaned or cleaned.get(rkey) in (None, ""):
-            path = (rmeta or {}).get("path") if isinstance(rmeta, dict) else None
-            if path:
-                cleaned[rkey] = str(path)
+        if rkey in cleaned and cleaned.get(rkey) not in (None, ""):
+            continue
+        path = _resolve_resource_path(spec, rkey, rmeta)
+        if path:
+            cleaned[rkey] = path
     return _coerce_arguments(spec, cleaned), ""
+
+
+def _resolve_resource_path(spec: dict[str, Any], rkey: str,
+                           rmeta: Any) -> str | None:
+    """Resolve a declared runtime resource to a concrete path or None."""
+    if isinstance(rmeta, dict) and rmeta.get("path"):
+        return str(rmeta["path"])
+    tool = (spec.get("name") or "").replace("-", "_")
+    env_name = f"{tool}_{rkey}".upper()
+    if os.environ.get(env_name):
+        return os.environ[env_name]
+    # conventional layout: <working>/<tool>_<key> (created by task setup)
+    base = os.environ.get("TOOL_WORKDIR", "working")
+    cand = os.path.join(base, f"{tool}_{rkey}")
+    if os.path.exists(cand):
+        return cand
+    return None
 
 
 def _run_cli(command: str, arguments: dict[str, Any], timeout: int = 600,
@@ -510,59 +489,6 @@ def _ensure_installed(spec: dict[str, Any], exec_type: str = "cli") -> tuple[lis
     return actions, errors
 
 
-def _render_subcommand(spec: dict[str, Any], arguments: dict[str, Any]) -> list[str]:
-    """Render a subcommand-CLI invocation from the CANONICAL leaf ToolSpec.
-
-    The leaf (make_leaf_spec) already carries a concrete command
-    (`bqtools encode`) and inputs scoped to that subcommand, so the argv is
-    built straight from `spec.inputs` -- the runner NEVER re-reads
-    subcommand_details as a second schema source. Positionals go FIRST in
-    argv position order, then flags (bare for store-flags), so
-    `bqtools encode /tmp/in.fa --output out` renders exactly as the tool's
-    usage describes.
-    """
-    argv = [t for t in (spec.get("command") or "").split() if t]
-    if len(argv) < 2:
-        # defensive: not a concrete leaf; keep base exe + active sub
-        exe = argv[0] if argv else (spec.get("name") or "").split("_")[0]
-        sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
-        argv = [exe] + ([sub] if sub else [])
-    params: list[dict[str, Any]] = []
-    for key, meta in (spec.get("inputs") or {}).items():
-        if not isinstance(meta, dict):
-            continue
-        params.append({
-            "key": key,
-            "flag": meta.get("flag") or (f"--{key.replace('_', '-')}"
-                                         if not meta.get("positional") else ""),
-            "positional": bool(meta.get("positional")),
-            "position": meta.get("position") if meta.get("position") is not None else 0,
-            "type": meta.get("type", "string"),
-            "takes_value": meta.get("takes_value"),
-        })
-    # positionals first (argv order), then flags in declared order
-    positionals = sorted([p for p in params if p["positional"]],
-                         key=lambda p: p["position"])
-    flags = [p for p in params if not p["positional"]]
-    for p in positionals:
-        val = arguments.get(p["key"])
-        if val in (None, "", False):
-            continue
-        # NOT shlex-quoted: this argv goes straight to subprocess (no shell),
-        # so quoting would inject literal quotes into the path.
-        argv.append(str(val))
-    for p in flags:
-        val = arguments.get(p["key"])
-        if val in (None, "", False):
-            continue
-        store_flag = str(p["type"]).lower() in ("bool", "boolean") \
-            or p.get("takes_value") is False
-        argv.append(p["flag"])
-        if not store_flag:
-            argv.append(str(val))
-    return argv
-
-
 def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, Any]:
     """Execute a ToolSpec (registry.yaml entry) with the given arguments."""
     execution = spec.get("execution")
@@ -570,25 +496,12 @@ def run_tool_spec(spec: dict[str, Any], arguments: dict[str, Any]) -> dict[str, 
         execution = {"type": spec.get("type", "cli"), "command": spec.get("command", "")}
     exec_type = execution.get("type", "cli")
     timeout = int(spec.get("timeout_seconds", 600))
-    # A raw subcommand base spec (inputs={}) is resolved to its canonical leaf
-    # ONCE here, so validation AND rendering both operate on the SAME
-    # self-contained spec -- the runner never re-derives the subcommand later.
-    if spec.get("arg_style") == "subcommand" and not spec.get("inputs"):
-        from agent_connector.tool_spec import make_leaf_spec  # noqa: PLC0415
-        sub = spec.get("_active_subcommand") or arguments.get("subcommand", "")
-        if not sub:
-            return {"status": "validation_error", "return_code": None,
-                    "stdout": "", "stderr": "[validation] missing subcommand: "
-                    "raw subcommand spec has no _active_subcommand and no "
-                    "'subcommand' argument", "argv": []}
-        spec = make_leaf_spec(spec, sub)
-        if not spec.get("inputs"):
-            return {"status": "validation_error", "return_code": None,
-                    "stdout": "", "stderr": f"[validation] subcommand "
-                    f"'{sub}' has no discovered params", "argv": []}
-        # `subcommand` was consumed to select the leaf; it is a dispatcher
-        # key, not a parameter of the leaf function.
-        arguments = {k: v for k, v in arguments.items() if k != "subcommand"}
+    # NO base-spec auto-resolution here. A subcommand BASE tool (arg_style=
+    # subcommand, inputs={}) is NOT executable: choosing the subcommand is the
+    # DISPATCHER's job, which ALREADY happened when the caller looked up the
+    # leaf (fnmap -> make_leaf_spec in to_function_schemas). If a base spec
+    # arrives anyway, validate_arguments rejects it -- `bqtools` and
+    # `bqtools_encode` are different call objects and the runner never guesses.
     arguments, arg_err = validate_arguments(spec, arguments)
     if arg_err:
         return {"status": "validation_error", "return_code": None,

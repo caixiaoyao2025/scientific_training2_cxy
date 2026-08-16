@@ -31,6 +31,66 @@ HEAVY_DEPS = ("torch", "tensorflow", "torchvision", "torchaudio", "jax",
               "pytorch", "transformers", "diffusers", "esm")
 SAMPLE_FASTA = """>seq1\nACGTACGTACGT\n>seq2\nTTTTTTGGGGGG\n>seq3\nCCCGGGAAATTT\n"""
 
+# Scalar-type hints for _infer_scalar_type. The NAME is checked first with
+# word boundaries (underscores/dashes are separators: num_samples -> "num
+# samples"); only if the name has NO signal does the DESCRIPTION get consulted,
+# and then with a reduced token set so prose words like "batch"/"samples" never
+# override an output_dir positional into an int.
+_INT_TYPE_HINTS = ("num", "count", "number", "threads", "thread", "seed",
+                   "port", "size", "depth", "samples", "index", "length",
+                   "width", "height", "batch", "iteration", "iterations",
+                   "rounds", "times", "kmer", "offset", "step", "rank",
+                   "level", "iter")
+_FLOAT_TYPE_HINTS = ("rate", "ratio", "fraction", "prob", "pvalue",
+                     "threshold", "alpha", "gamma", "score", "cutoff",
+                     "distance", "resolution", "coverage", "quality")
+_PATH_TYPE_HINTS = ("path", "file", "dir", "directory", "folder", "fasta",
+                    "fastq", "bam", "cram", "bed", "vcf", "gtf", "gff", "pdb",
+                    "sam", "seq", "input", "output", "out", "in", "fa", "fna",
+                    "ref", "genome", "reference", "db", "index", "database")
+_DESC_INT_HINTS = ("number of", "integer", "count of")
+_DESC_FLOAT_HINTS = ("rate", "fraction", "ratio", "threshold", "float",
+                     "probability")
+_DESC_PATH_HINTS = ("path", "file", "directory", "fasta", "fastq", "bam",
+                    "bed", "vcf", "gtf", "gff", "pdb", "sam")
+
+
+def _infer_scalar_type(name: str, desc: str = "") -> str:
+    """Best-effort scalar JSON type for a CLI param from its name/description.
+
+    Auto-discovery sees only `--num_samples NUM_SAMPLES Number of samples`; the
+    type is not always in the help (argparse prints no types). Name heuristics
+    (num/count/seed -> int, rate/fraction -> float, path/file/dir -> path) are
+    better than defaulting every positional to `path` -- a tool like bioemu
+    takes `num_samples` as an INTEGER, and a string-typed schema makes the LLM
+    emit `"1"` where the CLI (and _coerce_arguments) needs `1`.
+    """
+    ntext = f"{name}".lower().replace("-", " ").replace("_", " ")
+    dtext = f"{desc}".lower().replace("-", " ").replace("_", " ")
+    # 1) the NAME is authoritative (output_dir must stay a dir even if its
+    #    description mentions "samples"/"batch")
+    for kw in _INT_TYPE_HINTS:
+        if re.search(rf"\b{re.escape(kw)}\b", ntext):
+            return "int"
+    for kw in _FLOAT_TYPE_HINTS:
+        if re.search(rf"\b{re.escape(kw)}\b", ntext):
+            return "float"
+    for kw in _PATH_TYPE_HINTS:
+        if re.search(rf"\b{re.escape(kw)}\b", ntext):
+            return "path"
+    # 2) description fallback (only when the name gave no signal, and only
+    #    strong tokens -- avoids prose like "batch"/"samples" misfiring)
+    for kw in _DESC_INT_HINTS:
+        if re.search(rf"\b{re.escape(kw)}\b", dtext):
+            return "int"
+    for kw in _DESC_FLOAT_HINTS:
+        if re.search(rf"\b{re.escape(kw)}\b", dtext):
+            return "float"
+    for kw in _DESC_PATH_HINTS:
+        if re.search(rf"\b{re.escape(kw)}\b", dtext):
+            return "path"
+    return "string"
+
 
 def _run(args: list[str], timeout: int, cwd: Optional[str] = None,
          env: Optional[dict] = None) -> tuple[int, str, str]:
@@ -662,7 +722,8 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
         desc = (desc_map.get(name) or desc_map.get(name.upper())
                 or desc_map.get(_normalize_metavar(candidate))
                 or f"Positional argument {candidate}")
-        out.append({"name": name, "type": "path", "description": desc,
+        out.append({"name": name, "type": _infer_scalar_type(name, desc),
+                    "description": desc,
                     "positional": True, "position": position})
         position += 1
 
@@ -718,7 +779,7 @@ def _parse_positional_args(help_output: str, skip_first: bool = False) -> list[d
                     syn_pos.append(cand)
     for cand in syn_pos:
         if cand not in {p["name"] for p in out}:
-            out.append({"name": cand, "type": "path",
+            out.append({"name": cand, "type": _infer_scalar_type(cand),
                         "description": f"Positional argument {cand}",
                         "positional": True, "position": position})
             position += 1
@@ -901,6 +962,12 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
             ptype = "integer"
         elif mv in ("float", "double"):
             ptype = "float"
+        else:
+            # metavar is an unknown token (BATCH_SIZE, BASE_SEED): infer from
+            # the NAME (num/count/seed -> int, rate -> float, path -> path)
+            # instead of silently calling it a string -- bioemu's
+            # `--num_samples` should reach the tool as an int, not "10".
+            ptype = _infer_scalar_type(mv, desc)
         in_usage = name in required_flags or any(a in required_flags for a in aliases)
         has_default = bool(re.search(
             r"\[default[:=][^\]]*\]|\(default[:=][^)]*\)|\bdefault:\s*\S+",

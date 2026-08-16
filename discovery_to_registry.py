@@ -276,6 +276,7 @@ def _infer_resources(parsed: list) -> dict:
             continue
         out[key] = {
             "required": bool(p.get("required")),
+            "required_by": "runtime",  # CLI needs it, but the LLM never does
             "source": "help_parsed",
             "description": p.get("description") or f"Runtime resource {name}",
         }
@@ -337,12 +338,14 @@ def tool_to_registry_entry(tool, verification=None):
                 for p in flag_params:
                     flag = _param_flag(p)
                     key = _canonical_key(p["name"])
-                    if str(p.get("type", "")).lower() in ("bool", "boolean") \
-                            or p.get("takes_value") is False:
-                        # store-flag: bare flag, no value slot
-                        parts.append(flag)
-                    else:
-                        parts.append(f"{flag} {{{{{key}}}}}")
+                    # EVERY flag gets `--flag {{key}}` -- including boolean
+                    # store-flags. The renderer turns a True value into the
+                    # bare `--filter_samples` and drops both tokens for
+                    # False/None, so an OPTIONAL boolean in the schema stays
+                    # OPTIONAL at the command line (a hardcoded bare
+                    # `--filter_samples` in the template forces the flag on for
+                    # every call -- a schema/argv contract fork).
+                    parts.append(f"{flag} {{{{{key}}}}}")
                 command_template = f"{base_cmd} {' '.join(parts)}"
             else:
                 # no grounded params at all -> pending, not a fake command
@@ -361,11 +364,10 @@ def tool_to_registry_entry(tool, verification=None):
             for p in flag_params:
                 flag = _param_flag(p)
                 key = _canonical_key(p["name"])
-                if str(p.get("type", "")).lower() in ("bool", "boolean") \
-                        or p.get("takes_value") is False:
-                    parts.append(flag)
-                else:
-                    parts.append(f"{flag} {{{{{key}}}}}")
+                # same value-driven rendering as the python branch: a boolean
+                # store-flag must NOT be hardcoded into the template (an
+                # optional flag that always renders is a schema/argv fork).
+                parts.append(f"{flag} {{{{{key}}}}}")
             if parts:
                 command_template = f"{base_cmd} {' '.join(parts)}"
             else:

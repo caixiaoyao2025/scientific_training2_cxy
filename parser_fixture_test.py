@@ -459,25 +459,19 @@ def test_leaf_spec_roundtrip():
         "subcommand_discovery_complete": True,
     }
     # base tool alone can NEVER accept a leaf arg (raw spec is not a contract):
-    # the validator refuses to guess the subcommand -- resolution is the
-    # DISPATCHER's job (run_tool_spec -> make_leaf_spec), never the validator's.
+    # the runner NEVER guesses the subcommand -- dispatch happened earlier
+    # (fnmap -> make_leaf_spec in to_function_schemas) and run_tool_spec only
+    # executes LEAF specs, so a base spec is rejected, not auto-resolved.
     from agent_connector.tool_runner import run_tool_spec
     _, err = validate_arguments(bqtools, {"input": "/tmp/in", "output": "/tmp/out"})
     assert "leaf" in err and "subcommand" in err, err
     _, err = validate_arguments(bqtools, {"subcommand": "encode",
                                           "input": "/tmp/in", "output": "/tmp/out"})
     assert "leaf" in err and "subcommand" in err, err
-    # but run_tool_spec resolves the raw spec to its canonical leaf ONCE, then
-    # validates + renders + executes THAT leaf (bqtools isn't installed here,
-    # so it ends at "command not found" with the CORRECT argv -- proving the
-    # dispatcher picked encode, not a subcommand guess).
     res = run_tool_spec(bqtools, {"subcommand": "encode",
                                   "input": "/tmp/in", "output": "/tmp/out"})
-    assert res.get("return_code") == 127, res
-    assert res.get("argv") == ["bqtools", "encode", "/tmp/in", "--output", "/tmp/out"], res
-    # unknown subcommand -> clear error, not a fake acceptance
-    res2 = run_tool_spec(bqtools, {"subcommand": "nope", "input": "/tmp/in"})
-    assert res2.get("status") == "validation_error", res2
+    assert res.get("status") == "validation_error", res
+    assert "subcommand" in (res.get("stderr") or ""), res
     # leaf spec scopes inputs to the subcommand
     leaf = make_leaf_spec(bqtools, "encode")
     assert leaf["name"] == "bqtools_encode"
@@ -535,6 +529,135 @@ def test_make_leaf_spec_bioemu_outputs():
         "output": {"type": "file", "source": "help_parsed"}}
     leaf2 = make_leaf_spec(tool, "encode")
     assert leaf2["outputs"].get("output", {}).get("type") == "file"
+
+
+def test_boolean_flag_value_driven_template():
+    """An OPTIONAL boolean in the schema must stay optional on the command
+    line: the registry template renders `--filter_samples {{filter_samples}}`,
+    and the renderer turns True -> bare `--filter_samples`, False/None ->
+    NOTHING. A hardcoded bare flag in the template would force the flag on for
+    every call (schema/argv contract fork)."""
+    from agent_connector.tool_runner import _render_command
+
+    tmpl = ("python -m bioemu.sample {{sequence}} {{num_samples}} "
+            "{{output_dir}} --filter_samples {{filter_samples}}")
+    on = _render_command(tmpl, {"sequence": "/tmp/in.fa", "num_samples": 1,
+                                "output_dir": "/tmp/out", "filter_samples": True})
+    assert on == ["python", "-m", "bioemu.sample", "/tmp/in.fa", "1",
+                  "/tmp/out", "--filter_samples"], on
+    off = _render_command(tmpl, {"sequence": "/tmp/in.fa", "num_samples": 1,
+                                 "output_dir": "/tmp/out", "filter_samples": False})
+    assert off == ["python", "-m", "bioemu.sample", "/tmp/in.fa", "1",
+                   "/tmp/out"], off
+    # registry generation puts EVERY flag as --flag {{key}} (store-flags too)
+    import discovery_to_registry as dtr
+    fake_exec = {"https://github.com/x/y": {
+        "executable": "python -m bioemu.sample",
+        "arg_style": "python",
+        "callable_via": "python -m bioemu.sample",
+        "params_schema": [
+            {"name": "sequence", "positional": True, "position": 0,
+             "type": "path", "required": True},
+            {"name": "num_samples", "positional": True, "position": 1,
+             "type": "int", "required": True},
+            {"name": "output_dir", "positional": True, "position": 2,
+             "type": "path", "required": True},
+            {"name": "--filter_samples", "type": "boolean", "takes_value": False,
+             "required": False},
+        ],
+        "positional_args": [],
+        "status": "passed",
+    }}
+    orig = dtr.load_execution
+    dtr.load_execution = lambda filename="tool_execution.json": fake_exec
+    try:
+        entry = dtr.tool_to_registry_entry(
+            {"name": "bioemu", "source": {"github": "https://github.com/x/y"},
+             "description": "d", "github_metadata": {}, "tags": [], "quality_score": 0})
+    finally:
+        dtr.load_execution = orig
+    cmd = entry["command"]
+    assert "--filter_samples {{filter_samples}}" in cmd, cmd
+    assert "{{num_samples}}" in cmd, cmd
+
+
+def test_positional_type_inference():
+    """Auto-discovery must NOT default every positional to `path` (bioemu's
+    num_samples is an INTEGER). Type is inferred from the name/description."""
+    # raw helper: the NAME is authoritative (output_dir stays a dir even when
+    # its prose says "samples"); description only as a weak fallback
+    assert et._infer_scalar_type("num_samples", "Number of samples") == "int"
+    assert et._infer_scalar_type("threads", "Number of threads") == "int"
+    assert et._infer_scalar_type("base_seed", "Random seed") == "int"
+    assert et._infer_scalar_type("output_dir", "Directory to save the samples") == "path"
+    assert et._infer_scalar_type("mode", "Compression mode") == "string"
+    assert et._infer_scalar_type("x", "FDR threshold") == "float"
+    assert et._infer_scalar_type("x", "Input sequence") == "string"
+    # through the parser: bioemu's num_samples positional is an int now
+    flags, pos, merged = _run(BIOEMU_HELP)
+    assert _by_name(merged, "num_samples").get("type") == "int"
+    assert _by_name(merged, "output_dir").get("type") == "path"
+    assert _by_name(merged, "sequence").get("type") in ("path", "string")
+
+
+def test_leaf_command_python_m():
+    """make_leaf_spec must keep `python -m pkg` prefixes when building the
+    concrete command -- NOT reduce the command to its first token (which would
+    turn `python -m nano_signal_simulator simulate` into `python simulate`)."""
+    from agent_connector.tool_spec import make_leaf_spec
+
+    tool = {
+        "name": "nano_signal_simulator", "arg_style": "subcommand",
+        "command": "python -m nano_signal_simulator {{subcommand}}", "inputs": {},
+        "subcommand_details": {
+            "simulate": {"params": [
+                {"name": "--output", "type": "path", "required": True},
+            ]},
+        },
+    }
+    leaf = make_leaf_spec(tool, "simulate")
+    assert leaf["command"] == "python -m nano_signal_simulator simulate", \
+        leaf["command"]
+
+
+def test_resource_env_injection():
+    """Runtime resources (kaptain db/db_lookup) are injected from the
+    environment -- declared `path` wins, then <TOOL>_<KEY> env var -- and are
+    never required from the LLM."""
+    import os
+    from agent_connector.tool_runner import _render_command, validate_arguments
+
+    spec = {
+        "name": "kaptain", "arg_style": "named",
+        "command": "kaptain --ont-in {{ont_in}} --db {{db}} --db-lookup "
+                   "{{db_lookup}} --output {{output}}",
+        "inputs": {
+            "ont_in": {"type": "path", "required": True},
+            "output": {"type": "path", "required": True},
+        },
+        "resources": {
+            "db": {"required": True, "required_by": "runtime"},
+            "db_lookup": {"required": True, "required_by": "runtime"},
+        },
+    }
+    os.environ["KAPTAIN_DB"] = "/data/kma.db"
+    os.environ["KAPTAIN_DB_LOOKUP"] = "/data/kma.db.lookup"
+    try:
+        cleaned, err = validate_arguments(spec, {"ont_in": "/tmp/q.fq",
+                                                 "output": "/tmp/out"})
+        assert err == "", err
+        argv = _render_command(spec["command"], cleaned)
+        assert "--db" in argv and "/data/kma.db" in argv, argv
+        assert "--db-lookup" in argv and "/data/kma.db.lookup" in argv, argv
+    finally:
+        os.environ.pop("KAPTAIN_DB", None)
+        os.environ.pop("KAPTAIN_DB_LOOKUP", None)
+    # declared `path` wins over the env var
+    spec["resources"]["db"]["path"] = "/provisioned/db"
+    cleaned2, err2 = validate_arguments(spec, {"ont_in": "/tmp/q.fq",
+                                               "output": "/tmp/out"})
+    assert err2 == "", err2
+    assert cleaned2["db"] == "/provisioned/db", cleaned2
 
 
 if __name__ == "__main__":

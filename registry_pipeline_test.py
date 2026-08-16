@@ -125,7 +125,11 @@ def pipeline(tool: dict) -> dict:
         report["output"] = "SKIP"
         return report
     try:
-        result = run_tool_spec(tool, args)
+        # subcommand tools execute as their LEAF spec (the same object the
+        # render step produced) -- a base spec would be rejected by the runner.
+        exec_spec = leaf if (tool.get("arg_style") == "subcommand"
+                             and tool.get("subcommand_details")) else tool
+        result = run_tool_spec(exec_spec, args)
         err = _check_output(result, tool)
         report["execute"] = "PASS" if not err else f"FAIL ({err})"
         report["output"] = "PASS" if not err else f"FAIL ({err})"

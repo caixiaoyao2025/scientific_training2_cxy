@@ -105,11 +105,18 @@ def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
     leaf["name"] = f"{tool.get('name', '')}_{sub.replace('-', '_')}"
     leaf["_active_subcommand"] = sub
     leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
-    # concrete command: base executable + the chosen subcommand, NOT a
-    # `{{subcommand}}` template the runner must interpret later.
-    exe = (tool.get("command") or "").split()[0] if (tool.get("command") or "").strip() \
-        else (tool.get("name") or "")
-    leaf["command"] = f"{exe} {sub}".strip()
+    # concrete command: the tool's command with {{subcommand}} replaced by the
+    # chosen sub -- NEVER just the first token (split()[0] would turn
+    # `python -m nano_signal_simulator {{subcommand}}` into `python simulate`).
+    # Base tools with a bare command (older registries) get the sub appended.
+    cmd_tmpl = (tool.get("command") or "").strip()
+    if "{{subcommand}}" in cmd_tmpl:
+        leaf_cmd = cmd_tmpl.replace("{{subcommand}}", sub)
+    elif cmd_tmpl:
+        leaf_cmd = f"{cmd_tmpl} {sub}"
+    else:
+        leaf_cmd = f"{tool.get('name') or ''} {sub}"
+    leaf["command"] = leaf_cmd.strip()
     leaf["inputs"] = {canonical_key(p.get("name", "")): _param_input(p)
                       for p in params if canonical_key(p.get("name", ""))}
     leaf["outputs"] = details.get("outputs") or tool.get("outputs") or {}
@@ -209,9 +216,13 @@ def validate_spec(spec: dict[str, Any]) -> str:
 
 def render_spec(spec: dict[str, Any], args: dict[str, Any]) -> list[str]:
     """Build the argv for a leaf/non-subcommand spec from the SAME canonical
-    inputs every other stage reads."""
-    from agent_connector.tool_runner import _render_command, _render_subcommand  # noqa: PLC0415
+    inputs every other stage reads. Pure renderer lives in argv_renderer (the
+    runner delegates to it too), so the schema/contract layer has no dependency
+    on the executor."""
+    from agent_connector.argv_renderer import (  # noqa: PLC0415
+        render_command, render_subcommand,
+    )
 
     if spec.get("arg_style") == "subcommand":
-        return _render_subcommand(spec, args)
-    return _render_command(spec.get("command") or "", args)
+        return render_subcommand(spec, args)
+    return render_command(spec.get("command") or "", args)
