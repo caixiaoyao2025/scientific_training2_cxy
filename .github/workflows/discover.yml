@@ -84,12 +84,22 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f github_from_html.json tool_library.json tool_library_clean.json discovered_registry.yaml tool_verification.json tool_execution.json excluded_tools.json seen_papers.json data/mcp_registry.yaml 2>/dev/null || true
           git diff --cached --quiet || git commit -m "auto: daily tool discovery $(date -u +%Y-%m-%d)"
-          for i in 1 2 3; do
-            if git pull --rebase "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" main; then
+          # Rebase onto latest main; on conflicts keep this run's freshly generated data
+          # (in rebase, "theirs" = the commits being replayed, i.e. the auto-commit).
+          pulled=0
+          for i in 1 2 3 4 5; do
+            git rebase --abort 2>/dev/null || true
+            if git fetch "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" main && git rebase -X theirs FETCH_HEAD; then
+              pulled=1
               break
             fi
             git rebase --abort 2>/dev/null || true
             echo "pull/rebase attempt $i failed, retrying..."
-            sleep 5
+            sleep 10
           done
+          if [ "$pulled" != "1" ]; then
+            echo "rebase failed after retries; aborting to avoid pushing a broken tree"
+            git rebase --abort 2>/dev/null || true
+            exit 1
+          fi
           git push "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" main
