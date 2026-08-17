@@ -292,6 +292,16 @@ def pipeline(tool: dict) -> list[dict]:
                 reports.append(r)
                 continue
             reports.append(_execute_stage(r, leaf, tool, args))
+            # After encode runs, use its output as the BINSEQ fixture for
+            # subsequent tools. _prepare_fixtures() often can't find bqtools
+            # (the venv path in the registry is stale from a previous CI run;
+            # the current execution creates a new venv at a different path),
+            # but run_tool_spec() reads the venv from the live spec.
+            sub = (leaf.get("_active_subcommand") or "")
+            if sub == "encode" and r.get("execute", "").startswith("PASS"):
+                out_val = (args or {}).get("output", "")
+                if out_val and os.path.isfile(out_val) and os.path.getsize(out_val) > 0:
+                    _FIXTURES["binseq"] = out_val
         return reports
 
     # ---- non-subcommand tool ----
