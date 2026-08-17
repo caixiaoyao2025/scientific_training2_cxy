@@ -88,7 +88,7 @@ tools:
       flag: --cache_so3_dir
       takes_value: true
     msa_host_url:
-      type: path
+      type: string
       description: MSA server URL. If not set, this defaults to colabfold's remote
         server. If sequence is an a3m file, this is ignored.
       required: false
@@ -104,7 +104,7 @@ tools:
       flag: --filter_samples
       takes_value: false
     base_seed:
-      type: int
+      type: string
       description: Base random seed for sampling. If set, each batch's seed will be
         set to base_seed + (num samples already generated).
       required: false
@@ -166,7 +166,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_93de5vln/bioemu
+    - bioemu @ file:///tmp/execute_rlbji2y8/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -208,7 +208,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_93de5vln/venv
+    venv_path: /tmp/execute_rlbji2y8/venv
   evidence:
     exec_status: passed
     exec_reason: 'README usage: python -m bioemu.sample --help'
@@ -271,11 +271,14 @@ tools:
       required: false
       takes_value: true
     - name: --msa_host_url
-      type: path
+      type: string
       description: MSA server URL. If not set, this defaults to colabfold's remote
         server. If sequence is an a3m file, this is ignored.
       required: false
       takes_value: true
+      choices:
+      - str
+      - None
     - name: --filter_samples
       type: boolean
       description: Filter out unphysical samples with e.g. long bond distances or
@@ -285,11 +288,14 @@ tools:
       aliases:
       - -f
     - name: --base_seed
-      type: int
+      type: string
       description: Base random seed for sampling. If set, each batch's seed will be
         set to base_seed + (num samples already generated).
       required: false
       takes_value: true
+      choices:
+      - int
+      - None
     - name: sequence
       type: path
       description: Amino acid sequence for which to generate samples, or a path to
@@ -350,7 +356,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_93de5vln/bioemu
+    - bioemu @ file:///tmp/execute_rlbji2y8/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -1363,10 +1369,10 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_23xl2a4d/venv
+    venv_path: /tmp/execute_z3a_t4lk/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_23xl2a4d/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_z3a_t4lk/bqtools/target/release/bqtools --help` ->
       exit 0'
     exec_executable: bqtools
     verified_license: false
@@ -1424,7 +1430,7 @@ tools:
       flag: --output-html
       takes_value: true
     subsampling:
-      type: int
+      type: string
       description: 'Subsample input to number of bases before  classification. Leave
         empty or use None for no  downsampling. (default: [None])'
       required: false
@@ -1519,10 +1525,10 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_k_j8y3b9/venv
+    venv_path: /tmp/execute_v6id1pxn/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_k_j8y3b9/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_v6id1pxn/venv/bin/kaptain --help` -> exit 0'
     exec_executable: kaptain
     verified_license: true
     verified_license_path: LICENSE
@@ -1565,16 +1571,28 @@ tools:
       required: false
       takes_value: true
     - name: --subsampling
-      type: int
+      type: string
       description: 'Subsample input to number of bases before  classification. Leave
         empty or use None for no  downsampling. (default: [None])'
       required: false
       takes_value: true
+      choices:
+      - 200M
+      - 500M
+      - 1000M
+      - 1500M
+      - 2000M
+      - None
     - name: --fdr
       type: string
       description: 'FDR setting. (default: [5])'
       required: false
       takes_value: true
+      choices:
+      - '15'
+      - '10'
+      - '5'
+      - '1'
     - name: --threads
       type: int
       description: 'Number of threads (default: 4)'
@@ -1615,7 +1633,7 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_k_j8y3b9/KAPTAIN
+    - kaptain @ file:///tmp/execute_v6id1pxn/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.0
     - numpy==2.4.6
