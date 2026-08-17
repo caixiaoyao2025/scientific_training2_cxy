@@ -212,6 +212,19 @@ def _check_output(result: dict, spec: dict, args: dict) -> str:
     stdout = result.get("stdout") or ""
     if stdout.strip():
         return ""
+    # stdout is empty — but the tool may have produced file/directory output
+    # via params like --basepath or --output that the registry's output
+    # contract doesn't declare (e.g. bqtools split writes to --basepath but
+    # the registry says stdout). Check any file/dir-producing params.
+    for name, meta in (spec.get("inputs") or {}).items():
+        ptype = (meta or {}).get("type", "")
+        if ptype in ("path", "file", "directory") and name in (args or {}):
+            p = args[name]
+            if ptype == "directory":
+                if os.path.isdir(p) and bool(os.listdir(p)):
+                    return ""
+            elif os.path.isfile(p) and os.path.getsize(p) > 0:
+                return ""
     return "output: exit 0 but no output"
 
 
