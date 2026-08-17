@@ -116,6 +116,16 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
             all_params = [k for g in any_of for k in g]
             return {}, (f"conditional required: at least one of {all_params} "
                         f"is required")
+    # exec template constraint: --exec MUST contain "{}" which is replaced by
+    # the FIFO path. Without it the CLI rejects the call immediately.
+    exec_constraint = (spec.get("constraints") or {}).get("exec_template") or {}
+    if exec_constraint.get("contains"):
+        needle = exec_constraint["contains"]
+        exec_val = arguments.get("exec")
+        if exec_val is not None and needle not in str(exec_val):
+            return {}, (f"exec template must contain {needle!r} "
+                        f"(got {exec_val!r}). "
+                        f"Example: --exec 'cat {needle}'")
     # unknown template vars in the command would render to garbage argv.
     # A placeholder is bound by an input OR a declared resource (resources are
     # injected by the runner, not user-supplied). EXCEPT subcommand CLIs:

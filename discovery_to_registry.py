@@ -247,6 +247,12 @@ _SUBCOMMAND_CONSTRAINTS: dict[tuple[str, str], dict] = {
     ("bqtools", "split"): {
         "any_of": [["file"], ["sfile"], ["xfile"]],
     },
+    # bqtools pipe: --exec template MUST contain "{}" which is replaced by
+    # the FIFO path. Without it the CLI fails with "exec template must
+    # contain {} for the FIFO path". The LLM must know this before calling.
+    ("bqtools", "pipe"): {
+        "exec_template": {"contains": "{}"},
+    },
 }
 
 # Known param choices for tools whose --help output doesn't include
@@ -258,6 +264,23 @@ _SUBCOMMAND_CONSTRAINTS: dict[tuple[str, str], dict] = {
 # Value: list of allowed values.
 _KNOWN_PARAM_CHOICES: dict[tuple[str, str, str], list[str]] = {
     ("bqtools", "*", "format"): ["a", "q", "b", "t"],
+}
+
+# Per-subcommand human-readable descriptions extracted from bqtools --help.
+# These replace the generic top-level "working with BINSEQ files" so that
+# tool retrieval and LLM selection can distinguish what each subcommand does.
+# Format: (tool_name, subcommand) -> description string.
+_SUBCOMMAND_DESCRIPTIONS: dict[tuple[str, str], str] = {
+    ("bqtools", "encode"): "Encode FASTA/FASTQ sequence files into BINSEQ format.",
+    ("bqtools", "decode"): "Restore BINSEQ files back to FASTA/FASTQ/TSV text format.",
+    ("bqtools", "cat"): "Concatenate multiple BINSEQ files into a single output.",
+    ("bqtools", "info"): "Print metadata about a BINSEQ file (record count, format, etc.).",
+    ("bqtools", "grep"): "Search BINSEQ records by sequence pattern and write matches to output.",
+    ("bqtools", "sample"): "Randomly sample a fraction of records from a BINSEQ file.",
+    ("bqtools", "split"): "Split a BINSEQ file into multiple files by pattern matching.",
+    ("bqtools", "pipe"): "Split BINSEQ files into multiple named pipes for streaming.",
+    ("bqtools", "revcomp"): "Reverse complement all sequences in a BINSEQ file.",
+    ("bqtools", "verify"): "Compute an order-independent checksum to verify BINSEQ integrity.",
 }
 
 
@@ -274,6 +297,11 @@ def _subcommand_outputs(subs: dict, tool_name: str) -> dict:
         entry = dict(detail)
         params = entry.get("params") or []
         entry["outputs"] = _infer_outputs(params, [], "named")
+        # inject per-subcommand description from curated lookup so that tool
+        # retrieval and LLM selection can distinguish what each sub does
+        desc_key = (tool_name, sub)
+        if desc_key in _SUBCOMMAND_DESCRIPTIONS:
+            entry["description"] = _SUBCOMMAND_DESCRIPTIONS[desc_key]
         # attach per-subcommand constraints (e.g. any_of for split)
         key = (tool_name, sub)
         if key in _SUBCOMMAND_CONSTRAINTS:

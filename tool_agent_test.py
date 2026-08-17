@@ -39,7 +39,7 @@ BASE_URL = (os.environ.get("WESTLAKE_BASE_URL") or os.environ.get("OPENAI_BASE_U
             or os.environ.get("DEEPSEEK_BASE_URL")
             or "https://ark.cn-beijing.volces.com/api/v3")
 MODEL = (os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL")
-         or os.environ.get("DEEPSEEK_MODEL") or "doubao-seed-evolving")
+          or os.environ.get("DEEPSEEK_MODEL") or "glm-5-2-260617")
 API_KEY = (os.environ.get("WESTLAKE_API_KEY") or os.environ.get("OPENAI_API_KEY")
            or os.environ.get("DEEPSEEK_API_KEY") or "")
 REGISTRY = os.environ.get("REGISTRY", "data/mcp_registry.yaml")
@@ -215,6 +215,13 @@ def _function_description(tool: dict) -> str:
         groups = " OR ".join(", ".join(g) for g in ao if g)
         desc = (desc.strip() + " "
                 + f"Requires at least one of: {groups}.").strip()
+    # exec template constraint: the --exec string MUST contain "{}" which is
+    # replaced by the FIFO pipe path. Without it, the CLI rejects the call.
+    exec_constraint = (tool.get("constraints") or {}).get("exec_template") or {}
+    if exec_constraint.get("contains") == "{}":
+        desc = (desc.strip() + " "
+                + 'The --exec parameter MUST contain "{}" which is replaced '
+                  'by the FIFO path. Example: --exec "cat {}"').strip()
     outs = tool.get("outputs") or {}
     if isinstance(outs, dict) and outs:
         bits = []
@@ -402,8 +409,12 @@ def main() -> int:
     print(f"\n== {len(schemas)} function schemas sent to the LLM ==")
     for s in schemas:
         fn = s["function"]
-        print(f"  {fn['name']:30} params={list(fn['parameters'].get('properties', {}).keys())} "
-              f"required={fn['parameters'].get('required')}")
+        params = fn["parameters"]
+        line = (f"  {fn['name']:30} params={list(params.get('properties', {}).keys())} "
+                f"required={params.get('required')}")
+        if params.get("anyOf"):
+            line += f" anyOf={params['anyOf']}"
+        print(line)
     sub_broken = []
     for t in callable_tools:
         if t.get("arg_style") == "subcommand" and t.get("subcommand_details"):

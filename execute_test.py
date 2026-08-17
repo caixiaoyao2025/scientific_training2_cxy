@@ -554,7 +554,7 @@ def _llm_attempt_call(pkg_name: str, repo_dir: str, venv_py: str,
                 or os.environ.get("DEEPSEEK_BASE_URL")
                 or "https://ark.cn-beijing.volces.com/api/v3")
     model = (os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL")
-             or os.environ.get("DEEPSEEK_MODEL") or "doubao-seed-evolving")
+             or os.environ.get("DEEPSEEK_MODEL") or "glm-5-2-260617")
     if not api_key:
         return {"ok": False, "status": "no_llm_key", "code": "", "evidence": ""}
 
