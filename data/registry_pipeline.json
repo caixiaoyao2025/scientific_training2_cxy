@@ -47,59 +47,59 @@
     "name": "bqtools_decode",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_decode",
     "_argv": [
       "bqtools",
       "decode",
-      "/tmp/pipeline_sample.vbq",
+      "/tmp/pipeline_out/sample.vbq",
       "--output",
       "/tmp/pipeline_out/sample.fa",
       "--format",
       "a"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
+      "input": "/tmp/pipeline_out/sample.vbq",
       "output": "/tmp/pipeline_out/sample.fa",
       "format": "a"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_cat",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_cat",
     "_argv": [
       "bqtools",
       "cat",
-      "/tmp/pipeline_sample.vbq",
+      "/tmp/pipeline_out/sample.vbq",
       "--output",
       "/tmp/pipeline_out/cat.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
+      "input": "/tmp/pipeline_out/sample.vbq",
       "output": "/tmp/pipeline_out/cat.vbq"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_info",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 0 but no output)",
-    "output": "FAIL (output: exit 0 but no output)",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_info",
     "_argv": [
       "bqtools",
       "info",
-      "/tmp/pipeline_sample.vbq"
+      "/tmp/pipeline_out/sample.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq"
+      "input": "/tmp/pipeline_out/sample.vbq"
     },
     "_return_code": 0
   },
@@ -107,13 +107,13 @@
     "name": "bqtools_grep",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_grep",
     "_argv": [
       "bqtools",
       "grep",
-      "/tmp/pipeline_sample.vbq",
+      "/tmp/pipeline_out/sample.vbq",
       "ACGT",
       "--output",
       "/tmp/pipeline_out/grep.fa",
@@ -121,24 +121,24 @@
       "a"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
+      "input": "/tmp/pipeline_out/sample.vbq",
       "output": "/tmp/pipeline_out/grep.fa",
       "format": "a",
       "reg": "ACGT"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_sample",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_sample",
     "_argv": [
       "bqtools",
       "sample",
-      "/tmp/pipeline_sample.vbq",
+      "/tmp/pipeline_out/sample.vbq",
       "--output",
       "/tmp/pipeline_out/sample.fa",
       "--format",
@@ -147,49 +147,49 @@
       "0.5"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
+      "input": "/tmp/pipeline_out/sample.vbq",
       "output": "/tmp/pipeline_out/sample.fa",
       "format": "a",
       "fraction": "0.5"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_split",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "FAIL (output: exit 0 but no output)",
+    "output": "FAIL (output: exit 0 but no output)",
     "_function": "bqtools_split",
     "_argv": [
       "bqtools",
       "split",
-      "/tmp/pipeline_sample.vbq",
+      "/tmp/pipeline_out/sample.vbq",
       "--file",
       "/tmp/pipeline_pattern.txt"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
+      "input": "/tmp/pipeline_out/sample.vbq",
       "file": "/tmp/pipeline_pattern.txt"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_pipe",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "FAIL (output: exit 1 (stderr: Error: exec template must contain {} for the FIFO path\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: exec template must contain {} for the FIFO path\n))",
     "_function": "bqtools_pipe",
     "_argv": [
       "bqtools",
       "pipe",
-      "/tmp/pipeline_sample.vbq",
+      "/tmp/pipeline_out/sample.vbq",
       "--exec",
       "cat"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
+      "input": "/tmp/pipeline_out/sample.vbq",
       "exec": "cat"
     },
     "_return_code": 1
@@ -198,38 +198,38 @@
     "name": "bqtools_revcomp",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_revcomp",
     "_argv": [
       "bqtools",
       "revcomp",
-      "/tmp/pipeline_sample.vbq",
+      "/tmp/pipeline_out/sample.vbq",
       "--output",
       "/tmp/pipeline_out/revcomp.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
+      "input": "/tmp/pipeline_out/sample.vbq",
       "output": "/tmp/pipeline_out/revcomp.vbq"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_verify",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_verify",
     "_argv": [
       "bqtools",
       "verify",
-      "/tmp/pipeline_sample.vbq"
+      "/tmp/pipeline_out/sample.vbq"
     ],
     "_args": {
-      "input": "/tmp/pipeline_sample.vbq"
+      "input": "/tmp/pipeline_out/sample.vbq"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "kaptain",
