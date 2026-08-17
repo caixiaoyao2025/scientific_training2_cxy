@@ -66,26 +66,27 @@ def _param_input(p: dict[str, Any]) -> dict[str, Any]:
     """Registry subcommand param -> canonical input meta (keeps every piece
     the runner + function schema need: type, required, positional order,
     takes_value so store-flags render bare, and the EXACT flag spelling so the
-    argv renderer emits `--output` not a guessed name)."""
+    argv renderer emits `--output` not a guessed name).
+
+    Also preserves artifact metadata (artifact_type, extensions, semantic_type)
+    that may have been added by discovery_to_registry.py's infer_artifact_contract."""
     meta: dict[str, Any] = {
         "type": p.get("type", "string"),
         "description": p.get("description") or f"Argument {p.get('name')}",
         "required": p.get("required") is True,
         "source": "help_parsed",
     }
+    # Preserve artifact metadata from the registry param. This is the
+    # scientific data contract: artifact_type, extensions, semantic_type.
+    for ak in ("artifact_type", "extensions", "semantic_type", "artifact"):
+        if ak in p:
+            meta[ak] = p[ak]
     if p.get("positional"):
         meta["positional"] = True
-        # required semantics from the PARSER, not forced: a bare metavar
-        # (SEQUENCE, <INPUT>) is a mandatory argv slot, but a bracketed
-        # `[INPUT]` / `[FILES ...]` is OPTIONAL (reads stdin / zero-or-more).
-        # Forcing every positional required would demand an arg the CLI usage
-        # itself marks optional.
         meta["required"] = p.get("required") is True
         if p.get("position") is not None:
             meta["position"] = p["position"]
     else:
-        # flag spelling as the tool declared it (--format), used by the
-        # renderer to build argv; canonical_key keeps the input key clean.
         meta["flag"] = p.get("name", "")
     if p.get("takes_value") is not None:
         meta["takes_value"] = p["takes_value"]
@@ -146,6 +147,12 @@ def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
     leaf["execution"]["command"] = leaf["command"]
     leaf["inputs"] = {canonical_key(p.get("name", "")): _param_input(p)
                       for p in params if canonical_key(p.get("name", ""))}
+    # Annotate inputs with artifact_type so the LLM and test harness know
+    # what scientific data format each parameter expects (e.g. .cool, .bed).
+    from agent_connector.artifact_spec import annotate_inputs_with_artifacts  # noqa: PLC0415
+    annotate_inputs_with_artifacts(leaf["inputs"],
+                                  tool_name=tool.get("name", ""),
+                                  sub_name=sub)
     leaf["outputs"] = details.get("outputs") or tool.get("outputs") or {}
     leaf["resources"] = tool.get("resources") or {}
     # per-subcommand constraints (e.g. split requires one of file/sfile/xfile)

@@ -73,10 +73,14 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
     before any subprocess runs.
     """
     if spec.get("arg_style") == "subcommand" and not spec.get("inputs"):
-        return {}, ("base subcommand spec cannot be executed directly (it has "
-                    "no leaf inputs); resolve it to a leaf ToolSpec via "
-                    "make_leaf_spec first (to_function_schemas dispatches "
-                    "fnmap -> leaf). The runner never guesses the subcommand.")
+        # A zero-input LEAF (e.g. cooltools_genome) is valid: it has
+        # _active_subcommand set by make_leaf_spec and a concrete command.
+        # Only reject the raw BASE spec (no _active_subcommand).
+        if not spec.get("_active_subcommand"):
+            return {}, ("base subcommand spec cannot be executed directly (it has "
+                        "no leaf inputs); resolve it to a leaf ToolSpec via "
+                        "make_leaf_spec first (to_function_schemas dispatches "
+                        "fnmap -> leaf). The runner never guesses the subcommand.")
     inputs = spec.get("inputs") or {}
     if not isinstance(inputs, dict):
         return {}, f"input schema is not a dict: {inputs!r}"
@@ -126,6 +130,20 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
             return {}, (f"exec template must contain {needle!r} "
                         f"(got {exec_val!r}). "
                         f"Example: --exec 'cat {needle}'")
+    # artifact compatibility validation: if a parameter declares an artifact_type
+    # with specific extensions, check that the provided file path matches.
+    # This catches "FASTA fed to a .cool tool" before the CLI runs.
+    for key, meta in inputs.items():
+        if not isinstance(meta, dict):
+            continue
+        artifact = meta.get("artifact_type") or meta.get("artifact")
+        exts = meta.get("extensions") or []
+        if not artifact or not exts or key not in arguments:
+            continue
+        val = str(arguments[key] or "")
+        if val and not any(val.endswith(ext) for ext in exts):
+            return {}, (f"{key} expects {artifact} ({'/'.join(exts[:3])}), "
+                        f"got {val!r}")
     # unknown template vars in the command would render to garbage argv.
     # A placeholder is bound by an input OR a declared resource (resources are
     # injected by the runner, not user-supplied). EXCEPT subcommand CLIs:

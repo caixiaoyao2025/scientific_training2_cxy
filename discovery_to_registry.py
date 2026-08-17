@@ -284,6 +284,103 @@ _SUBCOMMAND_DESCRIPTIONS: dict[tuple[str, str], str] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Artifact contract inference
+# ---------------------------------------------------------------------------
+# Maps param names and tool contexts to artifact types. This is the ground-truth
+# annotation layer: description-based inference is a fallback, but explicit
+# param-name rules are more reliable for known scientific tools.
+
+# Param-name -> artifact contract (used when param name matches exactly)
+_PARAM_ARTIFACTS: dict[str, dict] = {
+    "cool_path": {"artifact_type": "cool_matrix", "extensions": [".cool", ".mcool"]},
+    "coolpath": {"artifact_type": "cool_matrix", "extensions": [".cool", ".mcool"]},
+    "clr_path": {"artifact_type": "cool_matrix", "extensions": [".cool", ".mcool"]},
+    "features_path": {"artifact_type": "genomic_features", "extensions": [".bed", ".bed.gz", ".gtf", ".gff"]},
+    "track_path": {"artifact_type": "genomic_features", "extensions": [".bed", ".bed.gz"]},
+    "expected_path": {"artifact_type": "expected_matrix", "extensions": [".tsv", ".tsv.gz"]},
+    "viewpoint": {"semantic_type": "genomic_region"},
+    "ref_path": {"artifact_type": "fasta", "extensions": [".fasta", ".fa", ".fna"]},
+    "fasta_path": {"artifact_type": "fasta", "extensions": [".fasta", ".fa"]},
+    "fastq_path": {"artifact_type": "fastq", "extensions": [".fastq", ".fq"]},
+    "bam_path": {"artifact_type": "bam", "extensions": [".bam"]},
+    "vcf_path": {"artifact_type": "vcf", "extensions": [".vcf", ".vcf.gz"]},
+    "pdb_path": {"artifact_type": "pdb", "extensions": [".pdb"]},
+    "ont_in": {"artifact_type": "fastq", "extensions": [".fastq", ".fq"]},
+}
+
+# Tool-name -> param-name -> artifact contract (overrides param-name rules)
+_TOOL_PARAM_ARTIFACTS: dict[tuple[str, str], dict] = {
+    ("bqtools", "input"): {"artifact_type": "binseq", "extensions": [".vbq", ".cbq", ".bq"]},
+    ("bioemu", "sequence"): {"artifact_type": "fasta", "extensions": [".fasta", ".fa"]},
+}
+
+
+def infer_artifact_contract(tool_name: str, param_name: str,
+                            description: str = "",
+                            command: str = "") -> dict:
+    """Infer the artifact contract for a ToolSpec input parameter.
+
+    Returns a dict with keys like artifact_type, extensions, semantic_type.
+    Empty dict means no artifact contract could be inferred.
+
+    Priority:
+      1. Tool+param specific rules (highest confidence)
+      2. Param-name rules (e.g. cool_path -> cool_matrix)
+      3. Description-based regex (fallback, lower confidence)
+    """
+    # Layer 1: tool+param specific
+    key = (tool_name, param_name)
+    if key in _TOOL_PARAM_ARTIFACTS:
+        return dict(_TOOL_PARAM_ARTIFACTS[key])
+
+    # Layer 2: param-name rules
+    if param_name in _PARAM_ARTIFACTS:
+        return dict(_PARAM_ARTIFACTS[param_name])
+
+    # Layer 3: description-based regex
+    import re as _re
+    text = f"{tool_name} {param_name} {description} {command}".lower()
+    patterns = [
+        (r"\.mcool|mcool\s+file", "cool_matrix", [".cool", ".mcool"]),
+        (r"\.cool|contact\s+matrix|hic\s+matrix", "cool_matrix", [".cool", ".mcool"]),
+        (r"\.bed|bed\s+file|bedpe|genomic\s+feature|feature\s+file", "genomic_features", [".bed", ".bed.gz"]),
+        (r"\.bam|bam\s+file", "bam", [".bam"]),
+        (r"\.sam|sam\s+file", "sam", [".sam"]),
+        (r"\.vcf|variant\s+call", "vcf", [".vcf", ".vcf.gz"]),
+        (r"\.fasta|fasta\s+file|sequence\s+file", "fasta", [".fasta", ".fa"]),
+        (r"\.fastq|fastq\s+file|sequencing\s+read", "fastq", [".fastq", ".fq"]),
+        (r"\.pdb|protein\s+structure", "pdb", [".pdb"]),
+        (r"\.bw|bigwig|signal\s+track", "bigwig", [".bw", ".bigwig"]),
+    ]
+    for pat, artifact, exts in patterns:
+        if _re.search(pat, text):
+            return {"artifact_type": artifact, "extensions": exts}
+    return {}
+
+
+def _annotate_artifacts(subs: dict, tool_name: str) -> None:
+    """Annotate all params in all subcommands with artifact contracts.
+
+    Mutates subs in place. Called during registry generation."""
+    for sub, detail in (subs or {}).items():
+        for p in (detail.get("params") or []):
+            pname = p.get("name", "")
+            # canonicalize for matching
+            ck = pname.lstrip("-").lower().replace("-", "_")
+            desc = p.get("description") or ""
+            cmd = ""  # command not available at param level
+            contract = infer_artifact_contract(tool_name, ck, desc, cmd)
+            if contract:
+                p.update(contract)
+
+
+def _annotate_artifacts_and_return(subs: dict, tool_name: str) -> dict:
+    """Annotate artifacts and return the mutated dict (for inline use)."""
+    _annotate_artifacts(subs, tool_name)
+    return subs
+
+
 def _subcommand_outputs(subs: dict, tool_name: str) -> dict:
     """Attach each subcommand's OWN output contract to its details.
 
@@ -608,7 +705,9 @@ def tool_to_registry_entry(tool, verification=None):
         # also carries its OWN output contract (inferred from that sub's params)
         # so leaf-task validation checks a FILE/DIR, not stdout.
         "subcommands": e.get("subcommands", []),
-        "subcommand_details": _subcommand_outputs(e.get("subcommand_details", {}), clean_name),
+        "subcommand_details": _subcommand_outputs(
+            _annotate_artifacts_and_return(e.get("subcommand_details", {}), clean_name),
+            clean_name),
         "subcommand_discovery_complete": e.get("subcommand_discovery_complete", False),
         # --- environment / install contract (surfaces to downstream agents) ---
         # Tells the caller what to install before invoking, and which system
