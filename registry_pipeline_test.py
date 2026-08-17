@@ -146,9 +146,10 @@ def _leaf_fixture(leaf: dict) -> dict:
             "info": {"input": _FIXTURES["binseq"]},
             "verify": {"input": _FIXTURES["binseq"]},
             "split": {"input": _FIXTURES["binseq"],
-                      "file": _FIXTURES["pattern"]},
+                      "file": _FIXTURES["pattern"],
+                      "basepath": str(outdir)},
             "pipe": {"input": _FIXTURES["binseq"],
-                     "exec": "cat"}}
+                     "exec": "cat {}"}}
     return {k: v for k, v in base.get(name, {}).items() if v}
 
 

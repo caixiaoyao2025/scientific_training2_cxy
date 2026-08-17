@@ -1129,9 +1129,10 @@ tools:
         position: 0
       usage: bqtools split [OPTIONS] <INPUT>
       outputs:
-        stdout:
-          type: text
-          description: Tool result printed to stdout.
+        basepath:
+          type: directory
+          description: Directory containing the split output files
+          input: basepath
           source: inferred
     pipe:
       params:
