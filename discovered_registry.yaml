@@ -166,7 +166,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_a_p4t4x8/bioemu
+    - bioemu @ file:///tmp/execute_1mjq81bu/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -208,7 +208,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_a_p4t4x8/venv
+    venv_path: /tmp/execute_1mjq81bu/venv
   _discovery_metadata:
     github: https://github.com/microsoft/bioemu
     stars: 866
@@ -229,7 +229,7 @@ tools:
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-17T05:29:09.914029'
+    verified_checked_at: '2026-08-17T07:51:41.176395'
     dependencies:
       system_commands: []
       readme_hint: ''
@@ -383,7 +383,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_a_p4t4x8/bioemu
+    - bioemu @ file:///tmp/execute_1mjq81bu/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -499,6 +499,11 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: &id001
+        - a
+        - q
+        - b
+        - t
       - name: --batch-size
         type: int
         description: Batch size (in records) to use in parallel processing
@@ -683,6 +688,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --compress
         type: path
         description: Compress output file
@@ -883,6 +889,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --compress
         type: path
         description: Compress output file
@@ -1033,6 +1040,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --compress
         type: path
         description: Compress output file
@@ -1160,6 +1168,11 @@ tools:
           type: text
           description: Tool result printed to stdout.
           source: inferred
+      constraints:
+        any_of:
+        - - file
+        - - sfile
+        - - xfile
     pipe:
       params:
       - name: --span
@@ -1182,6 +1195,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --basepath
         type: path
         description: Base path for output files
@@ -1396,7 +1410,7 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_fyu4mycg/venv
+    venv_path: /tmp/execute_6z9pbc6u/venv
   _discovery_metadata:
     github: https://github.com/ArcInstitute/bqtools
     stars: 39
@@ -1416,21 +1430,21 @@ tools:
     verified_license: false
     verified_license_path: ''
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-17T05:30:27.883897'
+    verified_checked_at: '2026-08-17T07:53:00.549616'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: cargo
     exec_status: passed
-    exec_reason: '`/tmp/execute_fyu4mycg/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_6z9pbc6u/bqtools/target/release/bqtools --help` ->
       exit 0'
-    exec_install_evidence: " v1.4.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
+    exec_install_evidence: " v2.5.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
       \   Compiling is-terminal v0.4.17\n   Compiling xxhash-rust v0.8.18\n   Compiling\
-      \ thousands v0.2.0\n   Compiling fixedbitset v0.5.7\n   Compiling rust-htslib\
+      \ fixedbitset v0.5.7\n   Compiling thousands v0.2.0\n   Compiling rust-htslib\
       \ v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling\
-      \ bqtools v0.5.13 (/tmp/execute_fyu4mycg/bqtools)\n    Finished `release` profile\
-      \ [optimized] target(s) in 2m 21s\n"
+      \ bqtools v0.5.13 (/tmp/execute_6z9pbc6u/bqtools)\n    Finished `release` profile\
+      \ [optimized] target(s) in 2m 09s\n"
     exec_run_evidence: "into multiple files based on patterns provided in a pattern\
       \ file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc      \
       \ \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify \
@@ -1592,7 +1606,7 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_s9n7y1_h/venv
+    venv_path: /tmp/execute_de3c9dpy/venv
   _discovery_metadata:
     github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
     stars: 3
@@ -1613,14 +1627,14 @@ tools:
     verified_license_path: LICENSE
     verified_entry_scripts:
     - kaptain/__main__.py
-    verified_checked_at: '2026-08-17T05:30:55.939235'
+    verified_checked_at: '2026-08-17T07:53:26.765770'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_s9n7y1_h/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_de3c9dpy/venv/bin/kaptain --help` -> exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "efore\n                        classification. Leave empty\
       \ or use None for no\n                        downsampling. (default: [None])\n\
@@ -1728,9 +1742,9 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_s9n7y1_h/KAPTAIN
+    - kaptain @ file:///tmp/execute_de3c9dpy/KAPTAIN
     - MarkupSafe==3.0.3
-    - nbformat==5.11.0
+    - nbformat==5.11.1
     - numpy==2.4.6
     - packaging==25.0
     - pandas==3.0.5
@@ -1740,7 +1754,7 @@ tools:
     - PuLP==2.7.0
     - pydantic==2.13.4
     - pydantic_core==2.46.4
-    - Pygments==2.20.0
+    - Pygments==2.21.0
     - pytest==9.1.1
     - python-dateutil==2.9.0.post0
     - PyYAML==6.0.3

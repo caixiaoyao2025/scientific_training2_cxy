@@ -166,7 +166,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_a_p4t4x8/bioemu
+    - bioemu @ file:///tmp/execute_1mjq81bu/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -208,7 +208,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_a_p4t4x8/venv
+    venv_path: /tmp/execute_1mjq81bu/venv
   evidence:
     exec_status: passed
     exec_reason: 'README usage: python -m bioemu.sample --help'
@@ -356,7 +356,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_a_p4t4x8/bioemu
+    - bioemu @ file:///tmp/execute_1mjq81bu/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -472,6 +472,11 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: &id001
+        - a
+        - q
+        - b
+        - t
       - name: --batch-size
         type: int
         description: Batch size (in records) to use in parallel processing
@@ -656,6 +661,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --compress
         type: path
         description: Compress output file
@@ -856,6 +862,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --compress
         type: path
         description: Compress output file
@@ -1006,6 +1013,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --compress
         type: path
         description: Compress output file
@@ -1048,11 +1056,6 @@ tools:
           input: output
           source: help_parsed
     split:
-      constraints:
-        any_of:
-        - - file
-        - - sfile
-        - - xfile
       params:
       - name: --span
         type: string
@@ -1138,6 +1141,11 @@ tools:
           type: text
           description: Tool result printed to stdout.
           source: inferred
+      constraints:
+        any_of:
+        - - file
+        - - sfile
+        - - xfile
     pipe:
       params:
       - name: --span
@@ -1160,6 +1168,7 @@ tools:
         takes_value: true
         aliases:
         - -f
+        choices: *id001
       - name: --basepath
         type: path
         description: Base path for output files
@@ -1374,10 +1383,10 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_fyu4mycg/venv
+    venv_path: /tmp/execute_6z9pbc6u/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_fyu4mycg/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_6z9pbc6u/bqtools/target/release/bqtools --help` ->
       exit 0'
     exec_executable: bqtools
     verified_license: false
@@ -1530,10 +1539,10 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_s9n7y1_h/venv
+    venv_path: /tmp/execute_de3c9dpy/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_s9n7y1_h/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_de3c9dpy/venv/bin/kaptain --help` -> exit 0'
     exec_executable: kaptain
     verified_license: true
     verified_license_path: LICENSE
@@ -1638,9 +1647,9 @@ tools:
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_s9n7y1_h/KAPTAIN
+    - kaptain @ file:///tmp/execute_de3c9dpy/KAPTAIN
     - MarkupSafe==3.0.3
-    - nbformat==5.11.0
+    - nbformat==5.11.1
     - numpy==2.4.6
     - packaging==25.0
     - pandas==3.0.5
@@ -1650,7 +1659,7 @@ tools:
     - PuLP==2.7.0
     - pydantic==2.13.4
     - pydantic_core==2.46.4
-    - Pygments==2.20.0
+    - Pygments==2.21.0
     - pytest==9.1.1
     - python-dateutil==2.9.0.post0
     - PyYAML==6.0.3

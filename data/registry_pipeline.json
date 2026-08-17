@@ -158,8 +158,8 @@
     "name": "bqtools_split",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 0 but no output)",
-    "output": "FAIL (output: exit 0 but no output)",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_split",
     "_argv": [
       "bqtools",
