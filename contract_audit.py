@@ -102,16 +102,28 @@ for s in schemas:
             check(jt == "boolean", f"{fname}.{key}: {mtype} -> schema {jt}")
     # 4. a minimal legal call validates AND renders (no subcommand leak)
     if req_leaf:
-        args = {k: ("/tmp/sample.fasta" if (leaf["inputs"][k].get("type")
-                                            in ("path", "file", "string"))
-                    else (1 if leaf["inputs"][k].get("type") in ("int", "integer")
-                          else (0.5 if leaf["inputs"][k].get("type") in ("float", "number")
-                                else True)))
-                for k in req_leaf}
+        def _minimal_val(meta):
+            """Generate a minimal valid value for a param, respecting artifact extensions."""
+            jtype = meta.get("type", "string")
+            if jtype in ("int", "integer"):
+                return 1
+            if jtype in ("float", "number"):
+                return 0.5
+            if jtype == "boolean":
+                return True
+            # path/file/string: use artifact_type's first extension if available
+            artifact = meta.get("artifact_type") or ""
+            exts = meta.get("extensions") or []
+            if exts:
+                ext = exts[0]  # e.g. ".vbq" for binseq
+                return f"/tmp/sample{ext}"
+            return "/tmp/sample.fasta"
+
+        args = {k: _minimal_val(leaf["inputs"][k]) for k in req_leaf}
         # required positionals must also render; flags render from flag field
         for k in req_leaf:
             if leaf["inputs"][k].get("positional"):
-                args[k] = "/tmp/sample.fasta"
+                args[k] = _minimal_val(leaf["inputs"][k])
         # conditional required: any_of groups need at least one param each
         any_of = (leaf.get("constraints") or {}).get("any_of") or []
         for group in any_of:
@@ -119,7 +131,7 @@ for s in schemas:
                 # satisfy with the first param in the group
                 first = group[0]
                 if first not in args:
-                    args[first] = "/tmp/sample.fasta"
+                    args[first] = _minimal_val(leaf["inputs"][first])
         cleaned, err = validate_arguments(leaf, args)
         check(err == "", f"{fname}: minimal required args rejected: {err}")
         if not err:
