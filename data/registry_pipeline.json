@@ -165,12 +165,15 @@
       "bqtools",
       "split",
       "/tmp/pipeline_out/sample.vbq",
+      "--basepath",
+      "/tmp/pipeline_out",
       "--file",
       "/tmp/pipeline_pattern.txt"
     ],
     "_args": {
       "input": "/tmp/pipeline_out/sample.vbq",
-      "file": "/tmp/pipeline_pattern.txt"
+      "file": "/tmp/pipeline_pattern.txt",
+      "basepath": "/tmp/pipeline_out"
     },
     "_return_code": 0
   },
@@ -178,21 +181,21 @@
     "name": "bqtools_pipe",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Error: exec template must contain {} for the FIFO path\n))",
-    "output": "FAIL (output: exit 1 (stderr: Error: exec template must contain {} for the FIFO path\n))",
+    "execute": "PASS",
+    "output": "PASS",
     "_function": "bqtools_pipe",
     "_argv": [
       "bqtools",
       "pipe",
       "/tmp/pipeline_out/sample.vbq",
       "--exec",
-      "cat"
+      "cat {}"
     ],
     "_args": {
       "input": "/tmp/pipeline_out/sample.vbq",
-      "exec": "cat"
+      "exec": "cat {}"
     },
-    "_return_code": 1
+    "_return_code": 0
   },
   {
     "name": "bqtools_revcomp",

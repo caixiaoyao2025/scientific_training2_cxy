@@ -3,9 +3,9 @@
     "tool": "sra-tools",
     "repo_url": "https://github.com/ncbi/sra-tools",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_t15a4j34/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_ipkgflc9/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_t15a4j34/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute_ipkgflc9/sra-tools' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -25,13 +25,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:01:23.046204"
+    "checked_at": "2026-08-17T05:33:24.659637"
   },
   {
     "tool": "enaBrowserTools",
     "repo_url": "https://github.com/enasequence/enaBrowserTools",
     "status": "env_issue",
-    "reason": "`enabrowsertools /tmp/execute_in738tkr/sample.fasta` -> exit 127; `enabrowsertools --help` -> exit 127; `python -c 'import enaBrowserTools'` -> exit 1",
+    "reason": "`enabrowsertools /tmp/execute_00yzopzr/sample.fasta` -> exit 127; `enabrowsertools --help` -> exit 127; `python -c 'import enaBrowserTools'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -60,7 +60,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:01:34.147159"
+    "checked_at": "2026-08-17T05:33:35.580002"
   },
   {
     "tool": "taxtriage",
@@ -88,7 +88,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:01:41.536387"
+    "checked_at": "2026-08-17T05:33:42.816172"
   },
   {
     "tool": "bioemu",
@@ -264,7 +264,7 @@
       "astunparse==1.6.3",
       "attrs==26.1.0",
       "bio==1.8.3",
-      "bioemu @ file:///tmp/execute_7toijcf2/bioemu",
+      "bioemu @ file:///tmp/execute_a_p4t4x8/bioemu",
       "biopython==1.88",
       "biothings_client==0.5.1",
       "certifi==2026.7.22",
@@ -339,8 +339,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:02:01.669033",
-    "venv_path": "/tmp/execute_7toijcf2/venv",
+    "checked_at": "2026-08-17T05:34:04.226251",
+    "venv_path": "/tmp/execute_a_p4t4x8/venv",
     "venv_kept": true
   },
   {
@@ -353,9 +353,9 @@
     "tool": "BBMap",
     "repo_url": "https://github.com/BioInfoTools/BBMap",
     "status": "failed",
-    "reason": "make failed (exit 2): make: Entering directory '/tmp/execute_3m0elhtt/BBMap'\nmake: Leaving directory '/tmp/execute_3m0elhtt/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
+    "reason": "make failed (exit 2): make: Entering directory '/tmp/execute_tuoi51st/BBMap'\nmake: Leaving directory '/tmp/execute_tuoi51st/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
     "install_ok": false,
-    "install_evidence": "make: Entering directory '/tmp/execute_3m0elhtt/BBMap'\nmake: Leaving directory '/tmp/execute_3m0elhtt/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
+    "install_evidence": "make: Entering directory '/tmp/execute_tuoi51st/BBMap'\nmake: Leaving directory '/tmp/execute_tuoi51st/BBMap'\nmake: *** No targets specified and no makefile found.  Stop.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -375,7 +375,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:04:02.373321"
+    "checked_at": "2026-08-17T05:36:05.030508"
   },
   {
     "tool": "ClairS-TO",
@@ -403,7 +403,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:04:09.486516"
+    "checked_at": "2026-08-17T05:36:12.208691"
   },
   {
     "tool": "pbsv",
@@ -415,9 +415,9 @@
     "tool": "kent",
     "repo_url": "https://github.com/ucscGenomeBrowser/kent",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_6phbc5u7/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_ayvsdgup/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_6phbc5u7/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute_ayvsdgup/kent' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -437,13 +437,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:05:42.516579"
+    "checked_at": "2026-08-17T05:37:48.291768"
   },
   {
     "tool": "DeepExplain",
     "repo_url": "https://github.com/marcoancona/DeepExplain",
     "status": "env_issue",
-    "reason": "`deepexplain /tmp/execute_tom14h9l/sample.fasta` -> exit 127; `deepexplain --help` -> exit 127; `python -c 'import DeepExplain'` -> exit 1",
+    "reason": "`deepexplain /tmp/execute_w9zqn4rh/sample.fasta` -> exit 127; `deepexplain --help` -> exit 127; `python -c 'import DeepExplain'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -463,7 +463,7 @@
     "installed_versions": [
       "contourpy==1.3.3",
       "cycler==0.12.1",
-      "deepexplain @ file:///tmp/execute_tom14h9l/DeepExplain",
+      "deepexplain @ file:///tmp/execute_w9zqn4rh/DeepExplain",
       "fonttools==4.63.0",
       "ImageIO==2.37.4",
       "kiwisolver==1.5.0",
@@ -484,13 +484,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:06:04.066310"
+    "checked_at": "2026-08-17T05:38:09.713208"
   },
   {
     "tool": "tf-explain",
     "repo_url": "https://github.com/sicara/tf-explain",
     "status": "env_issue",
-    "reason": "`tf_explain /tmp/execute_1nwcpwqz/sample.fasta` -> exit 127; `tf_explain --help` -> exit 127; `python -c 'import tfexplain'` -> exit 1",
+    "reason": "`tf_explain /tmp/execute_10cy222m/sample.fasta` -> exit 127; `tf_explain --help` -> exit 127; `python -c 'import tfexplain'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -509,13 +509,13 @@
     "subcommand_discovery_complete": false,
     "installed_versions": [
       "packaging==26.3",
-      "tf-explain @ file:///tmp/execute_1nwcpwqz/tf-explain"
+      "tf-explain @ file:///tmp/execute_10cy222m/tf-explain"
     ],
     "exec_retries": 0,
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:06:24.528075"
+    "checked_at": "2026-08-17T05:38:30.280409"
   },
   {
     "tool": "DNNGP",
@@ -543,7 +543,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:06:33.309162"
+    "checked_at": "2026-08-17T05:38:39.136641"
   },
   {
     "tool": "atac-seq-pipeline",
@@ -571,7 +571,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:07:03.852030"
+    "checked_at": "2026-08-17T05:39:10.948417"
   },
   {
     "tool": "knn-smoothing",
@@ -583,9 +583,9 @@
     "tool": "bqtools",
     "repo_url": "https://github.com/ArcInstitute/bqtools",
     "status": "passed",
-    "reason": "`/tmp/execute_3saiiw9p/bqtools/target/release/bqtools --help` -> exit 0",
+    "reason": "`/tmp/execute_fyu4mycg/bqtools/target/release/bqtools --help` -> exit 0",
     "install_ok": true,
-    "install_evidence": " v3.0.1\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n   Compiling is-terminal v0.4.17\n   Compiling thousands v0.2.0\n   Compiling fixedbitset v0.5.7\n   Compiling xxhash-rust v0.8.18\n   Compiling rust-htslib v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling bqtools v0.5.13 (/tmp/execute_3saiiw9p/bqtools)\n    Finished `release` profile [optimized] target(s) in 2m 01s\n",
+    "install_evidence": " v1.4.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n   Compiling is-terminal v0.4.17\n   Compiling xxhash-rust v0.8.18\n   Compiling thousands v0.2.0\n   Compiling fixedbitset v0.5.7\n   Compiling rust-htslib v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling bqtools v0.5.13 (/tmp/execute_fyu4mycg/bqtools)\n    Finished `release` profile [optimized] target(s) in 2m 21s\n",
     "run_ok": true,
     "run_evidence": "into multiple files based on patterns provided in a pattern file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc       \n  revcomp  Reverse complement the sequences in a BINSEQ file\n  verify   Compute an order-independent checksum over a BINSEQ file\n  help     Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help     Print help\n  -V, --version  Print version\n",
     "executable": "bqtools",
@@ -1800,17 +1800,17 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:07:25.440001",
-    "venv_path": "/tmp/execute_3saiiw9p/venv",
+    "checked_at": "2026-08-17T05:39:33.513903",
+    "venv_path": "/tmp/execute_fyu4mycg/venv",
     "venv_kept": true
   },
   {
     "tool": "brainchromatin",
     "repo_url": "https://github.com/GreenleafLab/brainchromatin",
     "status": "failed",
-    "reason": "R install_local failed (exit 1): -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_2cy9i6re/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
+    "reason": "R install_local failed (exit 1): -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_j6q_7oe4/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
     "install_ok": false,
-    "install_evidence": "h) :\n  cannot open compressed file '/tmp/execute_2cy9i6re/brainchromatin/DESCRIPTION', probable reason 'No such file or directory'\nExecution halted\nERROR conda.cli.main_run:execute(148): `conda run R -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_2cy9i6re/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
+    "install_evidence": "h) :\n  cannot open compressed file '/tmp/execute_j6q_7oe4/brainchromatin/DESCRIPTION', probable reason 'No such file or directory'\nExecution halted\nERROR conda.cli.main_run:execute(148): `conda run R -e install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_local('/tmp/execute_j6q_7oe4/brainchromatin', repos='https://cloud.r-project.org')` failed. (See above for error)\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -1830,7 +1830,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:09:34.112445"
+    "checked_at": "2026-08-17T05:42:02.021794"
   },
   {
     "tool": "Uniprot-PDB-mapper",
@@ -1842,7 +1842,7 @@
     "tool": "MEBOCOST",
     "repo_url": "https://github.com/kaifuchenlab/MEBOCOST",
     "status": "env_issue",
-    "reason": "`mebocost /tmp/execute_e94lgvvu/sample.fasta` -> exit 127; `mebocost --help` -> exit 127; `python -c 'import MEBOCOST'` -> exit 1",
+    "reason": "`mebocost /tmp/execute_0zyp3w6c/sample.fasta` -> exit 127; `mebocost --help` -> exit 127; `python -c 'import MEBOCOST'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -1860,14 +1860,14 @@
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
     "installed_versions": [
-      "mebocost @ file:///tmp/execute_e94lgvvu/MEBOCOST",
+      "mebocost @ file:///tmp/execute_0zyp3w6c/MEBOCOST",
       "packaging==26.3"
     ],
     "exec_retries": 0,
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:09:51.580544"
+    "checked_at": "2026-08-17T05:42:20.034896"
   },
   {
     "tool": "scFv_Pmpnn_AF2",
@@ -1891,9 +1891,9 @@
     "tool": "ZipStrain",
     "repo_url": "https://github.com/OlmLab/ZipStrain",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_59xvw9j5/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_alv_l13x/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_59xvw9j5/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute_alv_l13x/ZipStrain' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -1913,13 +1913,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:10:02.043732"
+    "checked_at": "2026-08-17T05:42:29.582783"
   },
   {
     "tool": "strainmake",
     "repo_url": "https://github.com/UMMISCO/strainmake",
     "status": "passed",
-    "reason": "`/tmp/execute_esw1mf23/venv/bin/strainmake --help` -> exit 0",
+    "reason": "`/tmp/execute_jdtaoaaa/venv/bin/strainmake --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "WARNING: typer 0.27.1 does not provide the extra 'all'\n",
     "run_ok": true,
@@ -1951,15 +1951,15 @@
       "rich==15.0.0",
       "shellingham==1.5.4",
       "six==1.17.0",
-      "strainmake @ file:///tmp/execute_esw1mf23/strainmake",
+      "strainmake @ file:///tmp/execute_jdtaoaaa/strainmake",
       "typer==0.27.1"
     ],
     "exec_retries": 0,
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:10:09.097892",
-    "venv_path": "/tmp/execute_esw1mf23/venv",
+    "checked_at": "2026-08-17T05:42:36.539143",
+    "venv_path": "/tmp/execute_jdtaoaaa/venv",
     "venv_kept": true
   },
   {
@@ -1988,13 +1988,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:10:26.758876"
+    "checked_at": "2026-08-17T05:42:54.019629"
   },
   {
     "tool": "CHROMACS",
     "repo_url": "https://github.com/epigen-bioinfolab/CHROMACS",
     "status": "env_issue",
-    "reason": "`/tmp/execute_9zgf1ro0/venv/bin/chromacs --help` -> exit 1; `/tmp/execute_9zgf1ro0/venv/bin/chromacs /tmp/execute_9zgf1ro0/sample.fasta` -> exit 1; `python -c 'import CHROMACS'` -> exit 1",
+    "reason": "`/tmp/execute_b1ijd7kc/venv/bin/chromacs --help` -> exit 1; `/tmp/execute_b1ijd7kc/venv/bin/chromacs /tmp/execute_b1ijd7kc/sample.fasta` -> exit 1; `python -c 'import CHROMACS'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2012,7 +2012,7 @@
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
     "installed_versions": [
-      "chromacs @ file:///tmp/execute_9zgf1ro0/CHROMACS",
+      "chromacs @ file:///tmp/execute_b1ijd7kc/CHROMACS",
       "numpy==2.4.6",
       "packaging==26.3",
       "pandas==3.0.5",
@@ -2024,7 +2024,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:10:35.770140"
+    "checked_at": "2026-08-17T05:43:02.938313"
   },
   {
     "tool": "STACCato",
@@ -2032,7 +2032,7 @@
     "status": "failed",
     "reason": "R install ok but library() smoke failed",
     "install_ok": true,
-    "install_evidence": "[[i]], family = family[[i]], middle = middle[[i]],  :\n  Invalid ORCID iD: ‘YOUR-ORCID-ID’.\n** R\n** byte-compile and prepare package for lazy loading\nERROR: lazy loading failed for package ‘STACCato’\n* removing ‘/usr/share/miniconda/lib/R/library/STACCato’\nWarning message:\nIn i.p(...) :\n  installation of package ‘/tmp/RtmpO4O1vr/file83fc4bdabc73/STACCato_0.0.0.9000.tar.gz’ had non-zero exit status\n",
+    "install_evidence": "[[i]], family = family[[i]], middle = middle[[i]],  :\n  Invalid ORCID iD: ‘YOUR-ORCID-ID’.\n** R\n** byte-compile and prepare package for lazy loading\nERROR: lazy loading failed for package ‘STACCato’\n* removing ‘/usr/share/miniconda/lib/R/library/STACCato’\nWarning message:\nIn i.p(...) :\n  installation of package ‘/tmp/RtmpUQA3jT/file83ca7244eb4f/STACCato_0.0.0.9000.tar.gz’ had non-zero exit status\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2052,7 +2052,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:10:52.737399"
+    "checked_at": "2026-08-17T05:43:19.461083"
   },
   {
     "tool": "treestructure",
@@ -2080,8 +2080,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:19:00.913718",
-    "venv_path": "/tmp/execute_uxd7pa04/venv",
+    "checked_at": "2026-08-17T05:52:10.847976",
+    "venv_path": "/tmp/execute_vz6im531/venv",
     "venv_kept": true
   },
   {
@@ -2094,7 +2094,7 @@
     "tool": "PlantBind",
     "repo_url": "https://github.com/wenkaiyan-kevin/PlantBind",
     "status": "env_issue",
-    "reason": "`plantbind /tmp/execute_3eunvag_/sample.fasta` -> exit 127; `plantbind --help` -> exit 127; `src/main /tmp/execute_3eunvag_/sample.fasta` -> exit 127; `src/main --help` -> exit 127; `python -c 'import PlantBind'` -> exit 1",
+    "reason": "`plantbind /tmp/execute_is1wqjz6/sample.fasta` -> exit 127; `plantbind --help` -> exit 127; `src/main /tmp/execute_is1wqjz6/sample.fasta` -> exit 127; `src/main --help` -> exit 127; `python -c 'import PlantBind'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2118,7 +2118,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:20:39.815051"
+    "checked_at": "2026-08-17T05:53:59.093681"
   },
   {
     "tool": "AutoRevDock",
@@ -2130,7 +2130,7 @@
     "tool": "KAPTAIN",
     "repo_url": "https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN",
     "status": "passed",
-    "reason": "`/tmp/execute_ybwc0l9o/venv/bin/kaptain --help` -> exit 0",
+    "reason": "`/tmp/execute_s9n7y1_h/venv/bin/kaptain --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": true,
@@ -2270,7 +2270,7 @@
       "jsonschema==4.26.0",
       "jsonschema-specifications==2025.9.1",
       "jupyter_core==5.9.1",
-      "kaptain @ file:///tmp/execute_ybwc0l9o/KAPTAIN",
+      "kaptain @ file:///tmp/execute_s9n7y1_h/KAPTAIN",
       "MarkupSafe==3.0.3",
       "nbformat==5.11.0",
       "numpy==2.4.6",
@@ -2317,8 +2317,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:20:47.432298",
-    "venv_path": "/tmp/execute_ybwc0l9o/venv",
+    "checked_at": "2026-08-17T05:54:06.707549",
+    "venv_path": "/tmp/execute_s9n7y1_h/venv",
     "venv_kept": true
   },
   {
@@ -2331,7 +2331,7 @@
     "tool": "proteindock",
     "repo_url": "https://github.com/Kimmel-Lab/proteindock",
     "status": "env_issue",
-    "reason": "`proteindock /tmp/execute_p1vuipib/sample.fasta` -> exit 127; `proteindock --help` -> exit 127; `backend/main /tmp/execute_p1vuipib/sample.fasta` -> exit 127; `backend/main --help` -> exit 127; `bash /tmp/execute_p1vuipib/proteindock/run.sh /tmp/execute_p1vuipib/sample.fasta` -> exit 1; `bash /tmp/execute_p1vuipib/proteindock/run.sh --help` -> exit 1; `python -c 'import proteindock'` -> exit 1",
+    "reason": "`proteindock /tmp/execute_kr_gtnah/sample.fasta` -> exit 127; `proteindock --help` -> exit 127; `backend/main /tmp/execute_kr_gtnah/sample.fasta` -> exit 127; `backend/main --help` -> exit 127; `bash /tmp/execute_kr_gtnah/proteindock/run.sh /tmp/execute_kr_gtnah/sample.fasta` -> exit 1; `bash /tmp/execute_kr_gtnah/proteindock/run.sh --help` -> exit 1; `python -c 'import proteindock'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2381,7 +2381,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:21:14.660291"
+    "checked_at": "2026-08-17T05:54:32.852569"
   },
   {
     "tool": "mebocost_paper_scripts",
@@ -2393,7 +2393,7 @@
     "tool": "OmiXAI",
     "repo_url": "https://github.com/aameliig/OmiXAI",
     "status": "env_issue",
-    "reason": "`omixai /tmp/execute_jnmx2xxj/sample.fasta` -> exit 127; `omixai --help` -> exit 127; `python -c 'import OmiXAI'` -> exit 1",
+    "reason": "`omixai /tmp/execute_buwz3im3/sample.fasta` -> exit 127; `omixai --help` -> exit 127; `python -c 'import OmiXAI'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2453,7 +2453,7 @@
       "nvidia-nvjitlink==13.3.33",
       "nvidia-nvshmem-cu13==3.4.5",
       "nvidia-nvtx==13.0.85",
-      "omixai @ file:///tmp/execute_jnmx2xxj/OmiXAI",
+      "omixai @ file:///tmp/execute_buwz3im3/OmiXAI",
       "packaging==26.3",
       "pandas==3.0.5",
       "pillow==12.3.0",
@@ -2480,13 +2480,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:21:28.143174"
+    "checked_at": "2026-08-17T05:54:46.065841"
   },
   {
     "tool": "AstroLogics",
     "repo_url": "https://github.com/sysbio-curie/AstroLogics",
     "status": "env_issue",
-    "reason": "`astrologics /tmp/execute_l7_ppnqt/sample.fasta` -> exit 127; `astrologics --help` -> exit 127; `python -c 'import AstroLogics'` -> exit 1",
+    "reason": "`astrologics /tmp/execute_oe6rrds1/sample.fasta` -> exit 127; `astrologics --help` -> exit 127; `python -c 'import AstroLogics'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2504,7 +2504,7 @@
     "subcommand_details": {},
     "subcommand_discovery_complete": false,
     "installed_versions": [
-      "astrologics @ file:///tmp/execute_l7_ppnqt/AstroLogics",
+      "astrologics @ file:///tmp/execute_oe6rrds1/AstroLogics",
       "asttokens==3.0.2",
       "beautifulsoup4==4.15.0",
       "biodivine_aeon==1.4.2",
@@ -2570,7 +2570,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:22:43.508998"
+    "checked_at": "2026-08-17T05:56:01.162372"
   },
   {
     "tool": "rapidmacs-dev",
@@ -2578,7 +2578,7 @@
     "status": "failed",
     "reason": "make failed (exit 2):  fatal error: htslib/kfunc.h: No such file or directory\n   11 | #include \"htslib/kfunc.h\"\n      |          ^~~~~~~~~~~~~~~~\ncompilation terminated.\nmake: *** [Makefile:77: build/call_peaks.o] Error 1\n",
     "install_ok": false,
-    "install_evidence": "\ng++ -std=c++11 -Wall -Wextra -O3 -fopenmp -msse4.1 -Iinclude -MMD -MP -c src/call_peaks.cc -o build/call_peaks.o\nmake: Leaving directory '/tmp/execute_kb8ixkwp/rapidmacs-dev'\nsrc/call_peaks.cc:11:10: fatal error: htslib/kfunc.h: No such file or directory\n   11 | #include \"htslib/kfunc.h\"\n      |          ^~~~~~~~~~~~~~~~\ncompilation terminated.\nmake: *** [Makefile:77: build/call_peaks.o] Error 1\n",
+    "install_evidence": "\ng++ -std=c++11 -Wall -Wextra -O3 -fopenmp -msse4.1 -Iinclude -MMD -MP -c src/call_peaks.cc -o build/call_peaks.o\nmake: Leaving directory '/tmp/execute_zt3y97go/rapidmacs-dev'\nsrc/call_peaks.cc:11:10: fatal error: htslib/kfunc.h: No such file or directory\n   11 | #include \"htslib/kfunc.h\"\n      |          ^~~~~~~~~~~~~~~~\ncompilation terminated.\nmake: *** [Makefile:77: build/call_peaks.o] Error 1\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2598,7 +2598,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:23:32.817951"
+    "checked_at": "2026-08-17T05:56:49.426021"
   },
   {
     "tool": "Chromap-suite",
@@ -2626,15 +2626,15 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:23:46.926025"
+    "checked_at": "2026-08-17T05:57:03.988063"
   },
   {
     "tool": "LinearCapR_ComputationalExperiments",
     "repo_url": "https://github.com/TakumiOtagaki/LinearCapR_ComputationalExperiments",
     "status": "failed",
-    "reason": "install failed (exit 1):  originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_ulg4cqht/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
+    "reason": "install failed (exit 1):  originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_hpuwybdo/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
     "install_ok": false,
-    "install_evidence": "   3. explicitly set `py_modules` or `packages` with a list of names\n      \n      To find more information, look for \"package discovery\" on setuptools docs.\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_ulg4cqht/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
+    "install_evidence": "   3. explicitly set `py_modules` or `packages` with a list of names\n      \n      To find more information, look for \"package discovery\" on setuptools docs.\n      [end of output]\n  \n  note: This error originates from a subprocess, and is likely not a problem with pip.\nERROR: Failed to build 'file:///tmp/execute_hpuwybdo/LinearCapR_ComputationalExperiments' when getting requirements to build wheel\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2654,7 +2654,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:24:06.423432"
+    "checked_at": "2026-08-17T05:57:22.642065"
   },
   {
     "tool": "STAR-suite",
@@ -2682,7 +2682,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:24:15.823293"
+    "checked_at": "2026-08-17T05:57:31.725480"
   },
   {
     "tool": "ERSAtool",
@@ -2716,7 +2716,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:24:24.846252"
+    "checked_at": "2026-08-17T05:57:40.448330"
   },
   {
     "tool": "Osei",
@@ -2744,7 +2744,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:28:35.976391"
+    "checked_at": "2026-08-17T06:01:48.529066"
   },
   {
     "tool": "MitoComp",
@@ -2756,7 +2756,7 @@
     "tool": "NanoSimFormer",
     "repo_url": "https://github.com/BioinfoSZU/NanoSimFormer",
     "status": "passed",
-    "reason": "`/tmp/execute_i52i0oay/venv/bin/nanosimformer --help` -> exit 0",
+    "reason": "`/tmp/execute_yr5qfctn/venv/bin/nanosimformer --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "WARNING: huggingface-hub 1.27.0 does not provide the extra 'hf-transfer'\n",
     "run_ok": true,
@@ -2827,7 +2827,7 @@
       "mpmath==1.3.0",
       "multidict==6.7.1",
       "multiprocess==0.70.19",
-      "nanosimformer @ file:///tmp/execute_i52i0oay/NanoSimFormer",
+      "nanosimformer @ file:///tmp/execute_yr5qfctn/NanoSimFormer",
       "narwhals==2.24.0",
       "networkx==3.6.1",
       "numpy==1.26.4",
@@ -2859,17 +2859,17 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:29:08.953163",
-    "venv_path": "/tmp/execute_i52i0oay/venv",
+    "checked_at": "2026-08-17T06:02:21.612634",
+    "venv_path": "/tmp/execute_yr5qfctn/venv",
     "venv_kept": true
   },
   {
     "tool": "EXPosition",
     "repo_url": "https://github.com/shaicoh3n/EXPosition",
     "status": "failed",
-    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_i24i81ew/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "reason": "install failed (exit 1): ERROR: Directory '/tmp/execute_tekcf_bi/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "install_ok": false,
-    "install_evidence": "ERROR: Directory '/tmp/execute_i24i81ew/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
+    "install_evidence": "ERROR: Directory '/tmp/execute_tekcf_bi/EXPosition' is not installable. Neither 'setup.py' nor 'pyproject.toml' found.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -2889,7 +2889,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:32:04.126249"
+    "checked_at": "2026-08-17T06:05:19.805331"
   },
   {
     "tool": "LPA",
@@ -2901,7 +2901,7 @@
     "tool": "Crackling-AWS",
     "repo_url": "https://github.com/bmds-lab/Crackling-AWS",
     "status": "env_issue",
-    "reason": "`crackling_aws /tmp/execute_nc6iko_e/sample.fasta` -> exit 127; `crackling_aws --help` -> exit 127; `python -c 'import CracklingAWS'` -> exit 1",
+    "reason": "`crackling_aws /tmp/execute_5mmcpcr0/sample.fasta` -> exit 127; `crackling_aws --help` -> exit 127; `python -c 'import CracklingAWS'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -2931,7 +2931,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:32:10.985076"
+    "checked_at": "2026-08-17T06:05:26.641060"
   },
   {
     "tool": "16S-Pipeline",
@@ -2959,13 +2959,13 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:32:18.742493"
+    "checked_at": "2026-08-17T06:05:34.345672"
   },
   {
     "tool": "morphic-provenance",
     "repo_url": "https://github.com/morphic-bio/morphic-provenance",
     "status": "passed",
-    "reason": "`/tmp/execute_dmj3vmge/venv/bin/morphic-provenance --help` -> exit 0",
+    "reason": "`/tmp/execute_p4d2ij4e/venv/bin/morphic-provenance --help` -> exit 0",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": true,
@@ -2989,7 +2989,7 @@
       "fastapi==0.115.14",
       "h11==0.16.0",
       "idna==3.18",
-      "morphic-provenance @ file:///tmp/execute_dmj3vmge/morphic-provenance",
+      "morphic-provenance @ file:///tmp/execute_p4d2ij4e/morphic-provenance",
       "packaging==26.3",
       "pydantic==2.13.4",
       "pydantic_core==2.46.4",
@@ -3002,8 +3002,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:56:23.121225",
-    "venv_path": "/tmp/execute_dmj3vmge/venv",
+    "checked_at": "2026-08-17T06:28:24.721306",
+    "venv_path": "/tmp/execute_p4d2ij4e/venv",
     "venv_kept": true
   },
   {
@@ -3022,7 +3022,7 @@
     "tool": "PU-GRAIL",
     "repo_url": "https://github.com/jaeminjj/PU-GRAIL",
     "status": "env_issue",
-    "reason": "`pu_grail /tmp/execute_ln1i89ai/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `pu_grail --help` -> exit 127; `code/predict /tmp/execute_ln1i89ai/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `code/predict --help` -> exit 127; `python -c 'import PUGRAIL'` -> exit 1",
+    "reason": "`pu_grail /tmp/execute_kv7vvflc/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `pu_grail --help` -> exit 127; `code/predict /tmp/execute_kv7vvflc/PU-GRAIL/Data/fold/fold_01/test_all.fasta` -> exit 127; `code/predict --help` -> exit 127; `python -c 'import PUGRAIL'` -> exit 1",
     "install_ok": true,
     "install_evidence": "",
     "run_ok": false,
@@ -3081,7 +3081,7 @@
       "pandas==3.0.5",
       "propcache==0.5.2",
       "psutil==7.2.2",
-      "pugrail @ file:///tmp/execute_ln1i89ai/PU-GRAIL",
+      "pugrail @ file:///tmp/execute_kv7vvflc/PU-GRAIL",
       "pyparsing==3.3.2",
       "python-dateutil==2.9.0.post0",
       "requests==2.34.2",
@@ -3103,7 +3103,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:56:33.912346"
+    "checked_at": "2026-08-17T06:28:35.540333"
   },
   {
     "tool": "LPA-dataset",
@@ -3137,17 +3137,17 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:57:50.207965",
-    "venv_path": "/tmp/execute_yp7on95k/venv",
+    "checked_at": "2026-08-17T06:29:52.716846",
+    "venv_path": "/tmp/execute_hea6fpw9/venv",
     "venv_kept": true
   },
   {
     "tool": "samtools",
     "repo_url": "https://github.com/samtools/samtools",
     "status": "failed",
-    "reason": "make failed (exit 2): ols'\nmake: Leaving directory '/tmp/execute_x_crx9ks/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
+    "reason": "make failed (exit 2): ols'\nmake: Leaving directory '/tmp/execute_2k80pzya/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
     "install_ok": false,
-    "install_evidence": "make: Entering directory '/tmp/execute_x_crx9ks/samtools'\nmake: Leaving directory '/tmp/execute_x_crx9ks/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
+    "install_evidence": "make: Entering directory '/tmp/execute_2k80pzya/samtools'\nmake: Leaving directory '/tmp/execute_2k80pzya/samtools'\nconfig.mk:34: ../htslib/htslib_static.mk: No such file or directory\nmake: *** No rule to make target '../htslib/htslib_static.mk'.  Stop.\n",
     "run_ok": false,
     "run_evidence": "",
     "executable": "",
@@ -3167,7 +3167,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:58:13.695695"
+    "checked_at": "2026-08-17T06:30:17.637178"
   },
   {
     "tool": "deepngs-navigator-panel-app",
@@ -3195,7 +3195,7 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:58:20.661954"
+    "checked_at": "2026-08-17T06:30:25.082345"
   },
   {
     "tool": "MultiLociBiallelicModel",
@@ -3229,8 +3229,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:59:08.309901",
-    "venv_path": "/tmp/execute_ji8195ad/venv",
+    "checked_at": "2026-08-17T06:31:16.364985",
+    "venv_path": "/tmp/execute_l64zuiua/venv",
     "venv_kept": true
   },
   {
@@ -3265,8 +3265,8 @@
     "heal_evidence": "",
     "missing_system_commands": [],
     "system_install_log": [],
-    "checked_at": "2026-08-17T04:59:37.496940",
-    "venv_path": "/tmp/execute_90r7pg0w/venv",
+    "checked_at": "2026-08-17T06:31:46.838536",
+    "venv_path": "/tmp/execute_vd_dpw0g/venv",
     "venv_kept": true
   }
 ]
