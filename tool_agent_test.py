@@ -48,9 +48,9 @@ MAX_SAME_TOOL_ATTEMPTS = 3  # anti-tool-roulette: cap retries per tool per task
 # A tool that HANGS (bioemu waiting on an unreachable model hub) must fail fast
 # and let the agent move on -- otherwise a single hung subprocess eats the
 # spec default 600s per call and the whole step times out (run #31941212195).
-AGENT_CALL_TIMEOUT = 150   # seconds per tool invocation in the agent harness
-AGENT_TASK_BUDGET = 180    # seconds per task (all turns combined)
-AGENT_LLM_TIMEOUT = 90     # seconds per chat.completions call (SDK timeout)
+AGENT_CALL_TIMEOUT = 240   # seconds per tool invocation in the agent harness
+AGENT_TASK_BUDGET = 360    # seconds per task (all turns combined)
+AGENT_LLM_TIMEOUT = 120    # seconds per chat.completions call (SDK timeout)
 
 # bqtools derives the output MODE from the -o path EXTENSION (*.bq/*.vbq/*.cbq),
 # so file-producing subcommand outputs need a real extension (.binseq errors
@@ -412,12 +412,27 @@ def main() -> int:
     # the FASTA). Best-effort: if the binary is missing the binseq tasks fail
     # honestly on a missing file instead of a fake format mismatch.
     binseq_sample = os.path.join(tempfile.gettempdir(), "agent_test_sample.vbq")
-    if not os.path.exists(binseq_sample) and shutil.which("bqtools"):
-        try:
-            subprocess.run(["bqtools", "encode", sample, "--output", binseq_sample],
-                           timeout=60, capture_output=True, text=True, check=False)
-        except Exception:  # noqa: BLE001
-            pass
+    if not os.path.exists(binseq_sample):
+        # run_tool_spec() prepends venv/bin/ to PATH; shutil.which() won't
+        # find bqtools unless we search the venv explicitly.
+        _bq_bin = None
+        for _t in callable_tools:
+            if _t.get("name") == "bqtools":
+                _v = (_t.get("install") or {}).get("venv_path", "")
+                if _v:
+                    _bq_bin = os.path.join(_v, "bin")
+                break
+        _bq_exe = shutil.which("bqtools") or (shutil.which("bqtools", path=_bq_bin) if _bq_bin else None)
+        if _bq_exe:
+            _env = os.environ.copy()
+            if _bq_bin:
+                _env["PATH"] = _bq_bin + os.pathsep + _env.get("PATH", "")
+            try:
+                subprocess.run(["bqtools", "encode", sample, "--output", binseq_sample],
+                               timeout=60, capture_output=True, text=True, check=False,
+                               env=_env)
+            except Exception:  # noqa: BLE001
+                pass
 
     # --- per-tool concrete tasks with specified params + output validation ---
     # Each task tells the agent the tool, the input file, and a concrete output

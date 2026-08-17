@@ -50,6 +50,24 @@ TEMPLATE_VAR_NAME = re.compile(r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}")
 _FIXTURES: dict = {}
 
 
+def _bqtools_venv_bin() -> str | None:
+    """Return the venv bin/ dir that contains bqtools, from the registry."""
+    reg_path = os.environ.get("REGISTRY", str(HERE / "data" / "mcp_registry.yaml"))
+    try:
+        with open(reg_path, encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+    except Exception:  # noqa: BLE001
+        return None
+    for t in (data.get("tools") or []):
+        if t.get("name") == "bqtools":
+            venv = (t.get("install") or {}).get("venv_path", "")
+            if venv:
+                vb = os.path.join(venv, "bin")
+                if os.path.isdir(vb):
+                    return vb
+    return None
+
+
 def _prepare_fixtures() -> dict:
     """Create the smoke fixtures: a real FASTA file and, if the bqtools binary
     is on PATH, a real BINSEQ file (encode the FASTA). Subcommand leaves that
@@ -61,24 +79,40 @@ def _prepare_fixtures() -> dict:
     fasta.write_text(
         ">seq1\nACGTACGT\n>seq2\nTTTTTT\n>seq3\nCCCGGG\n>seq4\nAAAAT\n>seq5\nGATAC\n",
         encoding="utf-8")
+    # pattern file for split (split requires at least one --file/--sfile/--xfile)
+    pattern = tmp / "pipeline_pattern.txt"
+    pattern.write_text("ACGT\n", encoding="utf-8")
     # BINSEQ variants are *.bq / *.vbq / *.cbq: `bqtools encode` derives the
     # output MODE from the -o path EXTENSION, so a `.binseq` path errors with
     # "Could not determine BINSEQ output mode from path". `.vbq` (variable-length,
     # the encode default) matches our variable-length FASTA fixture.
     binseq = tmp / "pipeline_sample.vbq"
     exe = shutil.which("bqtools")
+    if not exe:
+        # bqtools is installed in a venv created by the execute step;
+        # shutil.which() won't find it unless we search venv/bin/ explicitly.
+        venv_bin = _bqtools_venv_bin()
+        if venv_bin:
+            exe = shutil.which("bqtools", path=venv_bin)
     if exe and not binseq.exists():
+        # run_tool_spec() prepends venv/bin/ to PATH; we must do the same
+        # so the subprocess can resolve bqtools' own dependencies.
+        env = os.environ.copy()
+        venv_bin = _bqtools_venv_bin()
+        if venv_bin:
+            env["PATH"] = venv_bin + os.pathsep + env.get("PATH", "")
         for attempt in (
             [exe, "encode", str(fasta), "--output", str(binseq)],
             [exe, "encode", str(fasta), "--format", "a", "--output", str(binseq)],
         ):
             try:
-                r = subprocess.run(attempt, timeout=60, capture_output=True, text=True)
+                r = subprocess.run(attempt, timeout=60, capture_output=True,
+                                   text=True, check=False, env=env)
             except Exception:  # noqa: BLE001
                 continue
             if r.returncode == 0 and binseq.exists() and binseq.stat().st_size > 0:
                 break
-    return {"fasta": str(fasta), "binseq": str(binseq)}
+    return {"fasta": str(fasta), "binseq": str(binseq), "pattern": str(pattern)}
 
 
 def _leaf_fixture(leaf: dict) -> dict:
@@ -109,8 +143,10 @@ def _leaf_fixture(leaf: dict) -> dict:
                         "output": str(outdir / "revcomp.vbq")},
             "info": {"input": _FIXTURES["binseq"]},
             "verify": {"input": _FIXTURES["binseq"]},
-            "split": {"input": _FIXTURES["binseq"]},
-            "pipe": {"input": _FIXTURES["binseq"]}}
+            "split": {"input": _FIXTURES["binseq"],
+                      "file": _FIXTURES["pattern"]},
+            "pipe": {"input": _FIXTURES["binseq"],
+                     "exec": "cat"}}
     return {k: v for k, v in base.get(name, {}).items() if v}
 
 
