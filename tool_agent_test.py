@@ -425,6 +425,10 @@ def main() -> int:
     # the FASTA). Best-effort: if the binary is missing the binseq tasks fail
     # honestly on a missing file instead of a fake format mismatch.
     binseq_sample = os.path.join(tempfile.gettempdir(), "agent_test_sample.vbq")
+    # pattern file for split (requires at least one of --file/--sfile/--xfile)
+    pattern_file = os.path.join(tempfile.gettempdir(), "agent_test_pattern.txt")
+    with open(pattern_file, "w", encoding="utf-8") as pf:
+        pf.write("ACGT\n")
     if not os.path.exists(binseq_sample):
         # run_tool_spec() prepends venv/bin/ to PATH; shutil.which() won't
         # find bqtools unless we search the venv explicitly.
@@ -491,6 +495,11 @@ def main() -> int:
                               f"process the input file {inp}. Pass the arguments "
                               "the function's schema requires. After running, report "
                               "what it printed.")
+                    # split needs a pattern file: the anyOf constraint tells the
+                    # LLM it MUST provide one, and this hint gives it the path.
+                    if sub == "split":
+                        prompt += (f" The function requires at least one pattern "
+                                   f"file -- use '{pattern_file}' as the 'file' parameter.")
                 tasks.append((label, prompt, expected_fn, out, out_kind))
         else:
             expected_fn = name

@@ -101,6 +101,21 @@ def validate_arguments(spec: dict[str, Any], arguments: dict[str, Any]) -> tuple
                and (arguments.get(k) in (None, ""))]
     if missing:
         return {}, f"missing required inputs: {missing}"
+    # conditional required: constraints.any_of requires at least one param
+    # from each group (e.g. split needs at least one of file/sfile/xfile).
+    # Without this, the CLI would report a raw error like "At least one
+    # pattern file must be specified" -- we intercept with a clear message.
+    any_of = (spec.get("constraints") or {}).get("any_of") or []
+    if any_of:
+        satisfied = False
+        for group in any_of:
+            if group and all(arguments.get(k) not in (None, "") for k in group):
+                satisfied = True
+                break
+        if not satisfied:
+            all_params = [k for g in any_of for k in g]
+            return {}, (f"conditional required: at least one of {all_params} "
+                        f"is required")
     # unknown template vars in the command would render to garbage argv.
     # A placeholder is bound by an input OR a declared resource (resources are
     # injected by the runner, not user-supplied). EXCEPT subcommand CLIs:

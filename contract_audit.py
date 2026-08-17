@@ -112,6 +112,14 @@ for s in schemas:
         for k in req_leaf:
             if leaf["inputs"][k].get("positional"):
                 args[k] = "/tmp/sample.fasta"
+        # conditional required: any_of groups need at least one param each
+        any_of = (leaf.get("constraints") or {}).get("any_of") or []
+        for group in any_of:
+            if group and not any(args.get(k) not in (None, "") for k in group):
+                # satisfy with the first param in the group
+                first = group[0]
+                if first not in args:
+                    args[first] = "/tmp/sample.fasta"
         cleaned, err = validate_arguments(leaf, args)
         check(err == "", f"{fname}: minimal required args rejected: {err}")
         if not err:
