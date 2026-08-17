@@ -956,6 +956,29 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
         takes_value = bool(metavar)
         ptype = "string"
         mv = metavar.strip("<>").lower()
+
+        # ── choices extraction (argparse `{a,q,b,t}` and [choices: ...]) ──
+        choices: list[str] = []
+        # 1) brace-enclosed metavar: --format {a,q,b,t}
+        brace_m = re.search(r"\{([^}]+)\}", metavar)
+        if brace_m:
+            choices = [c.strip() for c in brace_m.group(1).split(",") if c.strip()]
+        # 2) [choices: a, q, b, t] / [possible values: a, q, b, t] / [a|q|b|t]
+        #    in description (argparse/help2man/clap)
+        if not choices:
+            ch_m = re.search(
+                r"\[(?:choices?|possible\s+values?):\s*([^\]]+)\]"
+                r"|\[([a-zA-Z0-9_| -]+)\](?:\s|$)",
+                desc, re.IGNORECASE)
+            if ch_m:
+                raw = ch_m.group(1) or ch_m.group(2) or ""
+                if "|" in raw:
+                    choices = [c.strip() for c in raw.split("|") if c.strip()]
+                elif "," in raw:
+                    choices = [c.strip() for c in raw.split(",") if c.strip()]
+                else:
+                    choices = [c.strip() for c in raw.split() if c.strip()]
+            # strip matched choices text from description below
         # fire/scopt describe the flag's type in the desc (`Type: bool`) even
         # when a metavar is shown (`--filter_samples=FILTER_SAMPLES`); a bool
         # type overrides the metavar -> store-flag (no value slot).
@@ -1012,6 +1035,9 @@ def _parse_help_params(help_output: str) -> list[dict[str, str]]:
             "required": is_required,
             "takes_value": takes_value,
         }
+        if choices:
+            entry["choices"] = choices
+            entry["type"] = "string"  # enum is always a string constraint
         if aliases:
             entry["aliases"] = aliases
         params.append(entry)

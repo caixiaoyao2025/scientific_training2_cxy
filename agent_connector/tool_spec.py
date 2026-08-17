@@ -91,6 +91,8 @@ def _param_input(p: dict[str, Any]) -> dict[str, Any]:
         meta["takes_value"] = p["takes_value"]
     if p.get("aliases"):
         meta["aliases"] = p["aliases"]
+    if p.get("choices"):
+        meta["choices"] = p["choices"]
     return meta
 
 
@@ -196,6 +198,8 @@ def function_property(meta: Any) -> dict[str, Any]:
     takes the `--output` flag."""
     prop: dict[str, Any] = {"type": json_schema_type(meta),
                             "description": (meta or {}).get("description", "") or ""}
+    if (meta or {}).get("choices"):
+        prop["enum"] = [str(x) for x in meta["choices"]]
     hint: list[str] = []
     if (meta or {}).get("positional"):
         hint.append("CLI positional argument")

@@ -57,8 +57,8 @@ AGENT_LLM_TIMEOUT = 120    # seconds per chat.completions call (SDK timeout)
 # "Could not determine BINSEQ output mode from path"). BINSEQ-consuming
 # subcommands need a *.vbq input, NOT the FASTA sample (a FASTA fed to decode/
 # grep/etc fails "Unable to determine BINSEQ format from magic bytes").
-_BQ_OUT_EXT = {"encode": ".vbq", "cat": ".vbq", "grep": ".vbq",
-               "sample": ".vbq", "revcomp": ".vbq", "decode": ".fa"}
+_BQ_OUT_EXT = {"encode": ".vbq", "cat": ".vbq", "grep": ".fa",
+               "sample": ".fa", "revcomp": ".vbq", "decode": ".fa"}
 _BQ_INPUT_BINSEQ = ("decode", "cat", "info", "grep", "sample", "split",
                     "pipe", "revcomp", "verify")
 
