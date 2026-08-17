@@ -1,414 +1,1430 @@
 tools:
-- name: bioemu
+- name: cooltools
   type: cli
-  command: python -m bioemu.sample {sequence} {num_samples} {output_dir} --batch_size_100
-    {batch_size_100} --model_name {model_name} --ckpt_path {ckpt_path} --model_config_path
-    {model_config_path} --denoiser_type {denoiser_type} --denoiser_config {denoiser_config}
-    --cache_embeds_dir {cache_embeds_dir} --cache_so3_dir {cache_so3_dir} --msa_host_url
-    {msa_host_url} --filter_samples {filter_samples} --base_seed {base_seed}
-  arg_style: python
-  callable_via: python -m bioemu.sample
-  readme_examples:
-  - python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10 --output_dir ~/test-chignolin
-  - python -m bioemu.sample \
-  - python -m bioemu.sidechain_relax --pdb-path path/to/topology.pdb --xtc-path path/to/samples.xtc
-  readme_usage: python -m bioemu.sample
-  description: '[Auto-discovered] Inference code for scalable emulation of protein
-    equilibrium ensembles with generative deep learning (⭐866, Python) (license: LICENSE)'
+  command: cooltools {subcommand}
+  arg_style: subcommand
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] The tools for your .cool''s (⭐168, Jupyter Notebook)
+    (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    batch_size_100:
-      type: int
-      description: Batch size you'd use for a sequence of length 100. The batch size
-        will be calculated from this, assuming that the memory requirement to compute
-        each sample scales quadratically with the sequence length.
-      required: false
-      source: help_parsed
-      flag: --batch_size_100
-      takes_value: true
-    model_name:
-      type: path
-      description: Name of pretrained model to use. If this is set, you do not need
-        to provide `ckpt_path` or `model_config_path`.
-      required: false
-      source: help_parsed
-      flag: --model_name
-      takes_value: true
-    ckpt_path:
-      type: path
-      description: Path to the model checkpoint. If this is set, `model_name` will
-        be ignored.
-      required: false
-      source: help_parsed
-      flag: --ckpt_path
-      takes_value: true
-    model_config_path:
-      type: path
-      description: Path to the model config, defining score model architecture and
-        the corruption process the model was trained with. Only required if `ckpt_path`
-        is set.
-      required: false
-      source: help_parsed
-      flag: --model_config_path
-      takes_value: true
-    denoiser_type:
+    subcommand:
       type: string
-      description: Denoiser to use for sampling, if `denoiser_config` not specified.
-        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
-      required: false
-      source: help_parsed
-      flag: --denoiser_type
-      takes_value: true
-    denoiser_config:
-      type: path
-      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
-        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
-        which includes the denoiser target, potentials, and steering parameters in
-        one file.
-      required: false
-      source: help_parsed
-      flag: --denoiser_config
-      takes_value: true
-    cache_embeds_dir:
-      type: path
-      description: Directory to store MSA embeddings. If not set, this defaults to
-        `COLABFOLD_DIR/embeds_cache`.
-      required: false
-      source: help_parsed
-      flag: --cache_embeds_dir
-      takes_value: true
-    cache_so3_dir:
-      type: path
-      description: Directory to store SO3 precomputations. If not set, this defaults
-        to `~/sampling_so3_cache`.
-      required: false
-      source: help_parsed
-      flag: --cache_so3_dir
-      takes_value: true
-    msa_host_url:
-      type: string
-      description: MSA server URL. If not set, this defaults to colabfold's remote
-        server. If sequence is an a3m file, this is ignored.
-      required: false
-      source: help_parsed
-      flag: --msa_host_url
-      takes_value: true
-    filter_samples:
-      type: boolean
-      description: Filter out unphysical samples with e.g. long bond distances or
-        steric clashes.
-      required: false
-      source: help_parsed
-      flag: --filter_samples
-      takes_value: false
-    base_seed:
-      type: string
-      description: Base random seed for sampling. If set, each batch's seed will be
-        set to base_seed + (num samples already generated).
-      required: false
-      source: help_parsed
-      flag: --base_seed
-      takes_value: true
-    sequence:
-      type: path
-      description: Amino acid sequence for which to generate samples, or a path to
-        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
-        then colabfold will be used to generate an MSA and embedding.
       required: true
-      source: help_parsed
-      positional: true
-      position: 0
-    num_samples:
-      type: int
-      description: Number of samples to generate. If `output_dir` already contains
-        samples, this function will only generate additional samples necessary to
-        reach the specified `num_samples`.
-      required: true
-      source: help_parsed
-      positional: true
-      position: 1
-    output_dir:
-      type: path
-      description: Directory to save the samples. Each batch of samples will initially
-        be dumped as .npz files. Once all batches are sampled, they will be converted
-        to .xtc and .pdb.
-      required: true
-      source: help_parsed
-      positional: true
-      position: 2
+      description: 'Subcommand to run. One of: coverage, dots, eigs-cis, eigs-trans,
+        expected-cis, expected-trans, genome, insulation, pileup, random-sample, rearrange,
+        saddle, virtual4c'
   resources: {}
   outputs:
-    output_dir:
-      type: directory
-      description: Directory to save the samples. Each batch of samples will initially
-        be dumped as .npz files. Once all batches are sampled, they will be converted
-        to .xtc and .pdb.
-      input: output_dir
-      source: help_parsed
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
   execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
+  subcommands:
+  - coverage
+  - dots
+  - eigs-cis
+  - eigs-trans
+  - expected-cis
+  - expected-trans
+  - genome
+  - insulation
+  - pileup
+  - random-sample
+  - rearrange
+  - saddle
+  - virtual4c
+  subcommand_details:
+    coverage:
+      params:
+      - name: --output
+        type: path
+        description: Specify output file name to store the coverage in a  tsv format.
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By default,  equals the number
+          of diagonals ignored during IC  balancing.
+        required: false
+        takes_value: true
+      - name: --store
+        type: boolean
+        description: Append columns with coverage (cov_cis_raw,  cov_tot_raw), or
+          (cov_cis_clr_weight_name,  cov_tot_clr_weight_name) if calculating balanced  coverage,
+          to the cooler bin table. If  clr_weight_name=None, also stores total cis
+          counts  in the cooler info
+        required: false
+        takes_value: false
+      - name: --chunksize
+        type: integer
+        description: Split the contact matrix pixel records into equally  sized chunks
+          to save memory and/or parallelize.  Default is 10^7
+        required: false
+        takes_value: true
+      - name: --bigwig
+        type: boolean
+        description: Also save output as bigWig files for cis and total  coverage
+          with the names <output>.<cis/tot>.bw
+        required: false
+        takes_value: false
+      - name: --clr_weight_name
+        type: string
+        description: Name of the weight column. Specify to calculate  coverage of
+          balanced cooler.
+        required: false
+        takes_value: true
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      usage: cooltools coverage [OPTIONS] COOL_PATH
+      outputs:
+        output:
+          type: file
+          description: Specify output file name to store the coverage in a  tsv format.
+          input: output
+          source: help_parsed
+    dots:
+      params:
+      - name: --view
+        type: path
+        description: Path to a BED file with the definition of  viewframe (regions)
+          used in the calculation  of EXPECTED_PATH. Dot-calling will be  performed
+          for these regions independently  e.g. chromosome arms. Note that '--regions'  is
+          the deprecated name of the option. Use '--  view' instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --clr-weight-name
+        type: string
+        description: Use cooler balancing weight with this name.
+        required: false
+        takes_value: true
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work  between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --max-loci-separation
+        type: integer
+        description: Limit loci separation for dot-calling, i.e.,  do not call dots
+          for loci that are further  than max_loci_separation basepair apart.  2-20MB
+          is reasonable and would capture most  of CTCF-dots.
+        required: false
+        takes_value: true
+      - name: --max-nans-tolerated
+        type: integer
+        description: Maximum number of NaNs tolerated in a  footprint of every used
+          filter. Must be  controlled with caution, as large max-nans-  tolerated,
+          might lead to pixels scored in the  padding area of the tiles to "penetrate"
+          to  the list of scored pixels for the statistical  testing. [max-nans-tolerated
+          <= 2*w ]
+        required: false
+        takes_value: true
+      - name: --tile-size
+        type: integer
+        description: Tile size for the Hi-C heatmap tiling.  Typically on order of
+          several mega-bases, and  <= max_loci_separation.
+        required: false
+        takes_value: true
+      - name: --num-lambda-bins
+        type: integer
+        description: Number of log-spaced bins to divide your  adjusted expected between.
+          Same as  HiCCUPS_W1_MAX_INDX (40) in the original  HiCCUPS.
+        required: false
+        takes_value: true
+      - name: --fdr
+        type: float
+        description: False discovery rate (FDR) to control in the  multiple hypothesis
+          testing BH-FDR procedure.
+        required: false
+        takes_value: true
+      - name: --clustering-radius
+        type: integer
+        description: Radius for clustering dots that have been  called too close to
+          each other.Typically on  order of 40 kilo-bases, and >= binsize.
+        required: false
+        takes_value: true
+      - name: --verbose
+        type: boolean
+        description: Enable verbose output
+        required: false
+        takes_value: false
+        aliases:
+        - -v
+      - name: --output
+        type: string
+        description: Specify output file name to store called dots  in a BEDPE-like
+          format
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - -o
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      - name: expected_path
+        type: path
+        description: Positional argument EXPECTED_PATH
+        required: true
+        positional: true
+        position: 1
+      usage: cooltools dots [OPTIONS] COOL_PATH EXPECTED_PATH
+      outputs:
+        output:
+          type: file
+          description: Specify output file name to store called dots  in a BEDPE-like
+            format
+          input: output
+          source: help_parsed
+    eigs-cis:
+      params:
+      - name: --phasing-track
+        type: path
+        description: Phasing track for orienting and ranking  eigenvectors,provided
+          as  /path/to/track::track_value_column_name.
+        required: false
+        takes_value: true
+      - name: --view
+        type: path
+        description: Path to a BED file which defines which regions  of the chromosomes
+          to use (only implemented for  cis contacts). Note that '--regions' is the  deprecated
+          name of the option. Use '--view'  instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --n-eigs
+        type: integer
+        description: Number of eigenvectors to compute.
+        required: false
+        takes_value: true
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Using raw  unbalanced data
+          is not currently supported for  eigenvectors.
+        required: false
+        takes_value: true
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By default,  equals the number
+          of diagonals ignored during IC  balancing.
+        required: false
+        takes_value: true
+      - name: --verbose
+        type: boolean
+        description: Enable verbose output
+        required: false
+        takes_value: false
+        aliases:
+        - -v
+      - name: --out-prefix
+        type: string
+        description: Save compartment track as a BED-like file.  Eigenvectors and
+          corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
+          and  out_prefix.contact_type.lam.txt
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - -o
+      - name: --bigwig
+        type: boolean
+        description: Also save compartment track (E1) as a bigWig  file with the name
+          out_prefix.contact_type.bw
+        required: false
+        takes_value: false
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      usage: cooltools eigs-cis [OPTIONS] COOL_PATH
+      outputs:
+        out_prefix:
+          type: file
+          description: Save compartment track as a BED-like file.  Eigenvectors and
+            corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
+            and  out_prefix.contact_type.lam.txt
+          input: out_prefix
+          source: help_parsed
+    eigs-trans:
+      params:
+      - name: --phasing-track
+        type: path
+        description: Phasing track for orienting and ranking  eigenvectors,provided
+          as  /path/to/track::track_value_column_name.
+        required: false
+        takes_value: true
+      - name: --view
+        type: path
+        description: Path to a BED file which defines which regions  of the chromosomes
+          to use (only implemented for  cis contacts).  Note that '--regions' is the  deprecated
+          name of the option. Use '--view'  instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --n-eigs
+        type: integer
+        description: Number of eigenvectors to compute.
+        required: false
+        takes_value: true
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Using raw  unbalanced data
+          is not supported for saddles.
+        required: false
+        takes_value: true
+      - name: --verbose
+        type: boolean
+        description: Enable verbose output
+        required: false
+        takes_value: false
+        aliases:
+        - -v
+      - name: --out-prefix
+        type: string
+        description: Save compartment track as a BED-like file.  Eigenvectors and
+          corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
+          and  out_prefix.contact_type.lam.txt
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - -o
+      - name: --bigwig
+        type: boolean
+        description: Also save compartment track (E1) as a bigWig  file with the name
+          out_prefix.contact_type.bw
+        required: false
+        takes_value: false
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      usage: cooltools eigs-trans [OPTIONS] COOL_PATH
+      outputs:
+        out_prefix:
+          type: file
+          description: Save compartment track as a BED-like file.  Eigenvectors and
+            corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
+            and  out_prefix.contact_type.lam.txt
+          input: out_prefix
+          source: help_parsed
+    expected-cis:
+      params:
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work  between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --chunksize
+        type: integer
+        description: Control the number of pixels handled by each worker  process
+          at a time.
+        required: false
+        takes_value: true
+        aliases:
+        - -c
+      - name: --output
+        type: path
+        description: Specify output file name to store the expected in a  tsv format.
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --view
+        type: path
+        description: Path to a 3 or 4-column BED file with genomic  regions to calculated
+          cis-expected on. When region  names are not provided (no 4th column), UCSC-style  region
+          names are generated. Cis-expected is  calculated for all chromosomes, when
+          this is not  specified. Note that '--regions' is the deprecated  name of
+          the option. Use '--view' instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --smooth
+        type: boolean
+        description: If set, cis-expected is smoothed and result stored  in an additional
+          column e.g. balanced.avg.smoothed
+        required: false
+        takes_value: false
+      - name: --aggregate-smoothed
+        type: boolean
+        description: If set, cis-expected is averaged over all regions  and then smoothed.
+          Result is stored in an  additional column, e.g. balanced.avg.smoothed.agg.  Ignored
+          without smoothing
+        required: false
+        takes_value: false
+      - name: --smooth-sigma
+        type: float
+        description: Control smoothing with the standard deviation of  the smoothing
+          Gaussian kernel, ignored without  smoothing.
+        required: false
+        takes_value: true
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name stored in  cooler.Provide
+          empty argument to calculate cis-  expected on raw data
+        required: false
+        takes_value: true
+      - name: --ignore-diags
+        type: integer
+        description: Number of diagonals to neglect for cis contact type
+        required: false
+        takes_value: true
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      usage: cooltools expected-cis [OPTIONS] COOL_PATH
+      outputs:
+        output:
+          type: file
+          description: Specify output file name to store the expected in a  tsv format.
+          input: output
+          source: help_parsed
+    expected-trans:
+      params:
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work  between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --chunksize
+        type: integer
+        description: Control the number of pixels handled by each worker  process
+          at a time.
+        required: false
+        takes_value: true
+        aliases:
+        - -c
+      - name: --output
+        type: path
+        description: Specify output file name to store the expected in a  tsv format.
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --view
+        type: path
+        description: Path to a 3 or 4-column BED file with genomic  regions. Trans-expected
+          is calculated on all  pairwise combinations of these regions. When region  names
+          are not provided (no 4th column), UCSC-style  region names are generated.
+          Trans-expected is  calculated  for all inter-chromosomal pairs, when  view
+          is not specified. Note that '--regions' is the  deprecated name of the option.
+          Use '--view'  instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name stored in  cooler.Provide
+          empty argument to calculate cis-  expected on raw data
+        required: false
+        takes_value: true
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      usage: cooltools expected-trans [OPTIONS] COOL_PATH
+      outputs:
+        output:
+          type: file
+          description: Specify output file name to store the expected in a  tsv format.
+          input: output
+          source: help_parsed
+    genome:
+      params: []
+      usage: cooltools genome [OPTIONS] COMMAND [ARGS]...
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
+    insulation:
+      params:
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work  between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --output
+        type: path
+        description: Specify output file name to store the  insulation in a tsv format.
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --view
+        type: path
+        description: Path to a BED file containing genomic regions  for which insulation
+          scores will be  calculated. Region names can be provided in a  4th column
+          and should match regions and their  names in expected. Note that '--regions'
+          is  the deprecated name of the option. Use '--  view' instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By  default, equals the number
+          of diagonals  ignored during IC balancing.
+        required: false
+        takes_value: true
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Provide  empty argument
+          to calculate insulation on raw  data (no masking bad pixels).
+        required: false
+        takes_value: true
+      - name: --min-frac-valid-pixels
+        type: float
+        description: The minimal fraction of valid pixels in a  sliding diamond. Used
+          to mask bins during  boundary detection.
+        required: false
+        takes_value: true
+      - name: --min-dist-bad-bin
+        type: integer
+        description: The minimal allowed distance to a bad bin.  Use to mask bins
+          after insulation calculation  and during boundary detection.
+        required: false
+        takes_value: true
+      - name: --threshold
+        type: float
+        description: Rule used to threshold the histogram of  boundary strengths to
+          exclude weakboundaries.  'Li' or 'Otsu' use corresponding methods from  skimage.thresholding.Providing
+          a float value  will filter by a fixed threshold
+        required: false
+        takes_value: true
+      - name: --window-pixels
+        type: boolean
+        description: If set then the window sizes are provided in  units of pixels.
+        required: false
+        takes_value: false
+      - name: --append-raw-scores
+        type: boolean
+        description: Append columns with raw scores (sum_counts,  sum_balanced, n_pixels)
+          to the output table.
+        required: false
+        takes_value: false
+      - name: --chunksize
+        type: integer
+        description: CLI flag --chunksize
+        required: false
+        takes_value: true
+      - name: --verbose
+        type: boolean
+        description: Report real-time progress.
+        required: false
+        takes_value: false
+      - name: --bigwig
+        type: boolean
+        description: Also save insulation tracks as a bigWig files  for different
+          window sizes with the names  output.<window-size>.bw
+        required: false
+        takes_value: false
+      - name: in_path
+        type: path
+        description: Positional argument IN_PATH
+        required: true
+        positional: true
+        position: 0
+      - name: window
+        type: string
+        description: Positional argument WINDOW
+        required: true
+        positional: true
+        position: 1
+      usage: cooltools insulation [OPTIONS] IN_PATH WINDOW
+      outputs:
+        output:
+          type: file
+          description: Specify output file name to store the  insulation in a tsv
+            format.
+          input: output
+          source: help_parsed
+    pileup:
+      params:
+      - name: --view
+        type: path
+        description: Path to a BED file which defines which  regions of the chromosomes
+          to use.  Required  if EXPECTED_PATH is provided Note that '--  regions'
+          is the deprecated name of the  option. Use '--view' instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --expected
+        type: path
+        description: Path to the expected table. If provided,  outputs OOE pileup.  if
+          not provided,  outputs regular pileup.
+        required: false
+        takes_value: true
+      - name: --flank
+        type: integer
+        description: Size of flanks.
+        required: false
+        takes_value: true
+      - name: --features-format
+        type: path
+        description: Input features format.
+        required: false
+        takes_value: true
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name.
+        required: false
+        takes_value: true
+      - name: --out
+        type: string
+        description: Save output pileup as NPZ/HDF5 file.
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - -o
+      - name: --out-format
+        type: string
+        description: Type of output.
+        required: false
+        takes_value: true
+      - name: --store-snips
+        type: boolean
+        description: Flag indicating whether snips should be  stored.
+        required: false
+        takes_value: false
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work  between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --ignore-diags
+        type: integer
+        description: The number of diagonals to ignore. By  default, equals the number
+          of diagonals  ignored during IC balancing.
+        required: false
+        takes_value: true
+      - name: --aggregate
+        type: string
+        description: Function for calculating aggregate signal.
+        required: false
+        takes_value: true
+      - name: --verbose
+        type: boolean
+        description: Enable verbose output
+        required: false
+        takes_value: false
+        aliases:
+        - -v
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      - name: features_path
+        type: path
+        description: Positional argument FEATURES_PATH
+        required: true
+        positional: true
+        position: 1
+      usage: cooltools pileup [OPTIONS] COOL_PATH FEATURES_PATH
+      outputs:
+        out:
+          type: file
+          description: Save output pileup as NPZ/HDF5 file.
+          input: out
+          source: help_parsed
+        out_format:
+          type: file
+          description: Type of output.
+          input: out_format
+          source: help_parsed
+    random-sample:
+      params:
+      - name: --count
+        type: integer
+        description: The target number of contacts in the sample. The  resulting sample
+          size will not match it precisely.  Mutually exclusive with --frac and --cis-count
+        required: false
+        takes_value: true
+        aliases:
+        - -c
+      - name: --cis-count
+        type: integer
+        description: The target number of cis contacts in the sample. The  resulting
+          sample size will not match it precisely.  Mutually exclusive with --count
+          and --frac
+        required: false
+        takes_value: true
+      - name: --frac
+        type: float
+        description: The target sample size as a fraction of contacts in the  original
+          dataset. Mutually exclusive with --count and
+        required: false
+        takes_value: true
+        aliases:
+        - -f
+      - name: --exact
+        type: boolean
+        description: If specified, use exact sampling that guarantees the  size of
+          the output sample. Otherwise, binomial sampling  will be used and the sample
+          size will be distributed  around the target value.
+        required: false
+        takes_value: false
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --chunksize
+        type: integer
+        description: The number of pixels loaded and processed per step of  computation.
+        required: false
+        takes_value: true
+      - name: in_path
+        type: path
+        description: Positional argument IN_PATH
+        required: true
+        positional: true
+        position: 0
+      - name: out_path
+        type: path
+        description: Positional argument OUT_PATH
+        required: true
+        positional: true
+        position: 1
+      usage: cooltools random-sample [OPTIONS] IN_PATH OUT_PATH
+      outputs:
+        out_path:
+          type: file
+          description: Positional argument OUT_PATH
+          input: out_path
+          source: help_parsed
+    rearrange:
+      params:
+      - name: --view
+        type: path
+        description: Path to a BED-like file which defines which regions  of the chromosomes
+          to use and in what order. Using
+        required: false
+        takes_value: true
+      - name: --new-chrom-col
+        type: string
+        description: CLI flag --new-chrom-col
+        required: false
+        takes_value: true
+        aliases:
+        - --orientation-col
+      - name: --orientation-col
+        type: path
+        description: Columns name in the view with orientations of each  region (+
+          or -). If not providedand there is no  column named 'strand' in the view
+          file, assumes all  are forward oriented
+        required: false
+        takes_value: true
+      - name: --assembly
+        type: string
+        description: The name of the assembly for the new cooler. If  None, uses the
+          same as in the original cooler.
+        required: false
+        takes_value: true
+      - name: --chunksize
+        type: integer
+        description: The number of pixels loaded and processed per step  of computation.
+        required: false
+        takes_value: true
+      - name: --mode
+        type: path
+        description: '(w)rite or (a)ppend to the output file (default: w)'
+        required: false
+        takes_value: true
+      - name: in_path
+        type: path
+        description: Positional argument IN_PATH
+        required: true
+        positional: true
+        position: 0
+      - name: out_path
+        type: path
+        description: Positional argument OUT_PATH
+        required: true
+        positional: true
+        position: 1
+      usage: cooltools rearrange [OPTIONS] IN_PATH OUT_PATH
+      outputs:
+        out_path:
+          type: file
+          description: Positional argument OUT_PATH
+          input: out_path
+          source: help_parsed
+    saddle:
+      params:
+      - name: --contact-type
+        type: string
+        description: Type of the contacts to aggregate
+        required: false
+        takes_value: true
+        aliases:
+        - -t
+      - name: --min-dist
+        type: integer
+        description: Minimal distance between bins to consider,  bp. If negative,
+          removesthe first two  diagonals of the data. Ignored with
+        required: false
+        takes_value: true
+      - name: --max-dist
+        type: integer
+        description: Maximal distance between bins to consider,  bp. Ignored, if negative.
+          Ignored with
+        required: false
+        takes_value: true
+      - name: --n-bins
+        type: integer
+        description: Number of bins for digitizing track values.
+        required: false
+        takes_value: true
+        aliases:
+        - -n
+      - name: --vrange
+        type: float
+        description: Low and high values used for binning genome-  wide track values,
+          e.g. if `range`=(-0.05,  0.05), `n-bins` equidistant bins would be  generated.
+          Use to prevent extreme track  values from exploding the bin range and to  ensure
+          consistent bins across several runs  of `compute_saddle` command using different  track
+          files.
+        required: false
+        takes_value: true
+      - name: --qrange
+        type: float
+        description: Low and high values used for quantile bins  of genome-wide track
+          values,e.g. if  `qrange`=(0.02, 0.98) the lower bin would  start at the
+          2nd percentile and the upper  bin would end at the 98th percentile of the  genome-wide
+          signal. Use to prevent the  extreme track values from exploding the bin  range.
+        required: false
+        takes_value: true
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name.
+        required: false
+        takes_value: true
+      - name: --strength
+        type: string
+        description: Compute and save compartment 'saddle  strength' profile
+        required: false
+        takes_value: true
+        aliases:
+        - --no-strength
+      - name: --view
+        type: path
+        description: Path to a BED file containing genomic  regions for which saddleplot
+          will be  calculated. Region names can be provided in  a 4th column and should
+          match regions and  their names in expected. Note that '--  regions' is the
+          deprecated name of the  option. Use '--view' instead.
+        required: false
+        takes_value: true
+        aliases:
+        - --regions
+      - name: --out-prefix
+        type: string
+        description: Dump 'saddledata', 'binedges' and 'hist'  arrays in a numpy-specific
+          .npz container.  Use numpy.load to load these arrays into a  dict-like object.
+          The digitized signal  values are saved to a bedGraph-style TSV.
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - -o
+      - name: --fig
+        type: path
+        description: Generate a figure and save to a file of the  specified format.
+          If not specified - no  image is generated. Repeat for multiple  output formats.
+        required: false
+        takes_value: true
+      - name: --scale
+        type: string
+        description: Value scale for the heatmap
+        required: false
+        takes_value: true
+      - name: --cmap
+        type: string
+        description: Name of matplotlib colormap
+        required: false
+        takes_value: true
+      - name: --vmin
+        type: float
+        description: 'Low value of the saddleplot colorbar. Note:  value in original
+          units irrespective of used  scale, and therefore should be positive for  both
+          vmin and vmax.'
+        required: false
+        takes_value: true
+      - name: --vmax
+        type: float
+        description: High value of the saddleplot colorbar
+        required: false
+        takes_value: true
+      - name: --hist-color
+        type: string
+        description: Face color of histogram bar chart
+        required: false
+        takes_value: true
+      - name: --verbose
+        type: boolean
+        description: Enable verbose output
+        required: false
+        takes_value: false
+        aliases:
+        - -v
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      - name: track_path
+        type: path
+        description: Positional argument TRACK_PATH
+        required: true
+        positional: true
+        position: 1
+      - name: expected_path
+        type: path
+        description: Positional argument EXPECTED_PATH
+        required: true
+        positional: true
+        position: 2
+      usage: cooltools saddle [OPTIONS] COOL_PATH TRACK_PATH EXPECTED_PATH
+      outputs:
+        out_prefix:
+          type: file
+          description: Dump 'saddledata', 'binedges' and 'hist'  arrays in a numpy-specific
+            .npz container.  Use numpy.load to load these arrays into a  dict-like
+            object. The digitized signal  values are saved to a bedGraph-style TSV.
+          input: out_prefix
+          source: help_parsed
+    virtual4c:
+      params:
+      - name: --clr-weight-name
+        type: string
+        description: Use balancing weight with this name. Provide empty  argument
+          to calculate insulation on raw data (no  masking bad pixels).
+        required: false
+        takes_value: true
+      - name: --out-prefix
+        type: string
+        description: Save virtual 4C track as a BED-like file. Contact  frequency
+          is stored in out_prefix.v4C.tsv
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - -o
+      - name: --bigwig
+        type: boolean
+        description: Also save virtual 4C track as a bigWig file with the  name out_prefix.v4C.bw
+        required: false
+        takes_value: false
+      - name: --nproc
+        type: integer
+        description: Number of processes to split the work between.
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: cool_path
+        type: path
+        description: Positional argument COOL_PATH
+        required: true
+        positional: true
+        position: 0
+      - name: viewpoint
+        type: string
+        description: Positional argument VIEWPOINT
+        required: true
+        positional: true
+        position: 1
+      usage: cooltools virtual4c [OPTIONS] COOL_PATH VIEWPOINT
+      outputs:
+        out_prefix:
+          type: file
+          description: Save virtual 4C track as a BED-like file. Contact  frequency
+            is stored in out_prefix.v4C.tsv
+          input: out_prefix
+          source: help_parsed
+  subcommand_discovery_complete: true
   install:
     method: pip_pkg
-    command: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
+    command: pip install https://github.com/open2c/cooltools
+    system_commands: []
+    python_packages:
+    - asciitree==0.3.3
+    - bioframe==0.8.0
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cooler==0.10.4
+    - cooltools @ file:///tmp/execute_8haqd9sl/cooltools
+    - cycler==0.12.1
+    - Cython==3.2.9
+    - cytoolz==1.1.0
+    - dill==0.4.1
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.18
+    - ImageIO==2.37.4
+    - joblib==1.5.3
+    - kiwisolver==1.5.0
+    - lazy-loader==0.5
+    - llvmlite==0.49.0
+    declared_packages:
+    - bioframe
+    - click
+    - cooler
+    - cython
+    - docutils
+    - ipython
+    - joblib
+    - matplotlib
+    - multiprocess
+    - nbsphinx
+    - numba
+    - numpy
+    - pandas
+    - pygments
+    - pytest
+    - pytest-cov
+    - pytest-flake8
+    - recommonmark
+    - scikit-image
+    - scikit-learn
+    - scipy
+    - sphinx
+    - sphinx-click
+    - sphinx-rtd-theme
+    missing_deps:
+    - api
+    - astropy
+    - checks
+    - cli
+    - common
+    - cooltools
+    - coverage
+    - dask
+    - h5py
+    - importlib
+    - ipdb
+    - lib
+    - operator
+    - pdb
+    - pybigtools
+    - requests
+    - sandbox
+    - setuptools
+    - skimage
+    - sklearn
+    - toolz
+    - unittest
+    - util
+    venv_path: /tmp/execute_8haqd9sl/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_8haqd9sl/venv/bin/cooltools --help` -> exit 0'
+    exec_executable: cooltools
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: subcommand
+    params_schema:
+    - name: --verbose
+      type: boolean
+      description: Verbose logging
+      required: false
+      takes_value: false
+      aliases:
+      - -v
+    - name: --debug
+      type: boolean
+      description: Post mortem debugging
+      required: false
+      takes_value: false
+      aliases:
+      - -d
+    - name: --version
+      type: boolean
+      description: Show the version and exit.
+      required: false
+      takes_value: false
+      aliases:
+      - -V
+    installed_versions:
+    - asciitree==0.3.3
+    - bioframe==0.8.0
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cooler==0.10.4
+    - cooltools @ file:///tmp/execute_8haqd9sl/cooltools
+    - cycler==0.12.1
+    - Cython==3.2.9
+    - cytoolz==1.1.0
+    - dill==0.4.1
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.18
+    - ImageIO==2.37.4
+    - joblib==1.5.3
+    - kiwisolver==1.5.0
+    - lazy-loader==0.5
+    - llvmlite==0.49.0
+    - matplotlib==3.11.1
+    - multiprocess==0.70.19
+    - narwhals==2.24.0
+    - networkx==3.6.1
+    - numba==0.67.0
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - pillow==12.3.0
+    - pyfaidx==0.9.0.4
+    - pyparsing==3.3.2
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - requests==2.34.2
+    - scikit-image==0.26.0
+    - scikit-learn==1.9.0
+    - scipy==1.17.1
+    - simplejson==4.1.1
+    - six==1.17.0
+    - threadpoolctl==3.6.0
+    - tifffile==2026.3.3
+    - toolz==1.1.0
+    - urllib3==2.7.0
+- name: openfold-3
+  type: cli
+  command: run_openfold {subcommand}
+  arg_style: subcommand
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] A fully open source biomolecular structure prediction
+    model based on AlphaFold3 (⭐820, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    subcommand:
+      type: string
+      required: true
+      description: 'Subcommand to run. One of: align-msa-server, predict, train'
+  resources: {}
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
+  execution: null
+  subcommands:
+  - align-msa-server
+  - predict
+  - train
+  subcommand_details:
+    align-msa-server:
+      params:
+      - name: --query-json
+        type: string
+        description: Json containing the queries for prediction.
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - --query_json
+      - name: --output-dir
+        type: string
+        description: Output directory for writing alignments
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - --output_dir
+      - name: --msa-computation-settings-yaml
+        type: path
+        description: Yaml file to customize Colabfold MSA  settings, see MsaComputationSettings
+          for  options.
+        required: false
+        takes_value: true
+        aliases:
+        - --msa_computation_settings_yaml
+      usage: run_openfold align-msa-server [OPTIONS]
+      outputs:
+        output_dir:
+          type: directory
+          description: Output directory for writing alignments
+          input: output_dir
+          source: help_parsed
+    predict:
+      params:
+      - name: --query-json
+        type: string
+        description: Json containing the queries for prediction.
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - --query_json
+      - name: --inference-ckpt-path
+        type: path
+        description: Path for model checkpoint to be used for  inference. If not specified,
+          will attempt to  find or download parameters to  $OPENFOLD_CACHE
+        required: false
+        takes_value: true
+        aliases:
+        - --inference_ckpt_path
+      - name: --inference-ckpt-name
+        type: path
+        description: Name of the checkpoint to be used for  inference. Only used if  `inference_ckpt_path`
+          is not specified.
+        required: false
+        takes_value: true
+        aliases:
+        - --inference_ckpt_name
+      - name: --num-diffusion-samples
+        type: integer
+        description: Number of diffusion samples to generate for  each query.
+        required: false
+        takes_value: true
+        aliases:
+        - --num_diffusion_samples
+      - name: --num-model-seeds
+        type: integer
+        description: Number of model seeds to use for each query.
+        required: false
+        takes_value: true
+        aliases:
+        - --num_model_seeds
+      - name: --runner-yaml
+        type: path
+        description: Yaml that specifies model and dataset  parameters, see examples/runner.yml
+        required: false
+        takes_value: true
+        aliases:
+        - --runner_yaml
+      - name: --use-msa-server
+        type: string
+        description: Use ColabFold MSA server to perform  alignments. If unset, the
+          value from the  runner yaml (or config default) is used.
+        required: false
+        takes_value: true
+        aliases:
+        - --use_msa_server
+      - name: --use-templates
+        type: string
+        description: Whether to use templates for prediction. If  unset, the value
+          from the runner yaml (or  config default) is used.
+        required: false
+        takes_value: true
+        aliases:
+        - --use_templates
+      - name: --output-dir
+        type: path
+        description: Output directory for writing results
+        required: false
+        takes_value: true
+        aliases:
+        - --output_dir
+      usage: run_openfold predict [OPTIONS]
+      outputs:
+        output_dir:
+          type: directory
+          description: Output directory for writing results
+          input: output_dir
+          source: help_parsed
+    train:
+      params:
+      - name: --runner-yaml
+        type: string
+        description: Yaml that specifies model and dataset  parameters, see examples/training_new.yml
+        required: true
+        takes_value: true
+        choices:
+        - required
+        aliases:
+        - --runner_yaml
+      - name: --seed
+        type: integer
+        description: Initial seed for all processes
+        required: false
+        takes_value: true
+      - name: --data-seed
+        type: integer
+        description: Initial seed for data pipeline. Defaults to  seed if not specified.
+        required: false
+        takes_value: true
+        aliases:
+        - --data_seed
+      usage: run_openfold train [OPTIONS]
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
+  subcommand_discovery_complete: true
+  install:
+    method: pip_pkg
+    command: 'pip install openfold3  # source: https://github.com/aqlaboratory/openfold-3'
     system_commands: []
     python_packages:
     - absl-py==2.5.0
     - aiohappyeyeballs==2.7.1
     - aiohttp==3.14.3
     - aiosignal==1.4.0
-    - annotated-doc==0.0.5
-    - antlr4-python3-runtime==4.9.3
-    - anyio==4.14.2
-    - astunparse==1.6.3
+    - annotated-types==0.8.0
     - attrs==26.1.0
-    - bio==1.8.3
-    - bioemu @ file:///tmp/execute_1mjq81bu/bioemu
-    - biopython==1.88
-    - biothings_client==0.5.1
+    - awscli==1.46.0
+    - awscrt==0.36.2
+    - biotite==1.6.0
+    - biotraj==1.2.2
+    - boto3==1.43.72
+    - botocore==1.43.72
     - certifi==2026.7.22
     - charset-normalizer==3.5.1
     - click==8.4.2
-    - contourpy==1.3.3
+    - colorama==0.4.6
     - cuda-bindings==13.3.1
     - cuda-pathfinder==1.6.0
     - cuda-toolkit==13.0.3.0
+    - docutils==0.19
     declared_packages: []
     missing_deps:
     - Bio
-    - FastMBAR
-    - alphafold
-    - bioemu
-    - chemgraph
-    - collective_variables
-    - denoiser
-    - fire
-    - hpacker
-    - huggingface_hub
-    - hydra
-    - matplotlib
-    - mdtraj
-    - models
+    - awscrt
+    - biotite
+    - boto3
+    - botocore
+    - contextvars
+    - deepspeed
+    - func_timeout
+    - gemmi
+    - importlib
+    - lightning_fabric
+    - lightning_utilities
+    - ml_collections
     - numpy
-    - omegaconf
-    - openfold
-    - openmm
-    - potentials
-    - requests
-    - scipy
-    - sde_lib
-    - so3_sde
-    - stackprinter
-    - steered_dg_lib
-    - structure_module
+    - openfold3
+    - packaging
+    - pydantic
+    - pytorch_lightning
+    - rdkit
+    - resource
     - torch
-    - torch_geometric
-    - toy_gmm
+    - torchmetrics
     - tqdm
-    venv_path: /tmp/execute_1mjq81bu/venv
+    - triton
+    - wandb
+    - yaml
+    venv_path: /tmp/execute_f6e_opo7/venv
   evidence:
     exec_status: passed
-    exec_reason: 'README usage: python -m bioemu.sample --help'
-    exec_executable: bioemu
+    exec_reason: '`/tmp/execute_f6e_opo7/venv/bin/run_openfold --help` -> exit 0'
+    exec_executable: run_openfold
     verified_license: true
     verified_license_path: LICENSE
     verified_status: repo_ok
-    inputs_source: help_parsed
-    params_schema:
-    - name: --batch_size_100
-      type: int
-      description: Batch size you'd use for a sequence of length 100. The batch size
-        will be calculated from this, assuming that the memory requirement to compute
-        each sample scales quadratically with the sequence length.
-      required: false
-      takes_value: true
-    - name: --model_name
-      type: path
-      description: Name of pretrained model to use. If this is set, you do not need
-        to provide `ckpt_path` or `model_config_path`.
-      required: false
-      takes_value: true
-    - name: --ckpt_path
-      type: path
-      description: Path to the model checkpoint. If this is set, `model_name` will
-        be ignored.
-      required: false
-      takes_value: true
-    - name: --model_config_path
-      type: path
-      description: Path to the model config, defining score model architecture and
-        the corruption process the model was trained with. Only required if `ckpt_path`
-        is set.
-      required: false
-      takes_value: true
-    - name: --denoiser_type
-      type: string
-      description: Denoiser to use for sampling, if `denoiser_config` not specified.
-        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
-      required: false
-      takes_value: true
-    - name: --denoiser_config
-      type: path
-      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
-        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
-        which includes the denoiser target, potentials, and steering parameters in
-        one file.
-      required: false
-      takes_value: true
-    - name: --cache_embeds_dir
-      type: path
-      description: Directory to store MSA embeddings. If not set, this defaults to
-        `COLABFOLD_DIR/embeds_cache`.
-      required: false
-      takes_value: true
-    - name: --cache_so3_dir
-      type: path
-      description: Directory to store SO3 precomputations. If not set, this defaults
-        to `~/sampling_so3_cache`.
-      required: false
-      takes_value: true
-    - name: --msa_host_url
-      type: string
-      description: MSA server URL. If not set, this defaults to colabfold's remote
-        server. If sequence is an a3m file, this is ignored.
-      required: false
-      takes_value: true
-      choices:
-      - str
-      - None
-    - name: --filter_samples
-      type: boolean
-      description: Filter out unphysical samples with e.g. long bond distances or
-        steric clashes.
-      required: false
-      takes_value: false
-      aliases:
-      - -f
-    - name: --base_seed
-      type: string
-      description: Base random seed for sampling. If set, each batch's seed will be
-        set to base_seed + (num samples already generated).
-      required: false
-      takes_value: true
-      choices:
-      - int
-      - None
-    - name: sequence
-      type: path
-      description: Amino acid sequence for which to generate samples, or a path to
-        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
-        then colabfold will be used to generate an MSA and embedding.
-      required: true
-      positional: true
-      position: 0
-    - name: num_samples
-      type: int
-      description: Number of samples to generate. If `output_dir` already contains
-        samples, this function will only generate additional samples necessary to
-        reach the specified `num_samples`.
-      required: true
-      positional: true
-      position: 1
-    - name: output_dir
-      type: path
-      description: Directory to save the samples. Each batch of samples will initially
-        be dumped as .npz files. Once all batches are sampled, they will be converted
-        to .xtc and .pdb.
-      required: true
-      positional: true
-      position: 2
-    exec_positional_args:
-    - name: sequence
-      type: path
-      description: Amino acid sequence for which to generate samples, or a path to
-        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
-        then colabfold will be used to generate an MSA and embedding.
-      required: true
-      positional: true
-      position: 0
-    - name: num_samples
-      type: int
-      description: Number of samples to generate. If `output_dir` already contains
-        samples, this function will only generate additional samples necessary to
-        reach the specified `num_samples`.
-      required: true
-      positional: true
-      position: 1
-    - name: output_dir
-      type: path
-      description: Directory to save the samples. Each batch of samples will initially
-        be dumped as .npz files. Once all batches are sampled, they will be converted
-        to .xtc and .pdb.
-      required: true
-      positional: true
-      position: 2
+    inputs_source: subcommand
     installed_versions:
     - absl-py==2.5.0
     - aiohappyeyeballs==2.7.1
     - aiohttp==3.14.3
     - aiosignal==1.4.0
-    - annotated-doc==0.0.5
-    - antlr4-python3-runtime==4.9.3
-    - anyio==4.14.2
-    - astunparse==1.6.3
+    - annotated-types==0.8.0
     - attrs==26.1.0
-    - bio==1.8.3
-    - bioemu @ file:///tmp/execute_1mjq81bu/bioemu
-    - biopython==1.88
-    - biothings_client==0.5.1
+    - awscli==1.46.0
+    - awscrt==0.36.2
+    - biotite==1.6.0
+    - biotraj==1.2.2
+    - boto3==1.43.72
+    - botocore==1.43.72
     - certifi==2026.7.22
     - charset-normalizer==3.5.1
     - click==8.4.2
-    - contourpy==1.3.3
+    - colorama==0.4.6
     - cuda-bindings==13.3.1
     - cuda-pathfinder==1.6.0
     - cuda-toolkit==13.0.3.0
-    - cycler==0.12.1
-    - dm-haiku==0.0.17
-    - dm-tree==0.1.10
-    - einops==0.8.2
+    - docutils==0.19
     - filelock==3.32.3
-    - fire==0.7.1
-    - flatbuffers==25.12.19
-    - fonttools==4.63.0
     - frozenlist==1.8.0
     - fsspec==2026.7.0
-    - gast==0.7.0
-    - google-pasta==0.2.0
-    - gprofiler-official==1.0.0
-    - grpcio==1.83.0
-    - h11==0.16.0
-    - h5py==3.14.0
-    - hf-xet==1.6.0
-    - httpcore==1.0.9
-    - httpx==0.28.1
-    - huggingface_hub==1.27.0
-    - hydra-core==1.3.5
+    - func_timeout==4.3.5
+    - gemmi==0.7.5
     - idna==3.18
-    - ihm==2.11
-    - jax==0.10.2
-    - jaxlib==0.10.2
+    - ijson==3.5.1
     - Jinja2==3.1.6
-    - jmp==0.0.4
-    - keras==3.15.1
-    - kiwisolver==1.5.0
-    - libclang==18.1.1
-    - markdown-it-py==4.2.0
+    - jmespath==1.1.0
+    - kalign-python==3.6.0
+    - lightning-utilities==0.15.3
+    - lmdb==2.3.0
     - MarkupSafe==3.0.3
-    - matplotlib==3.11.1
-    - mdtraj==1.11.1.post2
-    - mdurl==0.1.2
+    - memory-profiler==0.61.0
     - ml_collections==1.1.0
-    - ml_dtypes==0.6.0
-    - modelcif==1.7
     - mpmath==1.3.0
     - msgpack==1.2.1
     - multidict==6.7.1
-    - mygene==3.2.2
-    - namex==0.1.0
     - networkx==3.6.1
     - numpy==2.4.6
     - nvidia-cublas==13.1.1.3
@@ -426,15 +1442,233 @@ tools:
     - nvidia-nvjitlink==13.3.33
     - nvidia-nvshmem-cu13==3.4.5
     - nvidia-nvtx==13.0.85
-- name: bqtools
+    - openfold3 @ file:///tmp/execute_f6e_opo7/openfold-3
+    - opentelemetry-api==1.44.0
+    - packaging==26.3
+    - pandas==3.0.5
+    - pdbeccdutils==1.0.4
+    - pillow==12.3.0
+    - platformdirs==4.11.3
+    - propcache==0.5.2
+    - protobuf==7.35.1
+    - psutil==7.2.2
+    - pyasn1==0.6.4
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - python-dateutil==2.9.0.post0
+    - pytorch-lightning==2.6.5
+    - PyYAML==6.0.3
+    - rdkit==2025.9.6
+    - requests==2.34.2
+    - rsa==4.7.2
+    - s3transfer==0.19.2
+    - scipy==1.17.1
+    - sentry-sdk==2.68.0
+    - six==1.17.0
+    - sympy==1.14.0
+    - torch==2.13.0
+- name: ccdutils
   type: cli
-  command: bqtools {subcommand}
+  command: process_components_cif --input-cif {input_cif} --general-templates {general_templates}
+    --pubchem-templates {pubchem_templates} --output-dir {output_dir} --fragment-library
+    {fragment_library} --debug {debug} --ccd {ccd} --prd {prd}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] PDBe tools for an in-depth analysis of small molecules
+    in the Protein Data Bank. (⭐0, ) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_cif:
+      type: path
+      description: Input PDB-CCD/PDB-PRD cif file
+      required: false
+      source: help_parsed
+      flag: --input-cif
+      takes_value: true
+    general_templates:
+      type: string
+      description: Use general templates in SDF format instead of those supplied with
+        the code.
+      required: false
+      source: help_parsed
+      flag: --general-templates
+      takes_value: true
+    pubchem_templates:
+      type: path
+      description: Path to the directory with pubchem templates in sdf format.
+      required: false
+      source: help_parsed
+      flag: --pubchem-templates
+      takes_value: true
+    output_dir:
+      type: path
+      description: Path to output directory
+      required: true
+      source: help_parsed
+      flag: --output-dir
+      takes_value: true
+    fragment_library:
+      type: string
+      description: Use this fragment library in place of the one supplied with the
+        code.
+      required: false
+      source: help_parsed
+      flag: --fragment-library
+      takes_value: true
+    debug:
+      type: boolean
+      description: Turn on debug message logging output
+      required: false
+      source: help_parsed
+      flag: --debug
+      takes_value: false
+    ccd:
+      type: boolean
+      description: Pipeline is going to process CCD mmCIF files.
+      required: false
+      source: help_parsed
+      flag: --ccd
+      takes_value: false
+    prd:
+      type: boolean
+      description: Pipeline is going to process PRD mmCIF files.
+      required: false
+      source: help_parsed
+      flag: --prd
+      takes_value: false
+  resources: {}
+  outputs:
+    output_dir:
+      type: directory
+      description: Path to output directory
+      input: output_dir
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install pdbeccdutils  # source: https://github.com/PDBeurope/ccdutils'
+    system_commands: []
+    python_packages:
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - gemmi==0.7.5
+    - idna==3.18
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pdbeccdutils @ file:///tmp/execute_v0wir1lv/ccdutils
+    - pillow==12.3.0
+    - rdkit==2026.3.5
+    - requests==2.34.2
+    - scipy==1.17.1
+    - urllib3==2.7.0
+    declared_packages: []
+    missing_deps:
+    - PIL
+    - gemmi
+    - importlib
+    - networkx
+    - numpy
+    - pdbeccdutils
+    - rdkit
+    - requests
+    - scipy
+    - setuptools
+    - urllib3
+    - xml
+    venv_path: /tmp/execute_v0wir1lv/venv
+  evidence:
+    exec_status: passed
+    exec_reason: '`/tmp/execute_v0wir1lv/venv/bin/process_components_cif --help` ->
+      exit 0'
+    exec_executable: process_components_cif
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --input-cif
+      type: path
+      description: Input PDB-CCD/PDB-PRD cif file
+      required: false
+      takes_value: true
+      aliases:
+      - -i
+    - name: --general-templates
+      type: string
+      description: Use general templates in SDF format instead of those supplied with
+        the code.
+      required: false
+      takes_value: true
+      aliases:
+      - -g
+    - name: --pubchem-templates
+      type: path
+      description: Path to the directory with pubchem templates in sdf format.
+      required: false
+      takes_value: true
+      aliases:
+      - -p
+    - name: --output-dir
+      type: path
+      description: Path to output directory
+      required: true
+      takes_value: true
+      aliases:
+      - -o
+    - name: --fragment-library
+      type: string
+      description: Use this fragment library in place of the one supplied with the
+        code.
+      required: false
+      takes_value: true
+      aliases:
+      - -fl
+    - name: --debug
+      type: boolean
+      description: Turn on debug message logging output
+      required: false
+      takes_value: false
+    - name: --ccd
+      type: boolean
+      description: Pipeline is going to process CCD mmCIF files.
+      required: false
+      takes_value: false
+    - name: --prd
+      type: boolean
+      description: Pipeline is going to process PRD mmCIF files.
+      required: false
+      takes_value: false
+    installed_versions:
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - gemmi==0.7.5
+    - idna==3.18
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pdbeccdutils @ file:///tmp/execute_v0wir1lv/ccdutils
+    - pillow==12.3.0
+    - rdkit==2026.3.5
+    - requests==2.34.2
+    - scipy==1.17.1
+    - urllib3==2.7.0
+- name: rellig
+  type: cli
+  command: pdberellig {subcommand}
   arg_style: subcommand
   callable_via: ''
   readme_examples: []
   readme_usage: ''
-  description: '[Auto-discovered] A command line utilty for working with BINSEQ files
-    (⭐39, Rust) (NO license - research use only)'
+  description: '[Auto-discovered] PDBe tools for an in-depth analysis of small molecules
+    in the Protein Data Bank. (⭐0, ) (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
@@ -442,8 +1676,7 @@ tools:
     subcommand:
       type: string
       required: true
-      description: 'Subcommand to run. One of: encode, decode, cat, info, grep, sample,
-        split, pipe, revcomp, verify'
+      description: 'Subcommand to run. One of: cofactors, drugs, reactants'
   resources: {}
   outputs:
     stdout:
@@ -452,1243 +1685,185 @@ tools:
       source: inferred
   execution: null
   subcommands:
-  - encode
-  - decode
-  - cat
-  - info
-  - grep
-  - sample
-  - split
-  - pipe
-  - revcomp
-  - verify
+  - cofactors
+  - drugs
+  - reactants
   subcommand_details:
-    encode:
+    cofactors:
       params:
-      - name: --format
-        type: path
-        description: Input file format
-        required: false
-        takes_value: true
-        aliases:
-        - -f
-        choices: &id001
-        - a
-        - q
-        - b
-        - t
-      - name: --batch-size
-        type: int
-        description: Batch size (in records) to use in parallel processing
-        required: false
-        takes_value: true
-        aliases:
-        - -b
-      - name: --interleaved
-        type: boolean
-        description: Input is paired-interleaved
-        required: false
-        takes_value: false
-        aliases:
-        - -I
-      - name: --recursive
-        type: boolean
-        description: Apply encoding to all fasta/fastq files in the provided directory
-          input.
-        required: false
-        takes_value: false
-        aliases:
-        - -r
-      - name: --manifest
-        type: path
-        description: Path to a text file containing a list of input files to process.
-        required: false
-        takes_value: true
-        aliases:
-        - -M
-      - name: --depth
-        type: int
-        description: Maximum depth in the directory tree to process. Leaving this
-          option empty will set no limit
-        required: false
-        takes_value: true
-      - name: --paired
-        type: boolean
-        description: Encode *{_R1,_R2}* record pairs. Ignored unless `--manifest`
-          or `--recursive` is specified
-        required: false
-        takes_value: false
-        aliases:
-        - -P
-      - name: --collate
-        type: boolean
-        description: Collate all input files into a single output file. Will respect
-          paired records if `--paired` is specified
-        required: false
-        takes_value: false
-        aliases:
-        - -C
-      - name: --output
-        type: path
-        description: Output binseq file
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --mode
+      - name: --cif
         type: string
-        description: Defines the BINSEQ mode to use
-        required: false
+        description: path to input cif file
+        required: true
         takes_value: true
-        aliases:
-        - -m
-      - name: --policy
+        choices:
+        - required
+      - name: --ligand-type
         type: string
-        description: Policy for handling Ns in sequences
-        required: false
+        description: type of ligand in the PDB
+        required: true
         takes_value: true
-        aliases:
-        - -p
-      - name: --bitsize
+        choices:
+        - required
+      - name: --out-dir
         type: string
-        description: Encoding bitsize (2 or 4 bits per nucleotide)
-        required: false
+        description: path to output directory
+        required: true
         takes_value: true
-        aliases:
-        - -S
-      - name: --skip-headers
-        type: boolean
-        description: Exclude sequence names (headers) in the binseq file
-        required: false
-        takes_value: false
-        aliases:
-        - -H
-      - name: --uncompressed
-        type: boolean
-        description: 'Skip ZSTD compression of VBQ blocks (default: compressed)'
-        required: false
-        takes_value: false
-        aliases:
-        - -u
-      - name: --skip-quality
-        type: boolean
-        description: 'Skip inclusion of quality scores (default: included)'
-        required: false
-        takes_value: false
-        aliases:
-        - -Q
-      - name: --block-size
-        type: int
-        description: Virtual block size (in bytes)
-        required: false
-        takes_value: true
-        aliases:
-        - -B
-      - name: --threads
-        type: int
-        description: Number of threads to use for parallel reading and writing.
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: --level
-        type: int
-        description: Zstd compression level The compression level is between 1 and
-          22, with 3 being the default. Higher levels provide better compression at
-          the cost of speed. Level 0 disables compression.
-        required: false
-        takes_value: true
-        aliases:
-        - -l
-      - name: --archive
-        type: boolean
-        description: Archive mode
-        required: false
-        takes_value: false
-        aliases:
-        - -A
-      - name: --pipe
-        type: boolean
-        description: Pipe the output to stdout
-        required: false
-        takes_value: false
-      - name: input
-        type: path
-        description: Positional argument INPUT
-        required: false
-        positional: true
-        position: 0
-      usage: bqtools encode [OPTIONS] [INPUT]...
+        choices:
+        - required
+      usage: pdberellig cofactors [OPTIONS]
       outputs:
-        output:
-          type: file
-          description: Output binseq file
-          input: output
+        out_dir:
+          type: directory
+          description: path to output directory
+          input: out_dir
           source: help_parsed
-    decode:
+    drugs:
       params:
-      - name: --span
+      - name: --cif
         type: string
-        description: Span of records to process. If not specified, all records will
-          be processed
-        required: false
-        takes_value: true
-      - name: --output
-        type: path
-        description: Output file
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --prefix
-        type: path
-        description: Output file format prefix (required for paired BINSEQ files
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --mate
-        type: string
-        description: Designate which of the two mates is being processed
-        required: false
-        takes_value: true
-        aliases:
-        - -m
-      - name: --format
-        type: path
-        description: Output file format
-        required: false
-        takes_value: true
-        aliases:
-        - -f
-        choices: *id001
-      - name: --compress
-        type: path
-        description: Compress output file
-        required: false
-        takes_value: true
-        aliases:
-        - -c
-      - name: --threads
-        type: int
-        description: Number of threads to use for parallel compression (0 for auto)
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: input
-        type: path
-        description: Positional argument <INPUT>
+        description: path to input cif file
         required: true
-        positional: true
-        position: 0
-      usage: bqtools decode [OPTIONS] <INPUT>
+        takes_value: true
+        choices:
+        - required
+      - name: --out-dir
+        type: string
+        description: path to output directory
+        required: true
+        takes_value: true
+        choices:
+        - required
+      - name: --ligand-type
+        type: string
+        description: type of ligand in the PDB
+        required: true
+        takes_value: true
+        choices:
+        - required
+      usage: pdberellig drugs [OPTIONS]
       outputs:
-        output:
-          type: file
-          description: Output file
-          input: output
+        out_dir:
+          type: directory
+          description: path to output directory
+          input: out_dir
           source: help_parsed
-    cat:
+    reactants:
       params:
-      - name: --output
+      - name: --cif
+        type: string
+        description: path to input cif file
+        required: true
+        takes_value: true
+        choices:
+        - required
+      - name: --ligand-type
+        type: string
+        description: type of ligand in the PDB
+        required: true
+        takes_value: true
+        choices:
+        - required
+      - name: --chebi-structure-file
         type: path
-        description: Output binseq file
+        description: Path to the ChEBI structures file. If  omitted, the file is downloaded.
         required: false
         takes_value: true
-        aliases:
-        - -o
-      - name: --mode
+      - name: --out-dir
         type: string
-        description: Defines the BINSEQ mode to use
-        required: false
+        description: path to output directory
+        required: true
         takes_value: true
-        aliases:
-        - -m
-      - name: --policy
-        type: string
-        description: Policy for handling Ns in sequences
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --bitsize
-        type: string
-        description: Encoding bitsize (2 or 4 bits per nucleotide)
-        required: false
-        takes_value: true
-        aliases:
-        - -S
-      - name: --skip-headers
+        choices:
+        - required
+      - name: --update-chebi
         type: boolean
-        description: Exclude sequence names (headers) in the binseq file
+        description: Flag to update ChEBI structures file
         required: false
         takes_value: false
-        aliases:
-        - -H
-      - name: --uncompressed
-        type: boolean
-        description: 'Skip ZSTD compression of VBQ blocks (default: compressed)'
-        required: false
-        takes_value: false
-        aliases:
-        - -u
-      - name: --skip-quality
-        type: boolean
-        description: 'Skip inclusion of quality scores (default: included)'
-        required: false
-        takes_value: false
-        aliases:
-        - -Q
-      - name: --block-size
-        type: int
-        description: Virtual block size (in bytes)
+      - name: --minimal-ligand-size
+        type: integer
+        description: Minimum ligand size.
         required: false
         takes_value: true
-        aliases:
-        - -B
-      - name: --threads
-        type: int
-        description: Number of threads to use for parallel reading and writing.
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: --level
-        type: int
-        description: Zstd compression level The compression level is between 1 and
-          22, with 3 being the default. Higher levels provide better compression at
-          the cost of speed. Level 0 disables compression.
-        required: false
-        takes_value: true
-        aliases:
-        - -l
-      - name: --archive
-        type: boolean
-        description: Archive mode
-        required: false
-        takes_value: false
-        aliases:
-        - -A
-      - name: --pipe
-        type: boolean
-        description: Pipe the output to stdout
-        required: false
-        takes_value: false
-      - name: input
-        type: path
-        description: Positional argument INPUT
-        required: false
-        positional: true
-        position: 0
-      usage: bqtools cat [OPTIONS] [INPUT]...
+      usage: pdberellig reactants [OPTIONS]
       outputs:
-        output:
-          type: file
-          description: Output binseq file
-          input: output
+        out_dir:
+          type: directory
+          description: path to output directory
+          input: out_dir
           source: help_parsed
-    info:
-      params:
-      - name: --num
-        type: boolean
-        description: Only print the number of records in the file
-        required: false
-        takes_value: false
-        aliases:
-        - -n
-      - name: --json
-        type: boolean
-        description: Print the file in JSON format
-        required: false
-        takes_value: false
-        aliases:
-        - -j
-      - name: --show-index
-        type: boolean
-        description: Print the index of the file
-        required: false
-        takes_value: false
-      - name: --show-headers
-        type: boolean
-        description: Print the block headers of the file
-        required: false
-        takes_value: false
-      - name: input
-        type: path
-        description: Positional argument <INPUT>...
-        required: true
-        positional: true
-        position: 0
-      usage: bqtools info [OPTIONS] <INPUT>...
-      outputs:
-        stdout:
-          type: text
-          description: Tool result printed to stdout.
-          source: inferred
-    grep:
-      params:
-      - name: --span
-        type: string
-        description: Span of records to process. If not specified, all records will
-          be processed
-        required: false
-        takes_value: true
-      - name: --output
-        type: path
-        description: Output file
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --prefix
-        type: path
-        description: Output file format prefix (required for paired BINSEQ files
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --mate
-        type: string
-        description: Designate which of the two mates is being processed
-        required: false
-        takes_value: true
-        aliases:
-        - -m
-      - name: --format
-        type: path
-        description: Output file format
-        required: false
-        takes_value: true
-        aliases:
-        - -f
-        choices: *id001
-      - name: --compress
-        type: path
-        description: Compress output file
-        required: false
-        takes_value: true
-        aliases:
-        - -c
-      - name: --threads
-        type: int
-        description: Number of threads to use for parallel compression (0 for auto)
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: --reg1
-        type: string
-        description: Regex expression to search for in primary sequence
-        required: false
-        takes_value: true
-        aliases:
-        - -r
-      - name: --reg2
-        type: string
-        description: Regex expression to search for in extended sequence
-        required: false
-        takes_value: true
-        aliases:
-        - -R
-      - name: --invert
-        type: boolean
-        description: Invert pattern criteria (like grep -v)
-        required: false
-        takes_value: false
-        aliases:
-        - -v
-      - name: --header
-        type: boolean
-        description: Match patterns against the sequence header instead of the sequence
-        required: false
-        takes_value: false
-        aliases:
-        - -H
-      - name: --count
-        type: boolean
-        description: Only count matches
-        required: false
-        takes_value: false
-        aliases:
-        - -C
-      - name: --frac
-        type: boolean
-        description: Show match count as a fraction of total records
-        required: false
-        takes_value: false
-        aliases:
-        - -F
-      - name: --range
-        type: string
-        description: Only match patterns that are within this range.
-        required: false
-        takes_value: true
-      - name: --pattern-count
-        type: boolean
-        description: Count number of matches per pattern
-        required: false
-        takes_value: false
-        aliases:
-        - -P
-      - name: --fixed
-        type: boolean
-        description: Denotes patterns are fixed strings (non-regex)
-        required: false
-        takes_value: false
-        aliases:
-        - -x
-      - name: --rc
-        type: boolean
-        description: Reverse complement all patterns before matching
-        required: false
-        takes_value: false
-      - name: --no-dfa
-        type: boolean
-        description: Build Aho-Corasick automaton without DFA
-        required: false
-        takes_value: false
-      - name: --or-logic
-        type: boolean
-        description: use OR logic for multiple patterns (default=AND)
-        required: false
-        takes_value: false
-      - name: --color
-        type: string
-        description: Colorize output (auto, always, never)
-        required: false
-        takes_value: true
-      - name: input
-        type: path
-        description: Positional argument <INPUT>
-        required: true
-        positional: true
-        position: 0
-      - name: reg
-        type: string
-        description: Positional argument REG
-        required: false
-        positional: true
-        position: 1
-      usage: bqtools grep [OPTIONS] <INPUT> [REG]...
-      outputs:
-        output:
-          type: file
-          description: Output file
-          input: output
-          source: help_parsed
-    sample:
-      params:
-      - name: --span
-        type: string
-        description: Span of records to process. If not specified, all records will
-          be processed
-        required: false
-        takes_value: true
-      - name: --output
-        type: path
-        description: Output file
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --prefix
-        type: path
-        description: Output file format prefix (required for paired BINSEQ files
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --mate
-        type: string
-        description: Designate which of the two mates is being processed
-        required: false
-        takes_value: true
-        aliases:
-        - -m
-      - name: --format
-        type: path
-        description: Output file format
-        required: false
-        takes_value: true
-        aliases:
-        - -f
-        choices: *id001
-      - name: --compress
-        type: path
-        description: Compress output file
-        required: false
-        takes_value: true
-        aliases:
-        - -c
-      - name: --threads
-        type: int
-        description: Number of threads to use for parallel compression (0 for auto)
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: --fraction
-        type: float
-        description: Fraction of the input reads to sample
-        required: true
-        takes_value: true
-        aliases:
-        - -F
-      - name: --seed
-        type: int
-        description: Seed to use for random sampling
-        required: false
-        takes_value: true
-        aliases:
-        - -S
-      - name: input
-        type: path
-        description: Positional argument <INPUT>
-        required: true
-        positional: true
-        position: 0
-      usage: bqtools sample [OPTIONS] --fraction <FRACTION> <INPUT>
-      outputs:
-        output:
-          type: file
-          description: Output file
-          input: output
-          source: help_parsed
-    split:
-      params:
-      - name: --span
-        type: string
-        description: Span of records to process. If not specified, all records will
-          be processed
-        required: false
-        takes_value: true
-      - name: --basepath
-        type: path
-        description: Optional base path for output files. If not provided, the current
-          working directory will be used
-        required: false
-        takes_value: true
-      - name: --skip-unmatched
-        type: boolean
-        description: Skip writing records that do not match any pattern
-        required: false
-        takes_value: false
-      - name: --unmatched-basename
-        type: string
-        description: Optional base name for unmatched records
-        required: false
-        takes_value: true
-      - name: --min-records
-        type: string
-        description: Remove output files with fewer than this many records.
-        required: false
-        takes_value: true
-      - name: --fixed
-        type: boolean
-        description: Denotes patterns are fixed strings (non-regex)
-        required: false
-        takes_value: false
-        aliases:
-        - -x
-      - name: --rc
-        type: boolean
-        description: Reverse complement all patterns before matching
-        required: false
-        takes_value: false
-      - name: --no-dfa
-        type: boolean
-        description: Don't use Aho-Corasick DFA (slower, but lower memory)
-        required: false
-        takes_value: false
-      - name: --threads
-        type: int
-        description: 'Number of processing threads to use, 0: auto'
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: --quiet
-        type: boolean
-        description: Suppress the per-pattern record count summary written to stderr
-        required: false
-        takes_value: false
-      - name: --file
-        type: path
-        description: File of patterns to search for in either primary or extended
-          sequence
-        required: false
-        takes_value: true
-      - name: --sfile
-        type: path
-        description: File of patterns to search for in primary sequence
-        required: false
-        takes_value: true
-      - name: --xfile
-        type: path
-        description: File of patterns to search for in extended sequence
-        required: false
-        takes_value: true
-      - name: input
-        type: path
-        description: Positional argument <INPUT>
-        required: true
-        positional: true
-        position: 0
-      usage: bqtools split [OPTIONS] <INPUT>
-      outputs:
-        stdout:
-          type: text
-          description: Tool result printed to stdout.
-          source: inferred
-      constraints:
-        any_of:
-        - - file
-        - - sfile
-        - - xfile
-    pipe:
-      params:
-      - name: --span
-        type: string
-        description: Span of records to process. If not specified, all records will
-          be processed
-        required: false
-        takes_value: true
-      - name: --num-pipes
-        type: int
-        description: 'Number of pipes to make [0: as many as threads]'
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --format
-        type: path
-        description: Output file format
-        required: false
-        takes_value: true
-        aliases:
-        - -f
-        choices: *id001
-      - name: --basepath
-        type: path
-        description: Base path for output files
-        required: false
-        takes_value: true
-        aliases:
-        - -b
-      - name: --exec
-        type: string
-        description: Execute a shell command once per pipe, substituting FIFO paths.
-        required: false
-        takes_value: true
-        aliases:
-        - -x
-      - name: --exec-batch
-        type: int
-        description: Execute a single shell command with all FIFO paths substituted.
-        required: false
-        takes_value: true
-        aliases:
-        - -X
-      - name: input
-        type: path
-        description: Positional argument <INPUT>
-        required: true
-        positional: true
-        position: 0
-      usage: bqtools pipe [OPTIONS] <INPUT>
-      outputs:
-        stdout:
-          type: text
-          description: Tool result printed to stdout.
-          source: inferred
-    revcomp:
-      params:
-      - name: --span
-        type: string
-        description: Span of records to process. If not specified, all records will
-          be processed
-        required: false
-        takes_value: true
-      - name: --output
-        type: path
-        description: Output binseq file
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --mode
-        type: string
-        description: Defines the BINSEQ mode to use
-        required: false
-        takes_value: true
-        aliases:
-        - -m
-      - name: --policy
-        type: string
-        description: Policy for handling Ns in sequences
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --bitsize
-        type: string
-        description: Encoding bitsize (2 or 4 bits per nucleotide)
-        required: false
-        takes_value: true
-        aliases:
-        - -S
-      - name: --skip-headers
-        type: boolean
-        description: Exclude sequence names (headers) in the binseq file
-        required: false
-        takes_value: false
-        aliases:
-        - -H
-      - name: --uncompressed
-        type: boolean
-        description: 'Skip ZSTD compression of VBQ blocks (default: compressed)'
-        required: false
-        takes_value: false
-        aliases:
-        - -u
-      - name: --skip-quality
-        type: boolean
-        description: 'Skip inclusion of quality scores (default: included)'
-        required: false
-        takes_value: false
-        aliases:
-        - -Q
-      - name: --block-size
-        type: int
-        description: Virtual block size (in bytes)
-        required: false
-        takes_value: true
-        aliases:
-        - -B
-      - name: --threads
-        type: int
-        description: Number of threads to use for parallel reading and writing.
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: --level
-        type: int
-        description: Zstd compression level The compression level is between 1 and
-          22, with 3 being the default. Higher levels provide better compression at
-          the cost of speed. Level 0 disables compression.
-        required: false
-        takes_value: true
-        aliases:
-        - -l
-      - name: --archive
-        type: boolean
-        description: Archive mode
-        required: false
-        takes_value: false
-        aliases:
-        - -A
-      - name: --pipe
-        type: boolean
-        description: Pipe the output to stdout
-        required: false
-        takes_value: false
-      - name: --mate
-        type: string
-        description: Which mate(s) to reverse complement
-        required: false
-        takes_value: true
-        aliases:
-        - -M
-      - name: input
-        type: path
-        description: Positional argument <INPUT>
-        required: true
-        positional: true
-        position: 0
-      usage: bqtools revcomp [OPTIONS] <INPUT>
-      outputs:
-        output:
-          type: file
-          description: Output binseq file
-          input: output
-          source: help_parsed
-    verify:
-      params:
-      - name: --span
-        type: string
-        description: Span of records to process. If not specified, all records will
-          be processed
-        required: false
-        takes_value: true
-      - name: --skip-seq
-        type: boolean
-        description: Exclude sequence data from the checksum
-        required: false
-        takes_value: false
-      - name: --skip-qual
-        type: boolean
-        description: Exclude quality scores from the checksum
-        required: false
-        takes_value: false
-      - name: --skip-headers
-        type: boolean
-        description: Exclude sequence/record headers from the checksum
-        required: false
-        takes_value: false
-      - name: --skip-flags
-        type: boolean
-        description: Exclude the per-record flag from the checksum
-        required: false
-        takes_value: false
-      - name: --mate
-        type: string
-        description: Which mate(s) to include in the checksum for paired records
-        required: false
-        takes_value: true
-        aliases:
-        - -M
-      - name: --threads
-        type: int
-        description: 'Number of threads to use [0: auto]'
-        required: false
-        takes_value: true
-        aliases:
-        - -T
-      - name: --json
-        type: boolean
-        description: Print the checksum report as JSON
-        required: false
-        takes_value: false
-        aliases:
-        - -j
-      - name: input
-        type: path
-        description: Positional argument <INPUT>
-        required: true
-        positional: true
-        position: 0
-      usage: bqtools verify [OPTIONS] <INPUT>
-      outputs:
-        stdout:
-          type: text
-          description: Tool result printed to stdout.
-          source: inferred
   subcommand_discovery_complete: true
   install:
-    method: cargo
-    command: cargo install --git https://github.com/ArcInstitute/bqtools
-    system_commands: []
-    python_packages: []
-    declared_packages: []
-    missing_deps: []
-    venv_path: /tmp/execute_6z9pbc6u/venv
-  evidence:
-    exec_status: passed
-    exec_reason: '`/tmp/execute_6z9pbc6u/bqtools/target/release/bqtools --help` ->
-      exit 0'
-    exec_executable: bqtools
-    verified_license: false
-    verified_status: repo_ok
-    inputs_source: subcommand
-    params_schema:
-    - name: --version
-      type: boolean
-      description: Print version
-      required: false
-      takes_value: false
-      aliases:
-      - -V
-- name: kaptain
-  type: cli
-  command: kaptain --ont-in {ont_in} --db {db} --db-lookup {db_lookup} --dir-working
-    {dir_working} --output {output} --output-html {output_html} --subsampling {subsampling}
-    --fdr {fdr} --threads {threads} --version {version} --log {log}
-  arg_style: positional
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] KMA-bAsed Pipeline for meTAgenomic specIes ideNtification
-    (⭐3, Python) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs:
-    ont_in:
-      type: path
-      description: 'ONT input FASTA/Q file (default: None)'
-      required: true
-      source: help_parsed
-      flag: --ont-in
-      takes_value: true
-    dir_working:
-      type: path
-      description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
-      required: false
-      source: help_parsed
-      flag: --dir-working
-      takes_value: true
-    output:
-      type: path
-      description: 'Output directory (default: None)'
-      required: true
-      source: help_parsed
-      flag: --output
-      takes_value: true
-    output_html:
-      type: path
-      description: 'Output report name (default: report.html)'
-      required: false
-      source: help_parsed
-      flag: --output-html
-      takes_value: true
-    subsampling:
-      type: string
-      description: 'Subsample input to number of bases before  classification. Leave
-        empty or use None for no  downsampling. (default: [None])'
-      required: false
-      source: help_parsed
-      flag: --subsampling
-      takes_value: true
-    fdr:
-      type: string
-      description: 'FDR setting. (default: [5])'
-      required: false
-      source: help_parsed
-      flag: --fdr
-      takes_value: true
-    threads:
-      type: int
-      description: 'Number of threads (default: 4)'
-      required: false
-      source: help_parsed
-      flag: --threads
-      takes_value: true
-    version:
-      type: boolean
-      description: Print version and exit
-      required: false
-      source: help_parsed
-      flag: --version
-      takes_value: false
-    log:
-      type: boolean
-      description: 'Write out log information to file (default: False)'
-      required: false
-      source: help_parsed
-      flag: --log
-      takes_value: false
-  resources:
-    db:
-      required: true
-      required_by: runtime
-      source: help_parsed
-      description: 'Basename of KMA database. Database exists of four  files named
-        *.{comp.b, length.b, name, seq.b}  (default: None)'
-    db_lookup:
-      required: true
-      required_by: runtime
-      source: help_parsed
-      description: 'Lookup file of KMA database (default: None)'
-  outputs:
-    output:
-      type: directory
-      description: 'Output directory (default: None)'
-      input: output
-      source: help_parsed
-    output_html:
-      type: file
-      description: 'Output report name (default: report.html)'
-      input: output_html
-      source: help_parsed
-  execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
-  install:
     method: pip_pkg
-    command: 'pip install kaptain  # source: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN'
+    command: 'pip install pdberellig  # source: https://github.com/PDBeurope/rellig'
     system_commands: []
     python_packages:
-    - annotated-types==0.8.0
-    - argparse-dataclass==2.0.0
-    - attrs==26.1.0
-    - beautifulsoup4==4.15.0
-    - bs4==0.0.2
     - certifi==2026.7.22
     - charset-normalizer==3.5.1
-    - conda-inject==1.3.2
-    - ConfigArgParse==1.7.5
-    - connection_pool==0.0.3
-    - docutils==0.22.4
-    - dpath==2.2.0
-    - fastjsonschema==2.22.2
-    - gitdb==4.0.12
-    - GitPython==3.1.59
-    - greenlet==3.5.5
-    - humanfriendly==10.0
+    - click==8.4.2
+    - gemmi==0.7.5
     - idna==3.18
-    - immutables==0.21
-    - iniconfig==2.3.0
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==2.3.3
+    - pdbeccdutils==1.0.4
+    - pdberellig @ file:///tmp/execute_s0tf2jkp/rellig
+    - pillow==12.3.0
+    - pyparsing==3.3.2
+    - python-dateutil==2.9.0.post0
+    - pytz==2026.3.post1
+    - rdflib==7.6.0
+    - rdkit==2026.3.5
+    - requests==2.34.2
+    - scipy==1.17.1
+    - six==1.17.0
     declared_packages: []
     missing_deps:
-    - bs4
+    - SPARQLWrapper
+    - click
+    - concurrent
+    - gemmi
     - importlib
-    - kaptain
     - pandas
-    - yaml
-    - yattag
-    venv_path: /tmp/execute_de3c9dpy/venv
+    - pdbeccdutils
+    - pdberellig
+    - rdkit
+    - requests
+    - setuptools
+    - urllib3
+    venv_path: /tmp/execute_s0tf2jkp/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_de3c9dpy/venv/bin/kaptain --help` -> exit 0'
-    exec_executable: kaptain
+    exec_reason: '`/tmp/execute_s0tf2jkp/venv/bin/pdberellig --help` -> exit 0'
+    exec_executable: pdberellig
     verified_license: true
     verified_license_path: LICENSE
     verified_status: repo_ok
-    inputs_source: help_parsed
-    params_schema:
-    - name: --ont-in
-      type: path
-      description: 'ONT input FASTA/Q file (default: None)'
-      required: true
-      takes_value: true
-      aliases:
-      - -i
-    - name: --db
-      type: path
-      description: 'Basename of KMA database. Database exists of four  files named
-        *.{comp.b, length.b, name, seq.b}  (default: None)'
-      required: true
-      takes_value: true
-    - name: --db-lookup
-      type: path
-      description: 'Lookup file of KMA database (default: None)'
-      required: true
-      takes_value: true
-    - name: --dir-working
-      type: path
-      description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
-      required: false
-      takes_value: true
-    - name: --output
-      type: path
-      description: 'Output directory (default: None)'
-      required: true
-      takes_value: true
-      aliases:
-      - -o
-    - name: --output-html
-      type: path
-      description: 'Output report name (default: report.html)'
-      required: false
-      takes_value: true
-    - name: --subsampling
-      type: string
-      description: 'Subsample input to number of bases before  classification. Leave
-        empty or use None for no  downsampling. (default: [None])'
-      required: false
-      takes_value: true
-      choices:
-      - 200M
-      - 500M
-      - 1000M
-      - 1500M
-      - 2000M
-      - None
-    - name: --fdr
-      type: string
-      description: 'FDR setting. (default: [5])'
-      required: false
-      takes_value: true
-      choices:
-      - '15'
-      - '10'
-      - '5'
-      - '1'
-    - name: --threads
-      type: int
-      description: 'Number of threads (default: 4)'
-      required: false
-      takes_value: true
-    - name: --version
-      type: boolean
-      description: Print version and exit
-      required: false
-      takes_value: false
-    - name: --log
-      type: boolean
-      description: 'Write out log information to file (default: False)'
-      required: false
-      takes_value: false
+    inputs_source: subcommand
     installed_versions:
-    - annotated-types==0.8.0
-    - argparse-dataclass==2.0.0
-    - attrs==26.1.0
-    - beautifulsoup4==4.15.0
-    - bs4==0.0.2
     - certifi==2026.7.22
     - charset-normalizer==3.5.1
-    - conda-inject==1.3.2
-    - ConfigArgParse==1.7.5
-    - connection_pool==0.0.3
-    - docutils==0.22.4
-    - dpath==2.2.0
-    - fastjsonschema==2.22.2
-    - gitdb==4.0.12
-    - GitPython==3.1.59
-    - greenlet==3.5.5
-    - humanfriendly==10.0
+    - click==8.4.2
+    - gemmi==0.7.5
     - idna==3.18
-    - immutables==0.21
-    - iniconfig==2.3.0
-    - Jinja2==3.1.6
-    - jsonschema==4.26.0
-    - jsonschema-specifications==2025.9.1
-    - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_de3c9dpy/KAPTAIN
-    - MarkupSafe==3.0.3
-    - nbformat==5.11.1
+    - networkx==3.6.1
     - numpy==2.4.6
-    - packaging==25.0
-    - pandas==3.0.5
-    - platformdirs==4.11.3
-    - pluggy==1.6.0
-    - psutil==7.2.2
-    - PuLP==2.7.0
-    - pydantic==2.13.4
-    - pydantic_core==2.46.4
-    - Pygments==2.21.0
-    - pytest==9.1.1
+    - packaging==26.3
+    - pandas==2.3.3
+    - pdbeccdutils==1.0.4
+    - pdberellig @ file:///tmp/execute_s0tf2jkp/rellig
+    - pillow==12.3.0
+    - pyparsing==3.3.2
     - python-dateutil==2.9.0.post0
-    - PyYAML==6.0.3
-    - referencing==0.37.0
+    - pytz==2026.3.post1
+    - rdflib==7.6.0
+    - rdkit==2026.3.5
     - requests==2.34.2
-    - rpds-py==2026.6.3
+    - scipy==1.17.1
     - six==1.17.0
-    - smart_open==7.7.1
-    - smmap==5.0.3
-    - snakemake==9.25.1
-    - snakemake-interface-common==1.23.0
-    - snakemake-interface-executor-plugins==9.4.0
-    - snakemake-interface-logger-plugins==2.1.0
-    - snakemake-interface-report-plugins==1.3.0
-    - snakemake-interface-scheduler-plugins==2.0.2
-    - snakemake-interface-storage-plugins==4.4.1
-    - soupsieve==2.9.2
-    - SQLAlchemy==2.0.52
-    - sqlmodel==0.0.37
-    - tabulate==0.10.0
-    - tenacity==9.1.4
-    - throttler==1.2.3
-    - traitlets==5.16.1
-    - typing-inspection==0.4.4
-    - typing_extensions==4.16.0
+    - SPARQLWrapper==2.0.0
+    - tzdata==2026.3
     - urllib3==2.7.0
-    - wrapt==2.3.0
-    - yattag==1.16.1
-    - yte==1.9.4
-  expected_outputs:
-  - name: output_html
-    render_as: text
