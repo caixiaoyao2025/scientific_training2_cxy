@@ -1,398 +1,57 @@
 [
   {
-    "name": "cooltools_coverage",
+    "name": "metaphlan",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_coverage",
+    "execute": "FAIL (output: exit 2 (stderr: usage: metaphlan --input_type {fastq,fasta,mapout,sam} [--force]\n                 [--db_dir METAPHLAN_DB] [-x INDEX] [--))",
+    "output": "FAIL (output: exit 2 (stderr: usage: metaphlan --input_type {fastq,fasta,mapout,sam} [--force]\n                 [--db_dir METAPHLAN_DB] [-x INDEX] [--))",
     "_argv": [
-      "cooltools",
-      "coverage",
+      "metaphlan",
+      "/tmp/sample.fa",
+      "--input_type",
       "x"
     ],
     "_args": {
-      "cool_path": "x"
+      "input_type": "x",
+      "input_file": "/tmp/sample.fa"
     },
-    "_return_code": 1
+    "_functions": [
+      "metaphlan"
+    ],
+    "_return_code": 2
   },
   {
-    "name": "cooltools_dots",
+    "name": "condiga",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: cooltools dots [OPTIONS] COOL_PATH EXPECTED_PATH\nTry 'cooltools dots --help' for help.\n\nError: Invalid value for ))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: cooltools dots [OPTIONS] COOL_PATH EXPECTED_PATH\nTry 'cooltools dots --help' for help.\n\nError: Invalid value for ))",
-    "_function": "cooltools_dots",
+    "execute": "FAIL (output: exit 2 (stderr: Usage: condiga [OPTIONS]\nTry 'condiga --help' for help.\n\nError: Invalid value for '--contigs' / '-c': Path 'x' does not ))",
+    "output": "FAIL (output: exit 2 (stderr: Usage: condiga [OPTIONS]\nTry 'condiga --help' for help.\n\nError: Invalid value for '--contigs' / '-c': Path 'x' does not ))",
     "_argv": [
-      "cooltools",
-      "dots",
+      "condiga",
+      "--contigs",
       "x",
+      "--taxa",
+      "x",
+      "--genes",
+      "x",
+      "--coverages",
+      "x",
+      "--assembly-summary",
       "x",
       "--output",
       "/tmp/out.tsv"
     ],
     "_args": {
-      "output": "/tmp/out.tsv",
-      "cool_path": "x",
-      "expected_path": "x"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "cooltools_eigs_cis",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_eigs_cis",
-    "_argv": [
-      "cooltools",
-      "eigs-cis",
-      "x",
-      "--out-prefix",
-      "x"
-    ],
-    "_args": {
-      "out_prefix": "x",
-      "cool_path": "x"
-    },
-    "_return_code": 1
-  },
-  {
-    "name": "cooltools_eigs_trans",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_eigs_trans",
-    "_argv": [
-      "cooltools",
-      "eigs-trans",
-      "x",
-      "--out-prefix",
-      "x"
-    ],
-    "_args": {
-      "out_prefix": "x",
-      "cool_path": "x"
-    },
-    "_return_code": 1
-  },
-  {
-    "name": "cooltools_expected_cis",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_expected_cis",
-    "_argv": [
-      "cooltools",
-      "expected-cis",
-      "x"
-    ],
-    "_args": {
-      "cool_path": "x"
-    },
-    "_return_code": 1
-  },
-  {
-    "name": "cooltools_expected_trans",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_expected_trans",
-    "_argv": [
-      "cooltools",
-      "expected-trans",
-      "x"
-    ],
-    "_args": {
-      "cool_path": "x"
-    },
-    "_return_code": 1
-  },
-  {
-    "name": "cooltools_genome",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit None (stderr: [validation] base subcommand spec cannot be executed directly (it has no leaf inputs); resolve it to a leaf ToolSpec via))",
-    "output": "FAIL (output: exit None (stderr: [validation] base subcommand spec cannot be executed directly (it has no leaf inputs); resolve it to a leaf ToolSpec via))",
-    "_function": "cooltools_genome",
-    "_argv": [],
-    "_args": {},
-    "_return_code": null
-  },
-  {
-    "name": "cooltools_insulation",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: cooltools insulation [OPTIONS] IN_PATH WINDOW\nTry 'cooltools insulation --help' for help.\n\nError: Invalid value f))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: cooltools insulation [OPTIONS] IN_PATH WINDOW\nTry 'cooltools insulation --help' for help.\n\nError: Invalid value f))",
-    "_function": "cooltools_insulation",
-    "_argv": [
-      "cooltools",
-      "insulation",
-      "x",
-      "x"
-    ],
-    "_args": {
-      "in_path": "x",
-      "window": "x"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "cooltools_pileup",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_pileup",
-    "_argv": [
-      "cooltools",
-      "pileup",
-      "x",
-      "x",
-      "--out",
-      "x"
-    ],
-    "_args": {
-      "out": "x",
-      "cool_path": "x",
-      "features_path": "x"
-    },
-    "_return_code": 1
-  },
-  {
-    "name": "cooltools_random_sample",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit None (stderr: [validation] unknown arguments: ['format', 'fraction', 'input', 'output']))",
-    "output": "FAIL (output: exit None (stderr: [validation] unknown arguments: ['format', 'fraction', 'input', 'output']))",
-    "_function": "cooltools_random_sample",
-    "_argv": [],
-    "_args": {
-      "input": "/tmp/pipeline_sample.vbq",
-      "output": "/tmp/pipeline_out/sample.fa",
-      "format": "a",
-      "fraction": "0.5",
-      "in_path": "x",
-      "out_path": "x"
-    },
-    "_return_code": null
-  },
-  {
-    "name": "cooltools_rearrange",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_rearrange",
-    "_argv": [
-      "cooltools",
-      "rearrange",
-      "x",
-      "x"
-    ],
-    "_args": {
-      "in_path": "x",
-      "out_path": "x"
-    },
-    "_return_code": 1
-  },
-  {
-    "name": "cooltools_saddle",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: cooltools saddle [OPTIONS] COOL_PATH TRACK_PATH EXPECTED_PATH\nTry 'cooltools saddle --help' for help.\n\nError: Inv))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: cooltools saddle [OPTIONS] COOL_PATH TRACK_PATH EXPECTED_PATH\nTry 'cooltools saddle --help' for help.\n\nError: Inv))",
-    "_function": "cooltools_saddle",
-    "_argv": [
-      "cooltools",
-      "saddle",
-      "x",
-      "x",
-      "x",
-      "--out-prefix",
-      "x"
-    ],
-    "_args": {
-      "out_prefix": "x",
-      "cool_path": "x",
-      "track_path": "x",
-      "expected_path": "x"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "cooltools_virtual4c",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_8haqd9sl/venv/bin/cooltools\", line 6, in <module>\n    sys.exit(c))",
-    "_function": "cooltools_virtual4c",
-    "_argv": [
-      "cooltools",
-      "virtual4c",
-      "x",
-      "x",
-      "--out-prefix",
-      "x"
-    ],
-    "_args": {
-      "out_prefix": "x",
-      "cool_path": "x",
-      "viewpoint": "x"
-    },
-    "_return_code": 1
-  },
-  {
-    "name": "openfold-3_align_msa_server",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: run_openfold align-msa-server [OPTIONS]\nTry 'run_openfold align-msa-server --help' for help.\n\nError: Invalid valu))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: run_openfold align-msa-server [OPTIONS]\nTry 'run_openfold align-msa-server --help' for help.\n\nError: Invalid valu))",
-    "_function": "openfold-3_align_msa_server",
-    "_argv": [
-      "run_openfold",
-      "align-msa-server",
-      "--query-json",
-      "x",
-      "--output-dir",
-      "/tmp/out"
-    ],
-    "_args": {
-      "query_json": "x",
-      "output_dir": "/tmp/out"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "openfold-3_predict",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: run_openfold predict [OPTIONS]\nTry 'run_openfold predict --help' for help.\n\nError: Invalid value for '--query-jso))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: run_openfold predict [OPTIONS]\nTry 'run_openfold predict --help' for help.\n\nError: Invalid value for '--query-jso))",
-    "_function": "openfold-3_predict",
-    "_argv": [
-      "run_openfold",
-      "predict",
-      "--query-json",
-      "x"
-    ],
-    "_args": {
-      "query_json": "x"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "openfold-3_train",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: run_openfold train [OPTIONS]\nTry 'run_openfold train --help' for help.\n\nError: Invalid value for '--runner-yaml' ))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: run_openfold train [OPTIONS]\nTry 'run_openfold train --help' for help.\n\nError: Invalid value for '--runner-yaml' ))",
-    "_function": "openfold-3_train",
-    "_argv": [
-      "run_openfold",
-      "train",
-      "--runner-yaml",
-      "x"
-    ],
-    "_args": {
-      "runner_yaml": "x"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "ccdutils",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: usage: process_components_cif [-h] [-i INPUT_CIF] [-g GENERAL_TEMPLATES]\n                              [-p PUBCHEM_TEMPL))",
-    "output": "FAIL (output: exit 2 (stderr: usage: process_components_cif [-h] [-i INPUT_CIF] [-g GENERAL_TEMPLATES]\n                              [-p PUBCHEM_TEMPL))",
-    "_argv": [
-      "process_components_cif",
-      "--output-dir",
-      "/tmp/out"
-    ],
-    "_args": {
-      "output_dir": "/tmp/out"
+      "contigs": "x",
+      "taxa": "x",
+      "genes": "x",
+      "coverages": "x",
+      "assembly_summary": "x",
+      "output": "/tmp/out.tsv"
     },
     "_functions": [
-      "ccdutils"
+      "condiga"
     ],
-    "_return_code": 2
-  },
-  {
-    "name": "rellig_cofactors",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: pdberellig cofactors [OPTIONS]\nTry 'pdberellig cofactors --help' for help.\n\nError: Invalid value for '--ligand-ty))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: pdberellig cofactors [OPTIONS]\nTry 'pdberellig cofactors --help' for help.\n\nError: Invalid value for '--ligand-ty))",
-    "_function": "rellig_cofactors",
-    "_argv": [
-      "pdberellig",
-      "cofactors",
-      "--cif",
-      "x",
-      "--ligand-type",
-      "x",
-      "--out-dir",
-      "x"
-    ],
-    "_args": {
-      "cif": "x",
-      "ligand_type": "x",
-      "out_dir": "x"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "rellig_drugs",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: pdberellig drugs [OPTIONS]\nTry 'pdberellig drugs --help' for help.\n\nError: Invalid value for '--ligand-type': 'x'))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: pdberellig drugs [OPTIONS]\nTry 'pdberellig drugs --help' for help.\n\nError: Invalid value for '--ligand-type': 'x'))",
-    "_function": "rellig_drugs",
-    "_argv": [
-      "pdberellig",
-      "drugs",
-      "--cif",
-      "x",
-      "--out-dir",
-      "x",
-      "--ligand-type",
-      "x"
-    ],
-    "_args": {
-      "cif": "x",
-      "out_dir": "x",
-      "ligand_type": "x"
-    },
-    "_return_code": 2
-  },
-  {
-    "name": "rellig_reactants",
-    "schema": "PASS",
-    "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: pdberellig reactants [OPTIONS]\nTry 'pdberellig reactants --help' for help.\n\nError: Invalid value for '--ligand-ty))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: pdberellig reactants [OPTIONS]\nTry 'pdberellig reactants --help' for help.\n\nError: Invalid value for '--ligand-ty))",
-    "_function": "rellig_reactants",
-    "_argv": [
-      "pdberellig",
-      "reactants",
-      "--cif",
-      "x",
-      "--ligand-type",
-      "x",
-      "--out-dir",
-      "x"
-    ],
-    "_args": {
-      "cif": "x",
-      "ligand_type": "x",
-      "out_dir": "x"
-    },
     "_return_code": 2
   }
 ]

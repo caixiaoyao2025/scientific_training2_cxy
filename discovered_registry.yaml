@@ -1,1608 +1,560 @@
 tools:
-- name: cooltools
+- name: metaphlan
   type: cli
-  command: cooltools {{subcommand}}
-  arg_style: subcommand
+  command: metaphlan {{input_file}} --input_type {{input_type}} --force {{force}}
+    --db_dir {{db_dir}} --index {{index}} --mapout {{mapout}} --min_mapq_val {{min_mapq_val}}
+    --no_map {{no_map}} --tmp_dir {{tmp_dir}} --bt2_ps {{bt2_ps}} --bowtie2_exe {{bowtie2_exe}}
+    --bowtie2_build {{bowtie2_build}} --tax_lev {{tax_lev}} --min_alignment_len {{min_alignment_len}}
+    --ignore_eukaryotes {{ignore_eukaryotes}} --ignore_bacteria {{ignore_bacteria}}
+    --ignore_archaea {{ignore_archaea}} --ignore_ksgbs {{ignore_ksgbs}} --ignore_usgbs
+    {{ignore_usgbs}} --stat_q {{stat_q}} --perc_nonzero {{perc_nonzero}}
+  arg_style: positional
   callable_via: ''
   readme_examples: []
   readme_usage: ''
-  description: '[Auto-discovered] The tools for your .cool''s (⭐168, Jupyter Notebook)
-    (license: LICENSE)'
+  description: '[Auto-discovered] MetaPhlAn is a computational tool for profiling
+    the composition of microbial communities from metagenomic shotgun sequencing data
+    (⭐421, Python) (license: license.txt)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
-  inputs: {}
-  resources: {}
+  inputs:
+    input_type:
+      type: string
+      description: set whether the input is the FASTA file of metagenomic reads or  the
+        SAM file of the mapping of the reads against the MetaPhlAn db.
+      required: true
+      source: help_parsed
+      flag: --input_type
+      takes_value: true
+    force:
+      type: boolean
+      description: Force profiling of the input file by removing the mapout file
+      required: false
+      source: help_parsed
+      flag: --force
+      takes_value: false
+    mapout:
+      type: path
+      description: The file for saving the mapping output (old --bowtie2out option)
+      required: false
+      source: help_parsed
+      flag: --mapout
+      takes_value: true
+    min_mapq_val:
+      type: string
+      description: Minimum mapping quality value (MAPQ)
+      required: false
+      source: help_parsed
+      flag: --min_mapq_val
+      takes_value: true
+    no_map:
+      type: boolean
+      description: Avoid storing the --mapout map file
+      required: false
+      source: help_parsed
+      flag: --no_map
+      takes_value: false
+    tmp_dir:
+      type: string
+      description: The folder used to store temporary files
+      required: false
+      source: help_parsed
+      flag: --tmp_dir
+      takes_value: false
+    bt2_ps:
+      type: path
+      description: Presets options for BowTie2 (applied only when a FASTA file is
+        provided)
+      required: false
+      source: help_parsed
+      flag: --bt2_ps
+      takes_value: true
+    bowtie2_exe:
+      type: path
+      description: Full path and name of the BowTie2 executable. This option allowsMetaPhlAn
+        to reach the executable even when it is not in the system PATH or the system
+        PATH is unreachable
+      required: false
+      source: help_parsed
+      flag: --bowtie2_exe
+      takes_value: true
+    bowtie2_build:
+      type: path
+      description: Full path to the bowtie2-build command to use, deafult assumes
+        that 'bowtie2-build is present in the system path
+      required: false
+      source: help_parsed
+      flag: --bowtie2_build
+      takes_value: true
+    tax_lev:
+      type: int
+      description: CLI flag --tax_lev
+      required: false
+      source: help_parsed
+      flag: --tax_lev
+      takes_value: true
+    min_alignment_len:
+      type: string
+      description: The sam records for aligned reads with the longest subalignment  length
+        smaller than this threshold will be discarded.
+      required: false
+      source: help_parsed
+      flag: --min_alignment_len
+      takes_value: false
+    ignore_eukaryotes:
+      type: boolean
+      description: Do not profile eukaryotic organisms
+      required: false
+      source: help_parsed
+      flag: --ignore_eukaryotes
+      takes_value: false
+    ignore_bacteria:
+      type: boolean
+      description: Do not profile bacterial organisms
+      required: false
+      source: help_parsed
+      flag: --ignore_bacteria
+      takes_value: false
+    ignore_archaea:
+      type: boolean
+      description: Do not profile archeal organisms
+      required: false
+      source: help_parsed
+      flag: --ignore_archaea
+      takes_value: false
+    ignore_ksgbs:
+      type: boolean
+      description: Do not profile known SGBs (together with --sgb option)
+      required: false
+      source: help_parsed
+      flag: --ignore_ksgbs
+      takes_value: false
+    ignore_usgbs:
+      type: boolean
+      description: Do not profile unknown SGBs (together with --sgb option)
+      required: false
+      source: help_parsed
+      flag: --ignore_usgbs
+      takes_value: false
+    stat_q:
+      type: boolean
+      description: Quantile value for the robust average
+      required: false
+      source: help_parsed
+      flag: --stat_q
+      takes_value: false
+    perc_nonzero:
+      type: boolean
+      description: Percentage of markers with a non zero relative abundance for misidentify
+        a species
+      required: false
+      source: help_parsed
+      flag: --perc_nonzero
+      takes_value: false
+    input_file:
+      type: path
+      description: 'the input file can be:'
+      required: true
+      source: help_parsed
+      positional: true
+      position: 0
+  resources:
+    db_dir:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: Folder containing the MetaPhlAn database (old --bowtie2db option).
+        Alternatively, you can specify the location by exporting the METAPHLAN_DB_DIR
+        variable in the shell.
+    index:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: Specify the id of the database version to use. If "latest", MetaPhlAn
+        will get the latest version.  If an index name is provided, MetaPhlAn will
+        try to use it, if available, and skip the online check.  If the database files
+        are not found on the local MetaPhlAn installation they  will be automatically
+        downloaded
   outputs:
     stdout:
       type: text
       description: Tool result printed to stdout.
       source: inferred
   execution: null
-  subcommands:
-  - coverage
-  - dots
-  - eigs-cis
-  - eigs-trans
-  - expected-cis
-  - expected-trans
-  - genome
-  - insulation
-  - pileup
-  - random-sample
-  - rearrange
-  - saddle
-  - virtual4c
-  subcommand_details:
-    coverage:
-      params:
-      - name: --output
-        type: path
-        description: Specify output file name to store the coverage in a  tsv format.
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --ignore-diags
-        type: integer
-        description: The number of diagonals to ignore. By default,  equals the number
-          of diagonals ignored during IC  balancing.
-        required: false
-        takes_value: true
-      - name: --store
-        type: boolean
-        description: Append columns with coverage (cov_cis_raw,  cov_tot_raw), or
-          (cov_cis_clr_weight_name,  cov_tot_clr_weight_name) if calculating balanced  coverage,
-          to the cooler bin table. If  clr_weight_name=None, also stores total cis
-          counts  in the cooler info
-        required: false
-        takes_value: false
-      - name: --chunksize
-        type: integer
-        description: Split the contact matrix pixel records into equally  sized chunks
-          to save memory and/or parallelize.  Default is 10^7
-        required: false
-        takes_value: true
-      - name: --bigwig
-        type: boolean
-        description: Also save output as bigWig files for cis and total  coverage
-          with the names <output>.<cis/tot>.bw
-        required: false
-        takes_value: false
-      - name: --clr_weight_name
-        type: string
-        description: Name of the weight column. Specify to calculate  coverage of
-          balanced cooler.
-        required: false
-        takes_value: true
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      usage: cooltools coverage [OPTIONS] COOL_PATH
-      outputs:
-        output:
-          type: file
-          description: Specify output file name to store the coverage in a  tsv format.
-          input: output
-          source: help_parsed
-    dots:
-      params:
-      - name: --view
-        type: path
-        description: Path to a BED file with the definition of  viewframe (regions)
-          used in the calculation  of EXPECTED_PATH. Dot-calling will be  performed
-          for these regions independently  e.g. chromosome arms. Note that '--regions'  is
-          the deprecated name of the option. Use '--  view' instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --clr-weight-name
-        type: string
-        description: Use cooler balancing weight with this name.
-        required: false
-        takes_value: true
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work  between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --max-loci-separation
-        type: integer
-        description: Limit loci separation for dot-calling, i.e.,  do not call dots
-          for loci that are further  than max_loci_separation basepair apart.  2-20MB
-          is reasonable and would capture most  of CTCF-dots.
-        required: false
-        takes_value: true
-      - name: --max-nans-tolerated
-        type: integer
-        description: Maximum number of NaNs tolerated in a  footprint of every used
-          filter. Must be  controlled with caution, as large max-nans-  tolerated,
-          might lead to pixels scored in the  padding area of the tiles to "penetrate"
-          to  the list of scored pixels for the statistical  testing. [max-nans-tolerated
-          <= 2*w ]
-        required: false
-        takes_value: true
-      - name: --tile-size
-        type: integer
-        description: Tile size for the Hi-C heatmap tiling.  Typically on order of
-          several mega-bases, and  <= max_loci_separation.
-        required: false
-        takes_value: true
-      - name: --num-lambda-bins
-        type: integer
-        description: Number of log-spaced bins to divide your  adjusted expected between.
-          Same as  HiCCUPS_W1_MAX_INDX (40) in the original  HiCCUPS.
-        required: false
-        takes_value: true
-      - name: --fdr
-        type: float
-        description: False discovery rate (FDR) to control in the  multiple hypothesis
-          testing BH-FDR procedure.
-        required: false
-        takes_value: true
-      - name: --clustering-radius
-        type: integer
-        description: Radius for clustering dots that have been  called too close to
-          each other.Typically on  order of 40 kilo-bases, and >= binsize.
-        required: false
-        takes_value: true
-      - name: --verbose
-        type: boolean
-        description: Enable verbose output
-        required: false
-        takes_value: false
-        aliases:
-        - -v
-      - name: --output
-        type: string
-        description: Specify output file name to store called dots  in a BEDPE-like
-          format
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - -o
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      - name: expected_path
-        type: path
-        description: Positional argument EXPECTED_PATH
-        required: true
-        positional: true
-        position: 1
-      usage: cooltools dots [OPTIONS] COOL_PATH EXPECTED_PATH
-      outputs:
-        output:
-          type: file
-          description: Specify output file name to store called dots  in a BEDPE-like
-            format
-          input: output
-          source: help_parsed
-    eigs-cis:
-      params:
-      - name: --phasing-track
-        type: path
-        description: Phasing track for orienting and ranking  eigenvectors,provided
-          as  /path/to/track::track_value_column_name.
-        required: false
-        takes_value: true
-      - name: --view
-        type: path
-        description: Path to a BED file which defines which regions  of the chromosomes
-          to use (only implemented for  cis contacts). Note that '--regions' is the  deprecated
-          name of the option. Use '--view'  instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --n-eigs
-        type: integer
-        description: Number of eigenvectors to compute.
-        required: false
-        takes_value: true
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name. Using raw  unbalanced data
-          is not currently supported for  eigenvectors.
-        required: false
-        takes_value: true
-      - name: --ignore-diags
-        type: integer
-        description: The number of diagonals to ignore. By default,  equals the number
-          of diagonals ignored during IC  balancing.
-        required: false
-        takes_value: true
-      - name: --verbose
-        type: boolean
-        description: Enable verbose output
-        required: false
-        takes_value: false
-        aliases:
-        - -v
-      - name: --out-prefix
-        type: string
-        description: Save compartment track as a BED-like file.  Eigenvectors and
-          corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
-          and  out_prefix.contact_type.lam.txt
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - -o
-      - name: --bigwig
-        type: boolean
-        description: Also save compartment track (E1) as a bigWig  file with the name
-          out_prefix.contact_type.bw
-        required: false
-        takes_value: false
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      usage: cooltools eigs-cis [OPTIONS] COOL_PATH
-      outputs:
-        out_prefix:
-          type: file
-          description: Save compartment track as a BED-like file.  Eigenvectors and
-            corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
-            and  out_prefix.contact_type.lam.txt
-          input: out_prefix
-          source: help_parsed
-    eigs-trans:
-      params:
-      - name: --phasing-track
-        type: path
-        description: Phasing track for orienting and ranking  eigenvectors,provided
-          as  /path/to/track::track_value_column_name.
-        required: false
-        takes_value: true
-      - name: --view
-        type: path
-        description: Path to a BED file which defines which regions  of the chromosomes
-          to use (only implemented for  cis contacts).  Note that '--regions' is the  deprecated
-          name of the option. Use '--view'  instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --n-eigs
-        type: integer
-        description: Number of eigenvectors to compute.
-        required: false
-        takes_value: true
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name. Using raw  unbalanced data
-          is not supported for saddles.
-        required: false
-        takes_value: true
-      - name: --verbose
-        type: boolean
-        description: Enable verbose output
-        required: false
-        takes_value: false
-        aliases:
-        - -v
-      - name: --out-prefix
-        type: string
-        description: Save compartment track as a BED-like file.  Eigenvectors and
-          corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
-          and  out_prefix.contact_type.lam.txt
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - -o
-      - name: --bigwig
-        type: boolean
-        description: Also save compartment track (E1) as a bigWig  file with the name
-          out_prefix.contact_type.bw
-        required: false
-        takes_value: false
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      usage: cooltools eigs-trans [OPTIONS] COOL_PATH
-      outputs:
-        out_prefix:
-          type: file
-          description: Save compartment track as a BED-like file.  Eigenvectors and
-            corresponding eigenvalues are  stored in out_prefix.contact_type.vecs.tsv
-            and  out_prefix.contact_type.lam.txt
-          input: out_prefix
-          source: help_parsed
-    expected-cis:
-      params:
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work  between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --chunksize
-        type: integer
-        description: Control the number of pixels handled by each worker  process
-          at a time.
-        required: false
-        takes_value: true
-        aliases:
-        - -c
-      - name: --output
-        type: path
-        description: Specify output file name to store the expected in a  tsv format.
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --view
-        type: path
-        description: Path to a 3 or 4-column BED file with genomic  regions to calculated
-          cis-expected on. When region  names are not provided (no 4th column), UCSC-style  region
-          names are generated. Cis-expected is  calculated for all chromosomes, when
-          this is not  specified. Note that '--regions' is the deprecated  name of
-          the option. Use '--view' instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --smooth
-        type: boolean
-        description: If set, cis-expected is smoothed and result stored  in an additional
-          column e.g. balanced.avg.smoothed
-        required: false
-        takes_value: false
-      - name: --aggregate-smoothed
-        type: boolean
-        description: If set, cis-expected is averaged over all regions  and then smoothed.
-          Result is stored in an  additional column, e.g. balanced.avg.smoothed.agg.  Ignored
-          without smoothing
-        required: false
-        takes_value: false
-      - name: --smooth-sigma
-        type: float
-        description: Control smoothing with the standard deviation of  the smoothing
-          Gaussian kernel, ignored without  smoothing.
-        required: false
-        takes_value: true
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name stored in  cooler.Provide
-          empty argument to calculate cis-  expected on raw data
-        required: false
-        takes_value: true
-      - name: --ignore-diags
-        type: integer
-        description: Number of diagonals to neglect for cis contact type
-        required: false
-        takes_value: true
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      usage: cooltools expected-cis [OPTIONS] COOL_PATH
-      outputs:
-        output:
-          type: file
-          description: Specify output file name to store the expected in a  tsv format.
-          input: output
-          source: help_parsed
-    expected-trans:
-      params:
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work  between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --chunksize
-        type: integer
-        description: Control the number of pixels handled by each worker  process
-          at a time.
-        required: false
-        takes_value: true
-        aliases:
-        - -c
-      - name: --output
-        type: path
-        description: Specify output file name to store the expected in a  tsv format.
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --view
-        type: path
-        description: Path to a 3 or 4-column BED file with genomic  regions. Trans-expected
-          is calculated on all  pairwise combinations of these regions. When region  names
-          are not provided (no 4th column), UCSC-style  region names are generated.
-          Trans-expected is  calculated  for all inter-chromosomal pairs, when  view
-          is not specified. Note that '--regions' is the  deprecated name of the option.
-          Use '--view'  instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name stored in  cooler.Provide
-          empty argument to calculate cis-  expected on raw data
-        required: false
-        takes_value: true
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      usage: cooltools expected-trans [OPTIONS] COOL_PATH
-      outputs:
-        output:
-          type: file
-          description: Specify output file name to store the expected in a  tsv format.
-          input: output
-          source: help_parsed
-    genome:
-      params: []
-      usage: cooltools genome [OPTIONS] COMMAND [ARGS]...
-      outputs:
-        stdout:
-          type: text
-          description: Tool result printed to stdout.
-          source: inferred
-    insulation:
-      params:
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work  between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --output
-        type: path
-        description: Specify output file name to store the  insulation in a tsv format.
-        required: false
-        takes_value: true
-        aliases:
-        - -o
-      - name: --view
-        type: path
-        description: Path to a BED file containing genomic regions  for which insulation
-          scores will be  calculated. Region names can be provided in a  4th column
-          and should match regions and their  names in expected. Note that '--regions'
-          is  the deprecated name of the option. Use '--  view' instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --ignore-diags
-        type: integer
-        description: The number of diagonals to ignore. By  default, equals the number
-          of diagonals  ignored during IC balancing.
-        required: false
-        takes_value: true
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name. Provide  empty argument
-          to calculate insulation on raw  data (no masking bad pixels).
-        required: false
-        takes_value: true
-      - name: --min-frac-valid-pixels
-        type: float
-        description: The minimal fraction of valid pixels in a  sliding diamond. Used
-          to mask bins during  boundary detection.
-        required: false
-        takes_value: true
-      - name: --min-dist-bad-bin
-        type: integer
-        description: The minimal allowed distance to a bad bin.  Use to mask bins
-          after insulation calculation  and during boundary detection.
-        required: false
-        takes_value: true
-      - name: --threshold
-        type: float
-        description: Rule used to threshold the histogram of  boundary strengths to
-          exclude weakboundaries.  'Li' or 'Otsu' use corresponding methods from  skimage.thresholding.Providing
-          a float value  will filter by a fixed threshold
-        required: false
-        takes_value: true
-      - name: --window-pixels
-        type: boolean
-        description: If set then the window sizes are provided in  units of pixels.
-        required: false
-        takes_value: false
-      - name: --append-raw-scores
-        type: boolean
-        description: Append columns with raw scores (sum_counts,  sum_balanced, n_pixels)
-          to the output table.
-        required: false
-        takes_value: false
-      - name: --chunksize
-        type: integer
-        description: CLI flag --chunksize
-        required: false
-        takes_value: true
-      - name: --verbose
-        type: boolean
-        description: Report real-time progress.
-        required: false
-        takes_value: false
-      - name: --bigwig
-        type: boolean
-        description: Also save insulation tracks as a bigWig files  for different
-          window sizes with the names  output.<window-size>.bw
-        required: false
-        takes_value: false
-      - name: in_path
-        type: path
-        description: Positional argument IN_PATH
-        required: true
-        positional: true
-        position: 0
-      - name: window
-        type: string
-        description: Positional argument WINDOW
-        required: true
-        positional: true
-        position: 1
-      usage: cooltools insulation [OPTIONS] IN_PATH WINDOW
-      outputs:
-        output:
-          type: file
-          description: Specify output file name to store the  insulation in a tsv
-            format.
-          input: output
-          source: help_parsed
-    pileup:
-      params:
-      - name: --view
-        type: path
-        description: Path to a BED file which defines which  regions of the chromosomes
-          to use.  Required  if EXPECTED_PATH is provided Note that '--  regions'
-          is the deprecated name of the  option. Use '--view' instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --expected
-        type: path
-        description: Path to the expected table. If provided,  outputs OOE pileup.  if
-          not provided,  outputs regular pileup.
-        required: false
-        takes_value: true
-      - name: --flank
-        type: integer
-        description: Size of flanks.
-        required: false
-        takes_value: true
-      - name: --features-format
-        type: path
-        description: Input features format.
-        required: false
-        takes_value: true
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name.
-        required: false
-        takes_value: true
-      - name: --out
-        type: string
-        description: Save output pileup as NPZ/HDF5 file.
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - -o
-      - name: --out-format
-        type: string
-        description: Type of output.
-        required: false
-        takes_value: true
-      - name: --store-snips
-        type: boolean
-        description: Flag indicating whether snips should be  stored.
-        required: false
-        takes_value: false
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work  between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --ignore-diags
-        type: integer
-        description: The number of diagonals to ignore. By  default, equals the number
-          of diagonals  ignored during IC balancing.
-        required: false
-        takes_value: true
-      - name: --aggregate
-        type: string
-        description: Function for calculating aggregate signal.
-        required: false
-        takes_value: true
-      - name: --verbose
-        type: boolean
-        description: Enable verbose output
-        required: false
-        takes_value: false
-        aliases:
-        - -v
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      - name: features_path
-        type: path
-        description: Positional argument FEATURES_PATH
-        required: true
-        positional: true
-        position: 1
-      usage: cooltools pileup [OPTIONS] COOL_PATH FEATURES_PATH
-      outputs:
-        out:
-          type: file
-          description: Save output pileup as NPZ/HDF5 file.
-          input: out
-          source: help_parsed
-        out_format:
-          type: file
-          description: Type of output.
-          input: out_format
-          source: help_parsed
-    random-sample:
-      params:
-      - name: --count
-        type: integer
-        description: The target number of contacts in the sample. The  resulting sample
-          size will not match it precisely.  Mutually exclusive with --frac and --cis-count
-        required: false
-        takes_value: true
-        aliases:
-        - -c
-      - name: --cis-count
-        type: integer
-        description: The target number of cis contacts in the sample. The  resulting
-          sample size will not match it precisely.  Mutually exclusive with --count
-          and --frac
-        required: false
-        takes_value: true
-      - name: --frac
-        type: float
-        description: The target sample size as a fraction of contacts in the  original
-          dataset. Mutually exclusive with --count and
-        required: false
-        takes_value: true
-        aliases:
-        - -f
-      - name: --exact
-        type: boolean
-        description: If specified, use exact sampling that guarantees the  size of
-          the output sample. Otherwise, binomial sampling  will be used and the sample
-          size will be distributed  around the target value.
-        required: false
-        takes_value: false
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: --chunksize
-        type: integer
-        description: The number of pixels loaded and processed per step of  computation.
-        required: false
-        takes_value: true
-      - name: in_path
-        type: path
-        description: Positional argument IN_PATH
-        required: true
-        positional: true
-        position: 0
-      - name: out_path
-        type: path
-        description: Positional argument OUT_PATH
-        required: true
-        positional: true
-        position: 1
-      usage: cooltools random-sample [OPTIONS] IN_PATH OUT_PATH
-      outputs:
-        out_path:
-          type: file
-          description: Positional argument OUT_PATH
-          input: out_path
-          source: help_parsed
-    rearrange:
-      params:
-      - name: --view
-        type: path
-        description: Path to a BED-like file which defines which regions  of the chromosomes
-          to use and in what order. Using
-        required: false
-        takes_value: true
-      - name: --new-chrom-col
-        type: string
-        description: CLI flag --new-chrom-col
-        required: false
-        takes_value: true
-        aliases:
-        - --orientation-col
-      - name: --orientation-col
-        type: path
-        description: Columns name in the view with orientations of each  region (+
-          or -). If not providedand there is no  column named 'strand' in the view
-          file, assumes all  are forward oriented
-        required: false
-        takes_value: true
-      - name: --assembly
-        type: string
-        description: The name of the assembly for the new cooler. If  None, uses the
-          same as in the original cooler.
-        required: false
-        takes_value: true
-      - name: --chunksize
-        type: integer
-        description: The number of pixels loaded and processed per step  of computation.
-        required: false
-        takes_value: true
-      - name: --mode
-        type: path
-        description: '(w)rite or (a)ppend to the output file (default: w)'
-        required: false
-        takes_value: true
-      - name: in_path
-        type: path
-        description: Positional argument IN_PATH
-        required: true
-        positional: true
-        position: 0
-      - name: out_path
-        type: path
-        description: Positional argument OUT_PATH
-        required: true
-        positional: true
-        position: 1
-      usage: cooltools rearrange [OPTIONS] IN_PATH OUT_PATH
-      outputs:
-        out_path:
-          type: file
-          description: Positional argument OUT_PATH
-          input: out_path
-          source: help_parsed
-    saddle:
-      params:
-      - name: --contact-type
-        type: string
-        description: Type of the contacts to aggregate
-        required: false
-        takes_value: true
-        aliases:
-        - -t
-      - name: --min-dist
-        type: integer
-        description: Minimal distance between bins to consider,  bp. If negative,
-          removesthe first two  diagonals of the data. Ignored with
-        required: false
-        takes_value: true
-      - name: --max-dist
-        type: integer
-        description: Maximal distance between bins to consider,  bp. Ignored, if negative.
-          Ignored with
-        required: false
-        takes_value: true
-      - name: --n-bins
-        type: integer
-        description: Number of bins for digitizing track values.
-        required: false
-        takes_value: true
-        aliases:
-        - -n
-      - name: --vrange
-        type: float
-        description: Low and high values used for binning genome-  wide track values,
-          e.g. if `range`=(-0.05,  0.05), `n-bins` equidistant bins would be  generated.
-          Use to prevent extreme track  values from exploding the bin range and to  ensure
-          consistent bins across several runs  of `compute_saddle` command using different  track
-          files.
-        required: false
-        takes_value: true
-      - name: --qrange
-        type: float
-        description: Low and high values used for quantile bins  of genome-wide track
-          values,e.g. if  `qrange`=(0.02, 0.98) the lower bin would  start at the
-          2nd percentile and the upper  bin would end at the 98th percentile of the  genome-wide
-          signal. Use to prevent the  extreme track values from exploding the bin  range.
-        required: false
-        takes_value: true
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name.
-        required: false
-        takes_value: true
-      - name: --strength
-        type: string
-        description: Compute and save compartment 'saddle  strength' profile
-        required: false
-        takes_value: true
-        aliases:
-        - --no-strength
-      - name: --view
-        type: path
-        description: Path to a BED file containing genomic  regions for which saddleplot
-          will be  calculated. Region names can be provided in  a 4th column and should
-          match regions and  their names in expected. Note that '--  regions' is the
-          deprecated name of the  option. Use '--view' instead.
-        required: false
-        takes_value: true
-        aliases:
-        - --regions
-      - name: --out-prefix
-        type: string
-        description: Dump 'saddledata', 'binedges' and 'hist'  arrays in a numpy-specific
-          .npz container.  Use numpy.load to load these arrays into a  dict-like object.
-          The digitized signal  values are saved to a bedGraph-style TSV.
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - -o
-      - name: --fig
-        type: path
-        description: Generate a figure and save to a file of the  specified format.
-          If not specified - no  image is generated. Repeat for multiple  output formats.
-        required: false
-        takes_value: true
-      - name: --scale
-        type: string
-        description: Value scale for the heatmap
-        required: false
-        takes_value: true
-      - name: --cmap
-        type: string
-        description: Name of matplotlib colormap
-        required: false
-        takes_value: true
-      - name: --vmin
-        type: float
-        description: 'Low value of the saddleplot colorbar. Note:  value in original
-          units irrespective of used  scale, and therefore should be positive for  both
-          vmin and vmax.'
-        required: false
-        takes_value: true
-      - name: --vmax
-        type: float
-        description: High value of the saddleplot colorbar
-        required: false
-        takes_value: true
-      - name: --hist-color
-        type: string
-        description: Face color of histogram bar chart
-        required: false
-        takes_value: true
-      - name: --verbose
-        type: boolean
-        description: Enable verbose output
-        required: false
-        takes_value: false
-        aliases:
-        - -v
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      - name: track_path
-        type: path
-        description: Positional argument TRACK_PATH
-        required: true
-        positional: true
-        position: 1
-      - name: expected_path
-        type: path
-        description: Positional argument EXPECTED_PATH
-        required: true
-        positional: true
-        position: 2
-      usage: cooltools saddle [OPTIONS] COOL_PATH TRACK_PATH EXPECTED_PATH
-      outputs:
-        out_prefix:
-          type: file
-          description: Dump 'saddledata', 'binedges' and 'hist'  arrays in a numpy-specific
-            .npz container.  Use numpy.load to load these arrays into a  dict-like
-            object. The digitized signal  values are saved to a bedGraph-style TSV.
-          input: out_prefix
-          source: help_parsed
-    virtual4c:
-      params:
-      - name: --clr-weight-name
-        type: string
-        description: Use balancing weight with this name. Provide empty  argument
-          to calculate insulation on raw data (no  masking bad pixels).
-        required: false
-        takes_value: true
-      - name: --out-prefix
-        type: string
-        description: Save virtual 4C track as a BED-like file. Contact  frequency
-          is stored in out_prefix.v4C.tsv
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - -o
-      - name: --bigwig
-        type: boolean
-        description: Also save virtual 4C track as a bigWig file with the  name out_prefix.v4C.bw
-        required: false
-        takes_value: false
-      - name: --nproc
-        type: integer
-        description: Number of processes to split the work between.
-        required: false
-        takes_value: true
-        aliases:
-        - -p
-      - name: cool_path
-        type: path
-        description: Positional argument COOL_PATH
-        required: true
-        positional: true
-        position: 0
-      - name: viewpoint
-        type: string
-        description: Positional argument VIEWPOINT
-        required: true
-        positional: true
-        position: 1
-      usage: cooltools virtual4c [OPTIONS] COOL_PATH VIEWPOINT
-      outputs:
-        out_prefix:
-          type: file
-          description: Save virtual 4C track as a BED-like file. Contact  frequency
-            is stored in out_prefix.v4C.tsv
-          input: out_prefix
-          source: help_parsed
-  subcommand_discovery_complete: true
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
   install:
     method: pip_pkg
-    command: pip install https://github.com/open2c/cooltools
+    command: pip install https://github.com/biobakery/MetaPhlAn
     system_commands: []
     python_packages:
-    - asciitree==0.3.3
-    - bioframe==0.8.0
+    - biom_format==2.1.17
+    - biopython==1.88
     - certifi==2026.7.22
     - charset-normalizer==3.5.1
     - click==8.4.2
     - contourpy==1.3.3
-    - cooler==0.10.4
-    - cooltools @ file:///tmp/execute_8haqd9sl/cooltools
     - cycler==0.12.1
-    - Cython==3.2.9
-    - cytoolz==1.1.0
-    - dill==0.4.1
+    - DendroPy==5.0.10
     - fonttools==4.63.0
     - h5py==3.16.0
     - idna==3.18
-    - ImageIO==2.37.4
-    - joblib==1.5.3
     - kiwisolver==1.5.0
-    - lazy-loader==0.5
-    - llvmlite==0.49.0
-    declared_packages:
-    - bioframe
-    - click
-    - cooler
-    - cython
-    - docutils
-    - ipython
-    - joblib
-    - matplotlib
-    - multiprocess
-    - nbsphinx
-    - numba
-    - numpy
-    - pandas
-    - pygments
-    - pytest
-    - pytest-cov
-    - pytest-flake8
-    - recommonmark
-    - scikit-image
-    - scikit-learn
-    - scipy
-    - sphinx
-    - sphinx-click
-    - sphinx-rtd-theme
-    missing_deps:
-    - api
-    - astropy
-    - checks
-    - cli
-    - common
-    - cooltools
-    - coverage
-    - dask
-    - h5py
-    - importlib
-    - ipdb
-    - lib
-    - operator
-    - pdb
-    - pybigtools
-    - requests
-    - sandbox
-    - setuptools
-    - skimage
-    - sklearn
-    - toolz
-    - unittest
-    - util
-    venv_path: /tmp/execute_8haqd9sl/venv
-  _discovery_metadata:
-    github: https://github.com/open2c/cooltools
-    stars: 168
-    language: Jupyter Notebook
-    tags:
-    - cooltools
-    - software
-    - genome
-    quality_score: 55
-    paper_doi: 10.1186/s13059-026-03938-x
-    paper_title: Harmonizing single-cell 3D genome data with STARK and scNucleome.
-    install_method: pip_pkg
-    install_url: pip install https://github.com/open2c/cooltools
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: cooltools/__main__.py; deps: pyproject.toml,
-      requirements.txt lang=Python license); command not installed'
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_entry_scripts:
-    - cooltools/__main__.py
-    verified_checked_at: '2026-08-17T09:28:00.122822'
-    dependencies:
-      system_commands: []
-      readme_hint: ''
-      container_files: []
-      install_method: pip_pkg
-    exec_status: passed
-    exec_reason: '`/tmp/execute_8haqd9sl/venv/bin/cooltools --help` -> exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "e diamond insulation scores and call...\n  pileup        \
-      \  Perform retrieval of the snippets from .cool file.\n  random-sample   Pick\
-      \ a random sample of contacts from a Hi-C map.\n  rearrange       Rearrange\
-      \ data from a cooler according to a new genomic...\n  saddle          Calculate\
-      \ saddle statistics and generate saddle plots...\n  virtual4c       Generate\
-      \ virtual 4C profile from a contact map by...\n"
-    exec_params_schema:
-    - name: --verbose
-      type: boolean
-      description: Verbose logging
-      required: false
-      takes_value: false
-      aliases:
-      - -v
-    - name: --debug
-      type: boolean
-      description: Post mortem debugging
-      required: false
-      takes_value: false
-      aliases:
-      - -d
-    - name: --version
-      type: boolean
-      description: Show the version and exit.
-      required: false
-      takes_value: false
-      aliases:
-      - -V
-    exec_positional_args: []
-    exec_installed_versions:
-    - asciitree==0.3.3
-    - bioframe==0.8.0
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cooler==0.10.4
-    - cooltools @ file:///tmp/execute_8haqd9sl/cooltools
-    - cycler==0.12.1
-    - Cython==3.2.9
-    - cytoolz==1.1.0
-    - dill==0.4.1
-    - fonttools==4.63.0
-    - h5py==3.16.0
-    - idna==3.18
-    - ImageIO==2.37.4
-    - joblib==1.5.3
-    - kiwisolver==1.5.0
-    - lazy-loader==0.5
-    - llvmlite==0.49.0
     - matplotlib==3.11.1
-    - multiprocess==0.70.19
-    - narwhals==2.24.0
-    - networkx==3.6.1
-    - numba==0.67.0
+    - metaphlan @ file:///tmp/execute_u6cqxxzu/MetaPhlAn
     - numpy==2.4.6
     - packaging==26.3
     - pandas==3.0.5
+    - PhyloPhlAn==3.2.1
     - pillow==12.3.0
-    - pyfaidx==0.9.0.4
     - pyparsing==3.3.2
-    - python-dateutil==2.9.0.post0
-    - PyYAML==6.0.3
-    - requests==2.34.2
-    - scikit-image==0.26.0
-    - scikit-learn==1.9.0
-    - scipy==1.17.1
-    - simplejson==4.1.1
-    - six==1.17.0
-    - threadpoolctl==3.6.0
-    - tifffile==2026.3.3
-    - toolz==1.1.0
-    - urllib3==2.7.0
-    exec_executable: cooltools
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: subcommand
-    pending_reason: ''
-- name: openfold-3
-  type: cli
-  command: run_openfold {{subcommand}}
-  arg_style: subcommand
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] A fully open source biomolecular structure prediction
-    model based on AlphaFold3 (⭐820, Python) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs: {}
-  resources: {}
-  outputs:
-    stdout:
-      type: text
-      description: Tool result printed to stdout.
-      source: inferred
-  execution: null
-  subcommands:
-  - align-msa-server
-  - predict
-  - train
-  subcommand_details:
-    align-msa-server:
-      params:
-      - name: --query-json
-        type: string
-        description: Json containing the queries for prediction.
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - --query_json
-      - name: --output-dir
-        type: string
-        description: Output directory for writing alignments
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - --output_dir
-      - name: --msa-computation-settings-yaml
-        type: path
-        description: Yaml file to customize Colabfold MSA  settings, see MsaComputationSettings
-          for  options.
-        required: false
-        takes_value: true
-        aliases:
-        - --msa_computation_settings_yaml
-      usage: run_openfold align-msa-server [OPTIONS]
-      outputs:
-        output_dir:
-          type: directory
-          description: Output directory for writing alignments
-          input: output_dir
-          source: help_parsed
-    predict:
-      params:
-      - name: --query-json
-        type: string
-        description: Json containing the queries for prediction.
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - --query_json
-      - name: --inference-ckpt-path
-        type: path
-        description: Path for model checkpoint to be used for  inference. If not specified,
-          will attempt to  find or download parameters to  $OPENFOLD_CACHE
-        required: false
-        takes_value: true
-        aliases:
-        - --inference_ckpt_path
-      - name: --inference-ckpt-name
-        type: path
-        description: Name of the checkpoint to be used for  inference. Only used if  `inference_ckpt_path`
-          is not specified.
-        required: false
-        takes_value: true
-        aliases:
-        - --inference_ckpt_name
-      - name: --num-diffusion-samples
-        type: integer
-        description: Number of diffusion samples to generate for  each query.
-        required: false
-        takes_value: true
-        aliases:
-        - --num_diffusion_samples
-      - name: --num-model-seeds
-        type: integer
-        description: Number of model seeds to use for each query.
-        required: false
-        takes_value: true
-        aliases:
-        - --num_model_seeds
-      - name: --runner-yaml
-        type: path
-        description: Yaml that specifies model and dataset  parameters, see examples/runner.yml
-        required: false
-        takes_value: true
-        aliases:
-        - --runner_yaml
-      - name: --use-msa-server
-        type: string
-        description: Use ColabFold MSA server to perform  alignments. If unset, the
-          value from the  runner yaml (or config default) is used.
-        required: false
-        takes_value: true
-        aliases:
-        - --use_msa_server
-      - name: --use-templates
-        type: string
-        description: Whether to use templates for prediction. If  unset, the value
-          from the runner yaml (or  config default) is used.
-        required: false
-        takes_value: true
-        aliases:
-        - --use_templates
-      - name: --output-dir
-        type: path
-        description: Output directory for writing results
-        required: false
-        takes_value: true
-        aliases:
-        - --output_dir
-      usage: run_openfold predict [OPTIONS]
-      outputs:
-        output_dir:
-          type: directory
-          description: Output directory for writing results
-          input: output_dir
-          source: help_parsed
-    train:
-      params:
-      - name: --runner-yaml
-        type: string
-        description: Yaml that specifies model and dataset  parameters, see examples/training_new.yml
-        required: true
-        takes_value: true
-        choices:
-        - required
-        aliases:
-        - --runner_yaml
-      - name: --seed
-        type: integer
-        description: Initial seed for all processes
-        required: false
-        takes_value: true
-      - name: --data-seed
-        type: integer
-        description: Initial seed for data pipeline. Defaults to  seed if not specified.
-        required: false
-        takes_value: true
-        aliases:
-        - --data_seed
-      usage: run_openfold train [OPTIONS]
-      outputs:
-        stdout:
-          type: text
-          description: Tool result printed to stdout.
-          source: inferred
-  subcommand_discovery_complete: true
-  install:
-    method: pip_pkg
-    command: 'pip install openfold3  # source: https://github.com/aqlaboratory/openfold-3'
-    system_commands: []
-    python_packages:
-    - absl-py==2.5.0
-    - aiohappyeyeballs==2.7.1
-    - aiohttp==3.14.3
-    - aiosignal==1.4.0
-    - annotated-types==0.8.0
-    - attrs==26.1.0
-    - awscli==1.46.0
-    - awscrt==0.36.2
-    - biotite==1.6.0
-    - biotraj==1.2.2
-    - boto3==1.43.72
-    - botocore==1.43.72
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - click==8.4.2
-    - colorama==0.4.6
-    - cuda-bindings==13.3.1
-    - cuda-pathfinder==1.6.0
-    - cuda-toolkit==13.0.3.0
-    - docutils==0.19
     declared_packages: []
     missing_deps:
     - Bio
-    - awscrt
-    - biotite
-    - boto3
-    - botocore
-    - contextvars
-    - deepspeed
-    - func_timeout
-    - gemmi
-    - importlib
-    - lightning_fabric
-    - lightning_utilities
-    - ml_collections
+    - StringIO
+    - array
+    - biom
+    - consensus_markers
+    - database_controller
+    - dendropy
+    - external_exec
+    - matplotlib
     - numpy
-    - openfold3
+    - optparse
     - packaging
-    - pydantic
-    - pytorch_lightning
-    - rdkit
-    - resource
-    - torch
-    - torchmetrics
-    - tqdm
-    - triton
-    - wandb
-    - yaml
-    venv_path: /tmp/execute_f6e_opo7/venv
+    - pandas
+    - parallelisation
+    - phylophlan_controller
+    - pickletools
+    - pylab
+    - pyphlan
+    - pysam
+    - scipy
+    - scripts
+    - setuptools
+    - shlex
+    - stat
+    - util_fun
+    - utils
+    venv_path: /tmp/execute_u6cqxxzu/venv
   _discovery_metadata:
-    github: https://github.com/aqlaboratory/openfold-3
-    stars: 820
+    github: https://github.com/biobakery/MetaPhlAn
+    stars: 421
     language: Python
     tags:
+    - metaphlan
     - software
-    - molecular
-    - openfold
-    - structure
     quality_score: 55
-    paper_doi: 10.1021/acs.jcim.5c03137
-    paper_title: The Open Molecular Software Foundation (OMSF) and the Growing Role
-      of Open Source Software in Molecu
+    paper_doi: 10.12688/wellcomeopenres.19155.2
+    paper_title: Recovery of metagenomic data from the Aedes aegypti microbiome using
+      a reproducible snakemake pipeli
     install_method: pip_pkg
-    install_url: 'pip install openfold3  # source: https://github.com/aqlaboratory/openfold-3'
+    install_url: pip install https://github.com/biobakery/MetaPhlAn
     verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml, docs/environment.yml
-      lang=Python license); command not installed'
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
+      license); command not installed'
     verified_license: true
-    verified_license_path: LICENSE
+    verified_license_path: license.txt
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-17T09:29:24.779587'
+    verified_checked_at: '2026-08-17T11:38:39.077495'
     dependencies:
       system_commands: []
       readme_hint: conda
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_f6e_opo7/venv/bin/run_openfold --help` -> exit 0'
+    exec_reason: '`/tmp/execute_u6cqxxzu/venv/bin/metaphlan --help` -> exit 0'
     exec_install_evidence: ''
-    exec_run_evidence: "Usage: run_openfold [OPTIONS] COMMAND [ARGS]...\n\nOptions:\n\
-      \  --help  Show this message and exit.\n\nCommands:\n  align-msa-server  Generate\
-      \ ColabFold alignments without running model...\n  predict           Perform\
-      \ inference on a set of queries defined in the...\n  train             Perform\
-      \ a training experiment with a preprepared...\n"
-    exec_params_schema: []
-    exec_positional_args: []
+    exec_run_evidence: "oad of the latest MetaPhlAn database.\n  --read_min_len READ_MIN_LEN\n\
+      \                        Specify the minimum length of the reads to be considered\
+      \ when parsing the input file with 'read_fastx.py' script, default value is\
+      \ 70\n  --verbose             Makes MetaPhlAn verbose\n  -v, --version     \
+      \    Prints the current MetaPhlAn version and exit\n  -h, --help           \
+      \ show this help message and exit\n"
+    exec_params_schema:
+    - name: --input_type
+      type: string
+      description: set whether the input is the FASTA file of metagenomic reads or  the
+        SAM file of the mapping of the reads against the MetaPhlAn db.
+      required: true
+      takes_value: true
+      choices:
+      - fastq
+      - fasta
+      - mapout
+      - sam
+    - name: --force
+      type: boolean
+      description: Force profiling of the input file by removing the mapout file
+      required: false
+      takes_value: false
+    - name: --db_dir
+      type: path
+      description: Folder containing the MetaPhlAn database (old --bowtie2db option).
+        Alternatively, you can specify the location by exporting the METAPHLAN_DB_DIR
+        variable in the shell.
+      required: false
+      takes_value: true
+    - name: --index
+      type: string
+      description: Specify the id of the database version to use. If "latest", MetaPhlAn
+        will get the latest version.  If an index name is provided, MetaPhlAn will
+        try to use it, if available, and skip the online check.  If the database files
+        are not found on the local MetaPhlAn installation they  will be automatically
+        downloaded
+      required: false
+      takes_value: true
+      choices:
+      - default
+      - latest
+      aliases:
+      - -x
+    - name: --mapout
+      type: path
+      description: The file for saving the mapping output (old --bowtie2out option)
+      required: false
+      takes_value: true
+    - name: --min_mapq_val
+      type: string
+      description: Minimum mapping quality value (MAPQ)
+      required: false
+      takes_value: true
+    - name: --no_map
+      type: boolean
+      description: Avoid storing the --mapout map file
+      required: false
+      takes_value: false
+    - name: --tmp_dir
+      type: string
+      description: The folder used to store temporary files
+      required: false
+      takes_value: false
+      choices:
+      - default
+      - is
+      - the
+      - OS
+      - dependent
+      - tmp
+      - dir
+    - name: --bt2_ps
+      type: path
+      description: Presets options for BowTie2 (applied only when a FASTA file is
+        provided)
+      required: false
+      takes_value: true
+    - name: --bowtie2_exe
+      type: path
+      description: Full path and name of the BowTie2 executable. This option allowsMetaPhlAn
+        to reach the executable even when it is not in the system PATH or the system
+        PATH is unreachable
+      required: false
+      takes_value: true
+    - name: --bowtie2_build
+      type: path
+      description: Full path to the bowtie2-build command to use, deafult assumes
+        that 'bowtie2-build is present in the system path
+      required: false
+      takes_value: true
+    - name: --tax_lev
+      type: int
+      description: CLI flag --tax_lev
+      required: false
+      takes_value: true
+    - name: --min_alignment_len
+      type: string
+      description: The sam records for aligned reads with the longest subalignment  length
+        smaller than this threshold will be discarded.
+      required: false
+      takes_value: false
+      choices:
+      - default
+      - None
+    - name: --ignore_eukaryotes
+      type: boolean
+      description: Do not profile eukaryotic organisms
+      required: false
+      takes_value: false
+    - name: --ignore_bacteria
+      type: boolean
+      description: Do not profile bacterial organisms
+      required: false
+      takes_value: false
+    - name: --ignore_archaea
+      type: boolean
+      description: Do not profile archeal organisms
+      required: false
+      takes_value: false
+    - name: --ignore_ksgbs
+      type: boolean
+      description: Do not profile known SGBs (together with --sgb option)
+      required: false
+      takes_value: false
+    - name: --ignore_usgbs
+      type: boolean
+      description: Do not profile unknown SGBs (together with --sgb option)
+      required: false
+      takes_value: false
+    - name: --stat_q
+      type: boolean
+      description: Quantile value for the robust average
+      required: false
+      takes_value: false
+    - name: --perc_nonzero
+      type: boolean
+      description: Percentage of markers with a non zero relative abundance for misidentify
+        a species
+      required: false
+      takes_value: false
+    - name: input_file
+      type: path
+      description: 'the input file can be:'
+      required: false
+      positional: true
+      position: 0
+    exec_positional_args:
+    - name: input_file
+      type: path
+      description: 'the input file can be:'
+      required: false
+      positional: true
+      position: 0
     exec_installed_versions:
-    - absl-py==2.5.0
-    - aiohappyeyeballs==2.7.1
-    - aiohttp==3.14.3
-    - aiosignal==1.4.0
-    - annotated-types==0.8.0
-    - attrs==26.1.0
-    - awscli==1.46.0
-    - awscrt==0.36.2
-    - biotite==1.6.0
-    - biotraj==1.2.2
-    - boto3==1.43.72
-    - botocore==1.43.72
+    - biom_format==2.1.17
+    - biopython==1.88
     - certifi==2026.7.22
     - charset-normalizer==3.5.1
     - click==8.4.2
-    - colorama==0.4.6
-    - cuda-bindings==13.3.1
-    - cuda-pathfinder==1.6.0
-    - cuda-toolkit==13.0.3.0
-    - docutils==0.19
-    - filelock==3.32.3
-    - frozenlist==1.8.0
-    - fsspec==2026.7.0
-    - func_timeout==4.3.5
-    - gemmi==0.7.5
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - DendroPy==5.0.10
+    - fonttools==4.63.0
+    - h5py==3.16.0
     - idna==3.18
-    - ijson==3.5.1
-    - Jinja2==3.1.6
-    - jmespath==1.1.0
-    - kalign-python==3.6.0
-    - lightning-utilities==0.15.3
-    - lmdb==2.3.0
-    - MarkupSafe==3.0.3
-    - memory-profiler==0.61.0
-    - ml_collections==1.1.0
-    - mpmath==1.3.0
-    - msgpack==1.2.1
-    - multidict==6.7.1
-    - networkx==3.6.1
+    - kiwisolver==1.5.0
+    - matplotlib==3.11.1
+    - metaphlan @ file:///tmp/execute_u6cqxxzu/MetaPhlAn
     - numpy==2.4.6
-    - nvidia-cublas==13.1.1.3
-    - nvidia-cuda-cupti==13.0.85
-    - nvidia-cuda-nvrtc==13.0.88
-    - nvidia-cuda-runtime==13.0.96
-    - nvidia-cudnn-cu13==9.20.0.48
-    - nvidia-cufft==12.0.0.61
-    - nvidia-cufile==1.15.1.6
-    - nvidia-curand==10.4.0.35
-    - nvidia-cusolver==12.0.4.66
-    - nvidia-cusparse==12.6.3.3
-    - nvidia-cusparselt-cu13==0.8.1
-    - nvidia-nccl-cu13==2.29.7
-    - nvidia-nvjitlink==13.3.33
-    - nvidia-nvshmem-cu13==3.4.5
-    - nvidia-nvtx==13.0.85
-    - openfold3 @ file:///tmp/execute_f6e_opo7/openfold-3
-    - opentelemetry-api==1.44.0
     - packaging==26.3
     - pandas==3.0.5
-    - pdbeccdutils==1.0.4
+    - PhyloPhlAn==3.2.1
     - pillow==12.3.0
-    - platformdirs==4.11.3
-    - propcache==0.5.2
-    - protobuf==7.35.1
-    - psutil==7.2.2
-    - pyasn1==0.6.4
-    - pydantic==2.13.4
-    - pydantic_core==2.46.4
+    - pyparsing==3.3.2
+    - pysam==0.24.0
     - python-dateutil==2.9.0.post0
-    - pytorch-lightning==2.6.5
-    - PyYAML==6.0.3
-    - rdkit==2025.9.6
     - requests==2.34.2
-    - rsa==4.7.2
-    - s3transfer==0.19.2
     - scipy==1.17.1
-    - sentry-sdk==2.68.0
+    - seaborn==0.13.2
     - six==1.17.0
-    - sympy==1.14.0
-    - torch==2.13.0
-    exec_executable: run_openfold
+    - tqdm==4.70.0
+    - urllib3==2.7.0
+    exec_executable: metaphlan
     exec_retries: 0
     exec_heal_evidence: ''
-    inputs_source: subcommand
+    inputs_source: help_parsed
     pending_reason: ''
-- name: ccdutils
+- name: condiga
   type: cli
-  command: process_components_cif --input-cif {{input_cif}} --general-templates {{general_templates}}
-    --pubchem-templates {{pubchem_templates}} --output-dir {{output_dir}} --fragment-library
-    {{fragment_library}} --debug {{debug}} --ccd {{ccd}} --prd {{prd}}
+  command: condiga --contigs {{contigs}} --taxa {{taxa}} --genes {{genes}} --coverages
+    {{coverages}} --assembly-summary {{assembly_summary}} --rel-abundance {{rel_abundance}}
+    --genome-coverage {{genome_coverage}} --map-threshold {{map_threshold}} --nthreads
+    {{nthreads}} --output {{output}} --version {{version}}
   arg_style: named
   callable_via: ''
   readme_examples: []
   readme_usage: ''
-  description: '[Auto-discovered] PDBe tools for an in-depth analysis of small molecules
-    in the Protein Data Bank. (⭐0, ) (license: LICENSE)'
+  description: '[Auto-discovered] 🗂️🧬 Contigs directed gene annotation for accurate
+    protein sequence database construction in metaproteomics (⭐7, Python) (license:
+    LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    input_cif:
-      type: path
-      description: Input PDB-CCD/PDB-PRD cif file
-      required: false
-      source: help_parsed
-      flag: --input-cif
-      takes_value: true
-    general_templates:
+    contigs:
       type: string
-      description: Use general templates in SDF format instead of those supplied with
-        the code.
-      required: false
-      source: help_parsed
-      flag: --general-templates
-      takes_value: true
-    pubchem_templates:
-      type: path
-      description: Path to the directory with pubchem templates in sdf format.
-      required: false
-      source: help_parsed
-      flag: --pubchem-templates
-      takes_value: true
-    output_dir:
-      type: path
-      description: Path to output directory
+      description: path to the contigs file
       required: true
       source: help_parsed
-      flag: --output-dir
+      flag: --contigs
       takes_value: true
-    fragment_library:
+    taxa:
       type: string
-      description: Use this fragment library in place of the one supplied with the
-        code.
-      required: false
+      description: path to the taxonomic classification results  file
+      required: true
       source: help_parsed
-      flag: --fragment-library
+      flag: --taxa
       takes_value: true
-    debug:
-      type: boolean
-      description: Turn on debug message logging output
+    genes:
+      type: string
+      description: path to the genes file
+      required: true
+      source: help_parsed
+      flag: --genes
+      takes_value: true
+    coverages:
+      type: string
+      description: path to the contig coverages file
+      required: true
+      source: help_parsed
+      flag: --coverages
+      takes_value: true
+    assembly_summary:
+      type: string
+      description: path to the assembly_summary.txt file
+      required: true
+      source: help_parsed
+      flag: --assembly-summary
+      takes_value: true
+    rel_abundance:
+      type: float
+      description: minimum relative abundance cut-off
       required: false
       source: help_parsed
-      flag: --debug
-      takes_value: false
-    ccd:
-      type: boolean
-      description: Pipeline is going to process CCD mmCIF files.
+      flag: --rel-abundance
+      takes_value: true
+    genome_coverage:
+      type: float
+      description: minimum genome coverage cut-off
       required: false
       source: help_parsed
-      flag: --ccd
-      takes_value: false
-    prd:
-      type: boolean
-      description: Pipeline is going to process PRD mmCIF files.
+      flag: --genome-coverage
+      takes_value: true
+    map_threshold:
+      type: float
+      description: minimum mapping length threshold cut-off
       required: false
       source: help_parsed
-      flag: --prd
+      flag: --map-threshold
+      takes_value: true
+    nthreads:
+      type: integer
+      description: number of threads to use
+      required: false
+      source: help_parsed
+      flag: --nthreads
+      takes_value: true
+    output:
+      type: string
+      description: path to the output folder
+      required: true
+      source: help_parsed
+      flag: --output
+      takes_value: true
+    version:
+      type: boolean
+      description: Show the version and exit.
+      required: false
+      source: help_parsed
+      flag: --version
       takes_value: false
   resources: {}
   outputs:
-    output_dir:
-      type: directory
-      description: Path to output directory
-      input: output_dir
+    output:
+      type: file
+      description: path to the output folder
+      input: output
       source: help_parsed
   execution: null
   subcommands: []
@@ -1610,382 +562,160 @@ tools:
   subcommand_discovery_complete: false
   install:
     method: pip_pkg
-    command: 'pip install pdbeccdutils  # source: https://github.com/PDBeurope/ccdutils'
+    command: pip install https://github.com/metagentools/ConDiGA
     system_commands: []
     python_packages:
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - gemmi==0.7.5
-    - idna==3.18
-    - networkx==3.6.1
+    - biopython==1.88
+    - click==8.4.2
+    - condiga @ file:///tmp/execute_y941ywe1/ConDiGA
     - numpy==2.4.6
     - packaging==26.3
-    - pdbeccdutils @ file:///tmp/execute_v0wir1lv/ccdutils
-    - pillow==12.3.0
-    - rdkit==2026.3.5
-    - requests==2.34.2
-    - scipy==1.17.1
-    - urllib3==2.7.0
+    - tqdm==4.70.0
+    - xlsxwriter==3.2.9
     declared_packages: []
     missing_deps:
-    - PIL
-    - gemmi
-    - importlib
-    - networkx
-    - numpy
-    - pdbeccdutils
-    - rdkit
-    - requests
-    - scipy
+    - Bio
+    - click
     - setuptools
-    - urllib3
-    - xml
-    venv_path: /tmp/execute_v0wir1lv/venv
+    - xlsxwriter
+    venv_path: /tmp/execute_y941ywe1/venv
   _discovery_metadata:
-    github: https://github.com/PDBeurope/ccdutils
-    stars: 0
-    language: ''
+    github: https://github.com/metagentools/ConDiGA
+    stars: 7
+    language: Python
     tags:
-    - database
     - protein
-    - ccdutils
-    quality_score: 5.0
-    paper_doi: 10.1002/pro.70084
-    paper_title: PDBe tools for an in-depth analysis of small molecules in the Protein
-      Data Bank.
+    - sequence
+    - database
+    - condiga
+    quality_score: 29.2
+    paper_doi: 10.1186/s40168-024-01775-3
+    paper_title: Contigs directed gene annotation (ConDiGA) for accurate protein sequence
+      database construction in me
     install_method: pip_pkg
-    install_url: 'pip install pdbeccdutils  # source: https://github.com/PDBeurope/ccdutils'
+    install_url: pip install https://github.com/metagentools/ConDiGA
     verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: none; deps: pyproject.toml, setup.py
-      docker lang=Python license); command not installed'
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py, build/environment.yml
+      lang=Python license); command not installed'
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-17T09:35:57.521689'
+    verified_checked_at: '2026-08-17T11:40:48.213616'
     dependencies:
       system_commands: []
-      readme_hint: ''
-      container_files:
-      - Dockerfile
-      install_method: pip_pkg
-    exec_status: passed
-    exec_reason: '`/tmp/execute_v0wir1lv/venv/bin/process_components_cif --help` ->
-      exit 0'
-    exec_install_evidence: ''
-    exec_run_evidence: "                    Path to output directory\n  -fl FRAGMENT_LIBRARY,\
-      \ --fragment-library FRAGMENT_LIBRARY\n                        Use this fragment\
-      \ library in place of the one supplied with the code.\n  --debug           \
-      \    Turn on debug message logging output\n  --ccd                 Pipeline\
-      \ is going to process CCD mmCIF files.\n  --prd                 Pipeline is\
-      \ going to process PRD mmCIF files.\n"
-    exec_params_schema:
-    - name: --input-cif
-      type: path
-      description: Input PDB-CCD/PDB-PRD cif file
-      required: false
-      takes_value: true
-      aliases:
-      - -i
-    - name: --general-templates
-      type: string
-      description: Use general templates in SDF format instead of those supplied with
-        the code.
-      required: false
-      takes_value: true
-      aliases:
-      - -g
-    - name: --pubchem-templates
-      type: path
-      description: Path to the directory with pubchem templates in sdf format.
-      required: false
-      takes_value: true
-      aliases:
-      - -p
-    - name: --output-dir
-      type: path
-      description: Path to output directory
-      required: true
-      takes_value: true
-      aliases:
-      - -o
-    - name: --fragment-library
-      type: string
-      description: Use this fragment library in place of the one supplied with the
-        code.
-      required: false
-      takes_value: true
-      aliases:
-      - -fl
-    - name: --debug
-      type: boolean
-      description: Turn on debug message logging output
-      required: false
-      takes_value: false
-    - name: --ccd
-      type: boolean
-      description: Pipeline is going to process CCD mmCIF files.
-      required: false
-      takes_value: false
-    - name: --prd
-      type: boolean
-      description: Pipeline is going to process PRD mmCIF files.
-      required: false
-      takes_value: false
-    exec_positional_args: []
-    exec_installed_versions:
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - gemmi==0.7.5
-    - idna==3.18
-    - networkx==3.6.1
-    - numpy==2.4.6
-    - packaging==26.3
-    - pdbeccdutils @ file:///tmp/execute_v0wir1lv/ccdutils
-    - pillow==12.3.0
-    - rdkit==2026.3.5
-    - requests==2.34.2
-    - scipy==1.17.1
-    - urllib3==2.7.0
-    exec_executable: process_components_cif
-    exec_retries: 0
-    exec_heal_evidence: ''
-    inputs_source: help_parsed
-    pending_reason: ''
-- name: rellig
-  type: cli
-  command: pdberellig {{subcommand}}
-  arg_style: subcommand
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] PDBe tools for an in-depth analysis of small molecules
-    in the Protein Data Bank. (⭐0, ) (license: LICENSE)'
-  output_control:
-    intercept_large_output: true
-    max_preview_lines: 50
-  inputs: {}
-  resources: {}
-  outputs:
-    stdout:
-      type: text
-      description: Tool result printed to stdout.
-      source: inferred
-  execution: null
-  subcommands:
-  - cofactors
-  - drugs
-  - reactants
-  subcommand_details:
-    cofactors:
-      params:
-      - name: --cif
-        type: string
-        description: path to input cif file
-        required: true
-        takes_value: true
-        choices:
-        - required
-      - name: --ligand-type
-        type: string
-        description: type of ligand in the PDB
-        required: true
-        takes_value: true
-        choices:
-        - required
-      - name: --out-dir
-        type: string
-        description: path to output directory
-        required: true
-        takes_value: true
-        choices:
-        - required
-      usage: pdberellig cofactors [OPTIONS]
-      outputs:
-        out_dir:
-          type: directory
-          description: path to output directory
-          input: out_dir
-          source: help_parsed
-    drugs:
-      params:
-      - name: --cif
-        type: string
-        description: path to input cif file
-        required: true
-        takes_value: true
-        choices:
-        - required
-      - name: --out-dir
-        type: string
-        description: path to output directory
-        required: true
-        takes_value: true
-        choices:
-        - required
-      - name: --ligand-type
-        type: string
-        description: type of ligand in the PDB
-        required: true
-        takes_value: true
-        choices:
-        - required
-      usage: pdberellig drugs [OPTIONS]
-      outputs:
-        out_dir:
-          type: directory
-          description: path to output directory
-          input: out_dir
-          source: help_parsed
-    reactants:
-      params:
-      - name: --cif
-        type: string
-        description: path to input cif file
-        required: true
-        takes_value: true
-        choices:
-        - required
-      - name: --ligand-type
-        type: string
-        description: type of ligand in the PDB
-        required: true
-        takes_value: true
-        choices:
-        - required
-      - name: --chebi-structure-file
-        type: path
-        description: Path to the ChEBI structures file. If  omitted, the file is downloaded.
-        required: false
-        takes_value: true
-      - name: --out-dir
-        type: string
-        description: path to output directory
-        required: true
-        takes_value: true
-        choices:
-        - required
-      - name: --update-chebi
-        type: boolean
-        description: Flag to update ChEBI structures file
-        required: false
-        takes_value: false
-      - name: --minimal-ligand-size
-        type: integer
-        description: Minimum ligand size.
-        required: false
-        takes_value: true
-      usage: pdberellig reactants [OPTIONS]
-      outputs:
-        out_dir:
-          type: directory
-          description: path to output directory
-          input: out_dir
-          source: help_parsed
-  subcommand_discovery_complete: true
-  install:
-    method: pip_pkg
-    command: 'pip install pdberellig  # source: https://github.com/PDBeurope/rellig'
-    system_commands: []
-    python_packages:
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - click==8.4.2
-    - gemmi==0.7.5
-    - idna==3.18
-    - networkx==3.6.1
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==2.3.3
-    - pdbeccdutils==1.0.4
-    - pdberellig @ file:///tmp/execute_s0tf2jkp/rellig
-    - pillow==12.3.0
-    - pyparsing==3.3.2
-    - python-dateutil==2.9.0.post0
-    - pytz==2026.3.post1
-    - rdflib==7.6.0
-    - rdkit==2026.3.5
-    - requests==2.34.2
-    - scipy==1.17.1
-    - six==1.17.0
-    declared_packages: []
-    missing_deps:
-    - SPARQLWrapper
-    - click
-    - concurrent
-    - gemmi
-    - importlib
-    - pandas
-    - pdbeccdutils
-    - pdberellig
-    - rdkit
-    - requests
-    - setuptools
-    - urllib3
-    venv_path: /tmp/execute_s0tf2jkp/venv
-  _discovery_metadata:
-    github: https://github.com/PDBeurope/rellig
-    stars: 0
-    language: ''
-    tags:
-    - database
-    - rellig
-    - protein
-    quality_score: 5.0
-    paper_doi: 10.1002/pro.70084
-    paper_title: PDBe tools for an in-depth analysis of small molecules in the Protein
-      Data Bank.
-    install_method: pip_pkg
-    install_url: 'pip install pdberellig  # source: https://github.com/PDBeurope/rellig'
-    verified_status: repo_ok
-    verified_reason: 'repo healthy (entry scripts: pdberellig/__main__.py, pdberellig/cli.py;
-      deps: pyproject.toml, setup.py lang=Python license); command not installed'
-    verified_license: true
-    verified_license_path: LICENSE
-    verified_entry_scripts:
-    - pdberellig/__main__.py
-    - pdberellig/cli.py
-    verified_checked_at: '2026-08-17T09:36:12.245232'
-    dependencies:
-      system_commands: []
-      readme_hint: ''
+      readme_hint: conda
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_s0tf2jkp/venv/bin/pdberellig --help` -> exit 0'
+    exec_reason: '`/tmp/execute_y941ywe1/venv/bin/condiga --help` -> exit 0'
     exec_install_evidence: ''
-    exec_run_evidence: "Usage: pdberellig [OPTIONS] COMMAND [ARGS]...\n\n  CLI for\
-      \ pdberellig pipelines.\n\nOptions:\n  --help  Show this message and exit.\n\
-      \nCommands:\n  cofactors  PDBe RelLig pipeline - cofactors mode =================\n\
-      \  drugs      PDBe RelLig pipeline - drugs mode =================\n  reactants\
-      \  PDBe RelLig pipeline - reactants mode =================\n"
-    exec_params_schema: []
+    exec_run_evidence: "                                 minimum mapping length threshold\
+      \ cut-off\n                                  [default: 0.5; 0<=x<=1]\n  -t,\
+      \ --nthreads INTEGER          number of threads to use  [default: 8]\n  -o,\
+      \ --output PATH               path to the output folder  [required]\n  -v, --version\
+      \                   Show the version and exit.\n  --help                   \
+      \       Show this message and exit.\n"
+    exec_params_schema:
+    - name: --contigs
+      type: string
+      description: path to the contigs file
+      required: true
+      takes_value: true
+      choices:
+      - required
+      aliases:
+      - -c
+    - name: --taxa
+      type: string
+      description: path to the taxonomic classification results  file
+      required: true
+      takes_value: true
+      choices:
+      - required
+      aliases:
+      - -ta
+    - name: --genes
+      type: string
+      description: path to the genes file
+      required: true
+      takes_value: true
+      choices:
+      - required
+      aliases:
+      - -g
+    - name: --coverages
+      type: string
+      description: path to the contig coverages file
+      required: true
+      takes_value: true
+      choices:
+      - required
+      aliases:
+      - -cov
+    - name: --assembly-summary
+      type: string
+      description: path to the assembly_summary.txt file
+      required: true
+      takes_value: true
+      choices:
+      - required
+      aliases:
+      - -as
+    - name: --rel-abundance
+      type: float
+      description: minimum relative abundance cut-off
+      required: false
+      takes_value: true
+      aliases:
+      - -ra
+    - name: --genome-coverage
+      type: float
+      description: minimum genome coverage cut-off
+      required: false
+      takes_value: true
+      aliases:
+      - -gc
+    - name: --map-threshold
+      type: float
+      description: minimum mapping length threshold cut-off
+      required: false
+      takes_value: true
+      aliases:
+      - -mt
+    - name: --nthreads
+      type: integer
+      description: number of threads to use
+      required: false
+      takes_value: true
+      aliases:
+      - -t
+    - name: --output
+      type: string
+      description: path to the output folder
+      required: true
+      takes_value: true
+      choices:
+      - required
+      aliases:
+      - -o
+    - name: --version
+      type: boolean
+      description: Show the version and exit.
+      required: false
+      takes_value: false
+      aliases:
+      - -v
     exec_positional_args: []
     exec_installed_versions:
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
+    - biopython==1.88
     - click==8.4.2
-    - gemmi==0.7.5
-    - idna==3.18
-    - networkx==3.6.1
+    - condiga @ file:///tmp/execute_y941ywe1/ConDiGA
     - numpy==2.4.6
     - packaging==26.3
-    - pandas==2.3.3
-    - pdbeccdutils==1.0.4
-    - pdberellig @ file:///tmp/execute_s0tf2jkp/rellig
-    - pillow==12.3.0
-    - pyparsing==3.3.2
-    - python-dateutil==2.9.0.post0
-    - pytz==2026.3.post1
-    - rdflib==7.6.0
-    - rdkit==2026.3.5
-    - requests==2.34.2
-    - scipy==1.17.1
-    - six==1.17.0
-    - SPARQLWrapper==2.0.0
-    - tzdata==2026.3
-    - urllib3==2.7.0
-    exec_executable: pdberellig
+    - tqdm==4.70.0
+    - xlsxwriter==3.2.9
+    exec_executable: condiga
     exec_retries: 0
     exec_heal_evidence: ''
-    inputs_source: subcommand
+    inputs_source: help_parsed
     pending_reason: ''
