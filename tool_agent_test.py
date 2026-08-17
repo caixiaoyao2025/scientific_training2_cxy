@@ -659,6 +659,7 @@ def main() -> int:
     for r in skip_reasons:
         print(f"  [skip-task] {r}")
     stats = {"selected": 0, "wrong_function": 0, "started": 0,
+             "tool_unavailable": 0,
              "process_ok": 0, "output_valid": 0, "succeeded": 0}
     per_tool = {}
     for label, user_prompt, expected_fn, out_path, out_kind in tasks:
@@ -675,6 +676,7 @@ def main() -> int:
         tool_attempts = {}
         target_exited_0 = False   # the TARGET function exited 0 (process-level)
         target_ran = False        # the TARGET function was actually called
+        tool_unavailable = False  # timeout, command not found, or resource error
         raw_log = []              # full (fn, argv, rc, stdout, stderr) per call
         # TASK-SCOPED tool selection (P0): the LLM only sees the ONE function
         # this task is about. Exposing every schema lets it pick a random
@@ -745,6 +747,19 @@ def main() -> int:
                             target_exited_0 = True
                         if raw.get("return_code") not in (127,):
                             started = True
+                        # detect runtime resource unavailability
+                        stderr_l = (raw.get("stderr") or "").lower()
+                        if raw.get("return_code") is None:
+                            # subprocess.TimeoutExpired → return_code=None
+                            tool_unavailable = True
+                        elif raw.get("return_code") == 127:
+                            tool_unavailable = True
+                        elif any(kw in stderr_l for kw in [
+                            "database not present", "database not found",
+                            "database not available", "not installed",
+                            "command not found", "no such file",
+                        ]):
+                            tool_unavailable = True
                     low = result.lower()
                 print(f"          result: {result[:150]}")
                 messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
@@ -773,6 +788,8 @@ def main() -> int:
             status = "TASK_SUCCEEDED"
         elif target_exited_0:
             status = "OUTPUT_INVALID"
+        elif tool_unavailable:
+            status = "TOOL_UNAVAILABLE"
         elif target_ran:
             status = "PROCESS_FAILED"
         elif wrong_function:
@@ -787,6 +804,7 @@ def main() -> int:
             "expected_fn": expected_fn,
             "selected": selected, "wrong_function": wrong_function,
             "target_ran": target_ran, "target_exited_0": target_exited_0,
+            "tool_unavailable": tool_unavailable,
             "process_ok": process_ok, "output_ok": output_ok,
             "output_kind": out_kind, "status": status,
             "calls": raw_log,
@@ -794,6 +812,7 @@ def main() -> int:
         if selected: stats["selected"] += 1
         if wrong_function: stats["wrong_function"] += 1
         if started: stats["started"] += 1
+        if tool_unavailable: stats["tool_unavailable"] += 1
         if process_ok: stats["process_ok"] += 1
         if output_ok: stats["output_valid"] += 1
         if status == "TASK_SUCCEEDED": stats["succeeded"] += 1
@@ -805,11 +824,13 @@ def main() -> int:
     print(f"  tool selected:         {stats['selected']}/{n}")
     print(f"  wrong function:        {stats['wrong_function']}/{n}")
     print(f"  tool started (ran):    {stats['started']}/{n}")
+    print(f"  tool unavailable:      {stats['tool_unavailable']}/{n}")
     print(f"  target exit 0:         {stats['process_ok']}/{n}")
     print(f"  output valid:          {stats['output_valid']}/{n}")
     print(f"  TASK_SUCCEEDED:        {stats['succeeded']}/{n}")
     print("  (success = TARGET function exit 0 + valid output; any other tool")
     print("   exiting 0 is recorded as WRONG_FUNCTION, NOT success)")
+    print("  TOOL_UNAVAILABLE = timeout / command not found / missing runtime resource")
     # persist the FULL per-call detail (argv/stdout/stderr, untruncated) so a
     # failure is debuggable instead of being cut at 150 chars in the console.
     out_json = os.environ.get("AGENT_TEST_JSON", "")
