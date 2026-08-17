@@ -32,7 +32,7 @@ if REPO not in sys.path:
 import yaml  # noqa: E402
 
 from agent_connector.tool_spec import (  # noqa: E402
-    canonical_key, function_property, json_schema_type, make_leaf_spec,
+    canonical_key, function_anyof, function_property, json_schema_type, make_leaf_spec,
 )
 
 BASE_URL = (os.environ.get("WESTLAKE_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
@@ -155,10 +155,19 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
                 if (meta or {}).get("required") is True:
                     required.append(key)
             fname = f"{tool['name']}_{sub.replace('-', '_')}"
+            params_schema = {"type": "object", "properties": props, "required": required}
+            # conditional required: at least one param from each group must be
+            # provided (e.g. split needs --file OR --sfile OR --xfile). Emitted
+            # as JSON Schema ``anyOf`` so the LLM sees the constraint.
+            ao = function_anyof(leaf)
+            if ao:
+                params_schema["anyOf"] = [
+                    {"required": grp} for grp in ao if grp
+                ]
             out.append({"type": "function", "function": {
                 "name": fname,
                 "description": _function_description(leaf),
-                "parameters": {"type": "object", "properties": props, "required": required},
+                "parameters": params_schema,
             }})
             fnmap[fname] = leaf
         return out, fnmap
@@ -187,14 +196,12 @@ def to_function_schemas(tool: dict) -> tuple[list[dict], dict]:
 
 
 def _function_description(tool: dict) -> str:
-    """Tool description PLUS the runtime-resource contract and the output
-    contract, so the LLM knows (a) a database/index path is PRECONFIGURED --
-    never guessed, never an argument it must invent -- and (b) what the tool
-    produces and where (output_dir -> directory). The `outputs` contract stays
-    in the ToolSpec (the runner validates it); this text is its LLM-facing
-    projection, kept inside the standard `description` field (a custom
-    `outputs` key on the function object is not OpenAI function-calling JSON
-    and strict providers may reject or ignore it)."""
+    """Tool description PLUS the runtime-resource contract, the output
+    contract, and any conditional-required constraints, so the LLM knows
+    (a) a database/index path is PRECONFIGURED -- never guessed, never an
+    argument it must invent -- (b) what the tool produces and where
+    (output_dir -> directory), and (c) which parameter groups must be
+    provided together."""
     desc = (tool.get("description") or "")
     resources = tool.get("resources") or {}
     if resources:
@@ -202,6 +209,12 @@ def _function_description(tool: dict) -> str:
         desc = (desc.strip() + " "
                 + f"Runtime resources are preconfigured and must NOT be passed "
                   f"as arguments: {names}.")
+    # conditional required constraint hint
+    ao = (tool.get("constraints") or {}).get("any_of") or []
+    if ao:
+        groups = " OR ".join(", ".join(g) for g in ao if g)
+        desc = (desc.strip() + " "
+                + f"Requires at least one of: {groups}.").strip()
     outs = tool.get("outputs") or {}
     if isinstance(outs, dict) and outs:
         bits = []

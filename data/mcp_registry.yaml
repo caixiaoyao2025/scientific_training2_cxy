@@ -1048,6 +1048,11 @@ tools:
           input: output
           source: help_parsed
     split:
+      constraints:
+        any_of:
+        - - file
+        - - sfile
+        - - xfile
       params:
       - name: --span
         type: string

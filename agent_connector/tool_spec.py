@@ -148,6 +148,10 @@ def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
                       for p in params if canonical_key(p.get("name", ""))}
     leaf["outputs"] = details.get("outputs") or tool.get("outputs") or {}
     leaf["resources"] = tool.get("resources") or {}
+    # per-subcommand constraints (e.g. split requires one of file/sfile/xfile)
+    sub_constraints = details.get("constraints")
+    if sub_constraints:
+        leaf["constraints"] = sub_constraints
     return leaf
 
 
@@ -210,8 +214,18 @@ def function_property(meta: Any) -> dict[str, Any]:
         hint.append(f"CLI flag: {flag}")
     if hint:
         prop["description"] = ((prop["description"] + " ").strip()
-                               + f"[{', '.join(hint)}]").strip()
+                                + f"[{', '.join(hint)}]").strip()
     return prop
+
+
+def function_anyof(spec: dict[str, Any]) -> dict[str, list[list[str]]] | None:
+    """Extract ``constraints.any_of`` from a leaf ToolSpec.
+
+    The split subcommand requires at least one of --file/--sfile/--xfile.
+    This is expressed as a conditional required (anyOf) that cannot be
+    represented by individual param ``required: true`` fields. Returns
+    e.g. ``{"any_of": [["file"], ["sfile"], ["xfile"]]}`` or None."""
+    return (spec.get("constraints") or {}).get("any_of") or None
 
 
 def validate_spec(spec: dict[str, Any]) -> str:

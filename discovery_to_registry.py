@@ -237,6 +237,30 @@ def _infer_outputs(parsed: list, positional: list, arg_style: str) -> dict:
                        "source": "inferred"}}
 
 
+_SUBCOMMAND_CONSTRAINTS: dict[tuple[str, str], dict] = {
+    # bqtools split: at least one pattern file (--file/--sfile/--xfile) is
+    # required, but the CLI error message doesn't flag individual params as
+    # mandatory -- it only fails with "At least one pattern file must be
+    # specified". We model this as a conditional required (any_of) so the
+    # LLM schema emits JSON Schema ``anyOf`` and the LLM knows to provide
+    # at least one.
+    ("bqtools", "split"): {
+        "any_of": [["file"], ["sfile"], ["xfile"]],
+    },
+}
+
+# Known param choices for tools whose --help output doesn't include
+# [possible values: ...] text in a format our regex can parse. Applied during
+# registry generation so the LLM schema emits JSON Schema ``enum`` and the
+# LLM guesses the right value on the first call instead of trying "fasta"
+# and getting rejected before correcting to "a".
+# Key: (tool_name, subcommand_or_"*"_for_any, param_canonical_key)
+# Value: list of allowed values.
+_KNOWN_PARAM_CHOICES: dict[tuple[str, str, str], list[str]] = {
+    ("bqtools", "*", "format"): ["a", "q", "b", "t"],
+}
+
+
 def _subcommand_outputs(subs: dict, tool_name: str) -> dict:
     """Attach each subcommand's OWN output contract to its details.
 
@@ -250,6 +274,21 @@ def _subcommand_outputs(subs: dict, tool_name: str) -> dict:
         entry = dict(detail)
         params = entry.get("params") or []
         entry["outputs"] = _infer_outputs(params, [], "named")
+        # attach per-subcommand constraints (e.g. any_of for split)
+        key = (tool_name, sub)
+        if key in _SUBCOMMAND_CONSTRAINTS:
+            entry["constraints"] = _SUBCOMMAND_CONSTRAINTS[key]
+        # inject known param choices (e.g. format -> [a,q,b,t]) so the LLM
+        # schema emits JSON Schema enum and the LLM doesn't guess wrong values
+        for p in params:
+            from agent_connector.tool_spec import canonical_key as _ck  # noqa: PLC0401
+            ck = _ck(p.get("name", ""))
+            if not ck:
+                continue
+            for k, choices in _KNOWN_PARAM_CHOICES.items():
+                if k[0] == tool_name and k[1] in (sub, "*") and k[2] == ck:
+                    if not p.get("choices"):
+                        p["choices"] = choices
         out[sub] = entry
     return out
 
