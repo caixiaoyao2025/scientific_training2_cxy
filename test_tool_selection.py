@@ -136,7 +136,9 @@ def test_retrieval_only():
     print(f"  retrieval_hit@3 = {hit3}/{n}")
     print(f"  retrieval_hit@5 = {hit5}/{n}")
     print(f"  no_match_correct = {neg_correct}/{neg_total}")
-    return hit1
+    neg_pass = neg_correct == neg_total
+    all_pass = hit1 == n and neg_pass
+    return 0 if all_pass else 1
 
 
 def test_selection_retrieval_first():
