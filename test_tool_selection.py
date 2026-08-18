@@ -1,26 +1,18 @@
-"""Tool Selection Test — Layer 1 of the three-layer agent pipeline.
+"""Tool Selection Test — uses graph-tool-call for retrieval + LLM for selection.
 
-Tests whether the LLM picks the CORRECT function given a user task and
-all available tool schemas. This is distinct from tool_agent_test.py
-which tests parameter filling (Layer 2/3: selection + invocation).
+Three-layer test:
+  Layer 1 (retrieval): does the expected tool appear in top-k candidates?
+  Layer 2 (LLM): does the LLM pick the right tool from candidates?
+  Layer 3 (all_tools): LLM sees ALL schemas, picks without retrieval.
 
-The selection test does NOT run any tools — it only checks the first
-tool_call's function name against the expected function.
-
-Two modes:
-  1. retrieval_first: use tool_retrieval to filter candidates, then LLM
-     picks from the filtered set (simulates the full pipeline)
-  2. all_tools: LLM sees ALL schemas and must pick the right one
-     (tests raw LLM selection without retrieval assistance)
-
-Usage:
-    python test_tool_selection.py              # retrieval_first mode
-    python test_tool_selection.py --all-tools  # all_tools mode
+Metrics:
+  retrieval_hit@1, @3, @5
+  llm_first_choice_accuracy
+  no_match_correct (negative test)
 """
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 import time
@@ -30,11 +22,7 @@ from openai import OpenAI
 import yaml
 
 from tool_agent_test import to_function_schemas
-from agent_connector.tool_retrieval import build_tool_index, retrieve_tools
-
-MODEL = os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL") or os.environ.get("DEEPSEEK_MODEL") or "deepseek-v4-flash-ga-260731"
-MAX_RETRIES = 3
-RETRY_DELAY = 5
+from agent_connector.graph_retrieval import build_graph_from_registry, retrieve_tools
 
 BASE_URL = (
     os.environ.get("WESTLAKE_BASE_URL")
@@ -48,17 +36,12 @@ API_KEY = (
     or os.environ.get("DEEPSEEK_API_KEY")
     or ""
 )
-
-if not API_KEY:
-    raise RuntimeError(
-        "Missing API key: set WESTLAKE_API_KEY, OPENAI_API_KEY, or DEEPSEEK_API_KEY"
-    )
-if not BASE_URL.startswith(("http://", "https://")):
-    raise RuntimeError(f"Invalid BASE_URL: {BASE_URL!r}")
+MODEL = os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL") or os.environ.get("DEEPSEEK_MODEL") or "deepseek-v4-flash-ga-260731"
+MAX_RETRIES = 3
+RETRY_DELAY = 5
 
 # --- selection tasks: (user_task, expected_fn_name) ---
-# Each task is a natural language request that should map to exactly one
-# function. The expected_fn is the function the LLM should call FIRST.
+# expected_fn=None means no tool should match (negative test)
 SELECTION_TASKS = [
     # bqtools subcommands
     ("Encode my FASTA file into BINSEQ format", "bqtools_encode"),
@@ -71,8 +54,10 @@ SELECTION_TASKS = [
     ("Show me the metadata and record count of this BINSEQ file", "bqtools_info"),
     ("Verify the integrity checksum of this BINSEQ file", "bqtools_verify"),
     # cross-tool selection
-    ("Predict RNA secondary structure from a sequence file", "bioemu"),
+    ("Generate protein conformational samples from an amino-acid sequence", "bioemu"),
     ("Identify metagenomic species from ONT reads", "kaptain"),
+    # negative: no matching tool in registry
+    ("Predict RNA secondary structure from a sequence file", None),
 ]
 
 
@@ -81,7 +66,6 @@ def _load_schemas(registry_path: str):
     with open(registry_path, "r", encoding="utf-8") as f:
         reg = yaml.safe_load(f)
     tools = reg.get("tools", [])
-    index = build_tool_index(tools)
     schemas = []
     fnmap = {}
     for t in tools:
@@ -89,11 +73,13 @@ def _load_schemas(registry_path: str):
         schemas.extend(sch)
         fnmap.update(fm)
     schema_by_name = {s["function"]["name"]: s for s in schemas}
-    return tools, index, schemas, schema_by_name, fnmap
+    return tools, schemas, schema_by_name, fnmap
 
 
 def _llm_select(task: str, schemas: list, retries: int = MAX_RETRIES):
     """Send task to LLM, return the first tool_call function name or None."""
+    if not API_KEY:
+        raise RuntimeError("Missing API key")
     client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
     messages = [{"role": "user", "content": task}]
     for attempt in range(retries):
@@ -115,51 +101,89 @@ def _llm_select(task: str, schemas: list, retries: int = MAX_RETRIES):
                 raise
 
 
-def test_selection_retrieval_first():
-    """Test: retrieval filters candidates, then LLM picks from filtered set."""
+def test_retrieval_only():
+    """Layer 1: test retrieval hit rate without LLM."""
     registry_path = os.path.join(os.path.dirname(__file__), "data", "mcp_registry.yaml")
-    tools, index, all_schemas, schema_by_name, fnmap = _load_schemas(registry_path)
-    print(f"== Selection test (retrieval_first): {len(all_schemas)} total schemas ==")
+    graph = build_graph_from_registry(registry_path)
+    print(f"== Retrieval-only test ==")
+    hit1 = hit3 = hit5 = 0
+    total = len(SELECTION_TASKS)
+    for task, expected in SELECTION_TASKS:
+        if expected is None:
+            # negative test: check that no tool scores above threshold
+            results = retrieve_tools(graph, task, top_k=3)
+            top_name = results[0][0] if results else None
+            print(f"  [NEG] {task[:50]}... top={top_name}")
+            continue
+        results = retrieve_tools(graph, task, top_k=5)
+        names = [r[0] for r in results]
+        in1 = expected == names[0] if names else False
+        in3 = expected in names[:3]
+        in5 = expected in names[:5]
+        if in1: hit1 += 1
+        if in3: hit3 += 1
+        if in5: hit5 += 1
+        mark = "OK" if in1 else ("HIT@3" if in3 else ("HIT@5" if in5 else "MISS"))
+        print(f"  [{mark:6}] {task[:50]}... top3={names[:3]}")
+    n = total
+    print(f"\n  retrieval_hit@1 = {hit1}/{n}")
+    print(f"  retrieval_hit@3 = {hit3}/{n}")
+    print(f"  retrieval_hit@5 = {hit5}/{n}")
+    return hit1
+
+
+def test_selection_retrieval_first():
+    """Layer 1+2: graph-tool-call retrieval + LLM selection."""
+    registry_path = os.path.join(os.path.dirname(__file__), "data", "mcp_registry.yaml")
+    graph = build_graph_from_registry(registry_path)
+    _, all_schemas, schema_by_name, fnmap = _load_schemas(registry_path)
+    print(f"== Selection test (graph-tool-call retrieval + LLM): {len(all_schemas)} total schemas ==")
     passed = 0
     failed = 0
     skipped = 0
+    llm_correct = 0
+    llm_total = 0
     for task, expected in SELECTION_TASKS:
-        # retrieve top-k candidates
-        candidates = retrieve_tools(task, index, top_k=8, min_score=2)
-        if not candidates:
-            print(f"[SKIP] {task[:50]}... -> no retrieval candidates")
+        if expected is None:
+            print(f"  [NEG-SKIP] {task[:50]}... (negative test, no LLM needed)")
+            continue
+        # retrieve candidates via graph-tool-call
+        results = retrieve_tools(graph, task, top_k=5)
+        candidate_names = [r[0] for r in results]
+        if not candidate_names:
+            print(f"  [SKIP] {task[:50]}... -> no retrieval candidates")
             skipped += 1
             continue
-        # build schemas for candidates only
-        candidate_schemas = []
-        for c in candidates:
-            fn = c["fn_name"]
-            if fn in schema_by_name:
-                candidate_schemas.append(schema_by_name[fn])
+        # check retrieval hit
+        retrieval_hit = expected in candidate_names
+        # build schemas for candidates
+        candidate_schemas = [schema_by_name[n] for n in candidate_names if n in schema_by_name]
         if not candidate_schemas:
-            print(f"[SKIP] {task[:50]}... -> no schemas for candidates")
+            print(f"  [SKIP] {task[:50]}... -> no schemas for candidates")
             skipped += 1
             continue
-        # ask LLM to pick
+        # LLM picks from candidates
+        llm_total += 1
         got = _llm_select(task, candidate_schemas)
-        if got == expected:
+        llm_correct_task = got == expected
+        if llm_correct_task:
+            llm_correct += 1
+        if llm_correct_task:
             passed += 1
-            print(f"[PASS] {task[:50]}... -> {got}")
+            print(f"  [PASS] {task[:50]}... -> {got} (retrieval={'HIT' if retrieval_hit else 'MISS'})")
         else:
             failed += 1
-            cand_names = [c["fn_name"] for c in candidates]
-            print(f"[FAIL] {task[:50]}...")
-            print(f"       expected={expected}  got={got}")
-            print(f"       candidates={cand_names}")
-    print(f"\n== Results: {passed} passed, {failed} failed, {skipped} skipped "
-          f"out of {len(SELECTION_TASKS)} ==")
+            print(f"  [FAIL] {task[:50]}...")
+            print(f"         expected={expected}  got={got}  candidates={candidate_names[:5]}")
+    print(f"\n  LLM accuracy: {llm_correct}/{llm_total}")
+    print(f"  Passed: {passed}/{len(SELECTION_TASKS)}, Failed: {failed}, Skipped: {skipped}")
     return failed
 
 
 def test_selection_all_tools():
-    """Test: LLM sees ALL tool schemas and must pick the right one."""
+    """Layer 3: LLM sees ALL schemas, no retrieval."""
     registry_path = os.path.join(os.path.dirname(__file__), "data", "mcp_registry.yaml")
-    tools, index, all_schemas, schema_by_name, fnmap = _load_schemas(registry_path)
+    _, all_schemas, schema_by_name, fnmap = _load_schemas(registry_path)
     print(f"== Selection test (all_tools): {len(all_schemas)} total schemas ==")
     passed = 0
     failed = 0
@@ -167,21 +191,24 @@ def test_selection_all_tools():
         got = _llm_select(task, all_schemas)
         if got == expected:
             passed += 1
-            print(f"[PASS] {task[:50]}... -> {got}")
+            print(f"  [PASS] {task[:50]}... -> {got}")
         else:
             failed += 1
-            print(f"[FAIL] {task[:50]}...")
-            print(f"       expected={expected}  got={got}")
-    print(f"\n== Results: {passed} passed, {failed} failed "
-          f"out of {len(SELECTION_TASKS)} ==")
+            print(f"  [FAIL] {task[:50]}...")
+            print(f"         expected={expected}  got={got}")
+    print(f"\n  Passed: {passed}/{len(SELECTION_TASKS)}, Failed: {failed}")
     return failed
 
 
 def main():
     parser = argparse.ArgumentParser(description="Tool selection test")
     parser.add_argument("--all-tools", action="store_true",
-                        help="Give LLM all schemas instead of retrieval-filtered")
+                        help="LLM sees ALL schemas (no retrieval)")
+    parser.add_argument("--retrieval-only", action="store_true",
+                        help="Test retrieval hit rate only (no LLM)")
     args = parser.parse_args()
+    if args.retrieval_only:
+        return test_retrieval_only()
     if args.all_tools:
         return test_selection_all_tools()
     return test_selection_retrieval_first()

@@ -236,3 +236,104 @@ def artifact_for_param(spec: dict, param_key: str) -> str | None:
     inputs = spec.get("inputs") or {}
     meta = inputs.get(param_key) or {}
     return meta.get("artifact")
+
+
+# ---------------------------------------------------------------------------
+# Capability metadata for retrieval scoring
+# ---------------------------------------------------------------------------
+# Maps function name → (operation, input_artifacts, output_artifacts)
+# Used by tool_retrieval.py to score candidates by data-flow match instead
+# of pure keyword overlap.
+TOOL_CAPABILITIES: dict[str, dict] = {
+    # bqtools subcommands
+    "bqtools_encode": {
+        "operation": "encode",
+        "input": ["fasta", "fastq"],
+        "output": ["binseq"],
+    },
+    "bqtools_decode": {
+        "operation": "decode",
+        "input": ["binseq"],
+        "output": ["fasta", "fastq"],
+    },
+    "bqtools_info": {
+        "operation": "inspect",
+        "input": ["binseq"],
+        "output": [],
+    },
+    "bqtools_grep": {
+        "operation": "search",
+        "input": ["binseq"],
+        "output": ["binseq"],
+    },
+    "bqtools_sample": {
+        "operation": "sample",
+        "input": ["binseq"],
+        "output": ["binseq"],
+    },
+    "bqtools_split": {
+        "operation": "split",
+        "input": ["binseq"],
+        "output": ["binseq"],
+    },
+    "bqtools_cat": {
+        "operation": "concatenate",
+        "input": ["binseq"],
+        "output": ["binseq"],
+    },
+    "bqtools_revcomp": {
+        "operation": "reverse_complement",
+        "input": ["binseq"],
+        "output": ["binseq"],
+    },
+    "bqtools_verify": {
+        "operation": "verify",
+        "input": ["binseq"],
+        "output": [],
+    },
+    "bqtools_pipe": {
+        "operation": "pipe",
+        "input": ["binseq"],
+        "output": ["binseq"],
+    },
+    # other tools
+    "bioemu": {
+        "operation": "generate",
+        "input": ["fasta"],
+        "output": [],
+    },
+    "kaptain": {
+        "operation": "identify",
+        "input": ["fastq"],
+        "output": [],
+    },
+    "metaphlan": {
+        "operation": "profile",
+        "input": ["fasta", "fastq"],
+        "output": [],
+    },
+    "condiga": {
+        "operation": "annotate",
+        "input": [],
+        "output": [],
+    },
+}
+
+
+# Operation keywords that map user intent → tool operation
+OPERATION_KEYWORDS: dict[str, list[str]] = {
+    "encode": ["encode", "compress", "convert to binseq", "create binseq"],
+    "decode": ["decode", "decompress", "extract", "convert from binseq", "back to fasta"],
+    "inspect": ["info", "inspect", "metadata", "statistics", "show info", "record count"],
+    "search": ["search", "grep", "find pattern", "match pattern", "query"],
+    "sample": ["sample", "randomly", "subsample", "downsample"],
+    "split": ["split", "separate", "partition"],
+    "concatenate": ["concatenate", "merge", "combine", "concat"],
+    "reverse_complement": ["reverse complement", "revcomp", "reverse-complement"],
+    "verify": ["verify", "check integrity", "checksum", "validate"],
+    "pipe": ["pipe", "stream", "fifo"],
+    "generate": ["generate", "predict", "simulate", "model", "conformation"],
+    "identify": ["identify", "classify", "detect", "species"],
+    "profile": ["profile", "metagenomic", "taxonomy", "abundance"],
+    "annotate": ["annotate", "annotation", "gene"],
+}
