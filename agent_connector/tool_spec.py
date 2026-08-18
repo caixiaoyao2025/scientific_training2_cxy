@@ -117,7 +117,11 @@ def make_leaf_spec(tool: dict[str, Any], sub: str) -> dict[str, Any]:
     leaf = copy.deepcopy(tool)
     leaf["name"] = f"{tool.get('name', '')}_{sub.replace('-', '_')}"
     leaf["_active_subcommand"] = sub
-    leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
+    sub_desc = (details.get("description") or "").strip()
+    if sub_desc:
+        leaf["description"] = sub_desc
+    else:
+        leaf["description"] = (tool.get("description") or "") + f" -- {sub}"
     # concrete command: the tool's command with {{subcommand}} replaced by the
     # chosen sub -- NEVER just the first token (split()[0] would turn
     # `python -m nano_signal_simulator {{subcommand}}` into `python simulate`).
