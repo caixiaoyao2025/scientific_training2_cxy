@@ -1,56 +1,252 @@
 [
   {
-    "name": "metaphlan",
+    "name": "bioemu",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: usage: metaphlan --input_type {fastq,fasta,mapout,sam} [--force]\n                 [--db_dir METAPHLAN_DB] [-x INDEX] [--))",
-    "output": "FAIL (output: exit 2 (stderr: usage: metaphlan --input_type {fastq,fasta,mapout,sam} [--force]\n                 [--db_dir METAPHLAN_DB] [-x INDEX] [--))",
+    "execute": "FAIL (output: exit None (stderr: timed out after 120s))",
+    "output": "FAIL (output: exit None (stderr: timed out after 120s))",
     "_argv": [
-      "metaphlan",
-      "/tmp/sample.fa",
-      "--input_type",
-      "x"
+      "python",
+      "-m",
+      "bioemu.sample",
+      "MKT",
+      "1",
+      "/tmp/out"
     ],
     "_args": {
-      "input_type": "x",
-      "input_file": "/tmp/sample.fa"
+      "sequence": "MKT",
+      "num_samples": 1,
+      "output_dir": "/tmp/out"
     },
     "_functions": [
-      "metaphlan"
+      "bioemu"
     ],
-    "_return_code": 2
+    "_return_code": null
   },
   {
-    "name": "condiga",
+    "name": "bqtools_encode",
     "schema": "PASS",
     "render": "PASS",
-    "execute": "FAIL (output: exit 2 (stderr: Usage: condiga [OPTIONS]\nTry 'condiga --help' for help.\n\nError: Invalid value for '--contigs' / '-c': Path 'x' does not ))",
-    "output": "FAIL (output: exit 2 (stderr: Usage: condiga [OPTIONS]\nTry 'condiga --help' for help.\n\nError: Invalid value for '--contigs' / '-c': Path 'x' does not ))",
+    "execute": "FAIL (output: exit None (stderr: [validation] input expects binseq (.vbq/.cbq/.bq), got '/tmp/pipeline_sample.fa'))",
+    "output": "FAIL (output: exit None (stderr: [validation] input expects binseq (.vbq/.cbq/.bq), got '/tmp/pipeline_sample.fa'))",
+    "_function": "bqtools_encode",
+    "_argv": [],
+    "_args": {
+      "input": "/tmp/pipeline_sample.fa",
+      "output": "/tmp/pipeline_out/sample.vbq"
+    },
+    "_return_code": null
+  },
+  {
+    "name": "bqtools_decode",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_decode",
     "_argv": [
-      "condiga",
-      "--contigs",
-      "x",
-      "--taxa",
-      "x",
-      "--genes",
-      "x",
-      "--coverages",
-      "x",
-      "--assembly-summary",
+      "bqtools",
+      "decode",
+      "/tmp/pipeline_sample.vbq",
+      "--output",
+      "/tmp/pipeline_out/sample.fa",
+      "--format",
+      "a"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/sample.fa",
+      "format": "a"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "bqtools_cat",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_cat",
+    "_argv": [
+      "bqtools",
+      "cat",
+      "/tmp/pipeline_sample.vbq",
+      "--output",
+      "/tmp/pipeline_out/cat.vbq"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/cat.vbq"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "bqtools_info",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 0 but no output)",
+    "output": "FAIL (output: exit 0 but no output)",
+    "_function": "bqtools_info",
+    "_argv": [
+      "bqtools",
+      "info",
+      "/tmp/pipeline_sample.vbq"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq"
+    },
+    "_return_code": 0
+  },
+  {
+    "name": "bqtools_grep",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_grep",
+    "_argv": [
+      "bqtools",
+      "grep",
+      "/tmp/pipeline_sample.vbq",
+      "ACGT",
+      "--output",
+      "/tmp/pipeline_out/grep.fa",
+      "--format",
+      "a"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/grep.fa",
+      "format": "a",
+      "reg": "ACGT"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "bqtools_sample",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_sample",
+    "_argv": [
+      "bqtools",
+      "sample",
+      "/tmp/pipeline_sample.vbq",
+      "--output",
+      "/tmp/pipeline_out/sample.fa",
+      "--format",
+      "a",
+      "--fraction",
+      "0.5"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/sample.fa",
+      "format": "a",
+      "fraction": "0.5"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "bqtools_split",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_split",
+    "_argv": [
+      "bqtools",
+      "split",
+      "/tmp/pipeline_sample.vbq",
+      "--basepath",
+      "/tmp/pipeline_out",
+      "--file",
+      "/tmp/pipeline_pattern.txt"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq",
+      "file": "/tmp/pipeline_pattern.txt",
+      "basepath": "/tmp/pipeline_out"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "bqtools_pipe",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_pipe",
+    "_argv": [
+      "bqtools",
+      "pipe",
+      "/tmp/pipeline_sample.vbq",
+      "--exec",
+      "cat {}"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq",
+      "exec": "cat {}"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "bqtools_revcomp",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_revcomp",
+    "_argv": [
+      "bqtools",
+      "revcomp",
+      "/tmp/pipeline_sample.vbq",
+      "--output",
+      "/tmp/pipeline_out/revcomp.vbq"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq",
+      "output": "/tmp/pipeline_out/revcomp.vbq"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "bqtools_verify",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "output": "FAIL (output: exit 1 (stderr: Error: Error with IO: No such file or directory (os error 2)\n\nCaused by:\n    No such file or directory (os error 2)\n))",
+    "_function": "bqtools_verify",
+    "_argv": [
+      "bqtools",
+      "verify",
+      "/tmp/pipeline_sample.vbq"
+    ],
+    "_args": {
+      "input": "/tmp/pipeline_sample.vbq"
+    },
+    "_return_code": 1
+  },
+  {
+    "name": "kaptain",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
+    "output": "FAIL (output: exit 2 (stderr: usage: kaptain [-h] -i ONT_IN [ONT_IN ...] --db DB --db-lookup DB_LOOKUP\n               [--dir-working DIR_WORKING] -o O))",
+    "_argv": [
+      "kaptain",
+      "--ont-in",
       "x",
       "--output",
       "/tmp/out.tsv"
     ],
     "_args": {
-      "contigs": "x",
-      "taxa": "x",
-      "genes": "x",
-      "coverages": "x",
-      "assembly_summary": "x",
+      "ont_in": "x",
       "output": "/tmp/out.tsv"
     },
     "_functions": [
-      "condiga"
+      "kaptain"
     ],
     "_return_code": 2
   }

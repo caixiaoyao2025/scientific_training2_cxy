@@ -1,529 +1,1547 @@
 tools:
-- name: metaphlan
+- name: bioemu
   type: cli
-  command: metaphlan {input_file} --input_type {input_type} --force {force} --db_dir
-    {db_dir} --index {index} --mapout {mapout} --min_mapq_val {min_mapq_val} --no_map
-    {no_map} --tmp_dir {tmp_dir} --bt2_ps {bt2_ps} --bowtie2_exe {bowtie2_exe} --bowtie2_build
-    {bowtie2_build} --tax_lev {tax_lev} --min_alignment_len {min_alignment_len} --ignore_eukaryotes
-    {ignore_eukaryotes} --ignore_bacteria {ignore_bacteria} --ignore_archaea {ignore_archaea}
-    --ignore_ksgbs {ignore_ksgbs} --ignore_usgbs {ignore_usgbs} --stat_q {stat_q}
-    --perc_nonzero {perc_nonzero}
-  arg_style: positional
-  callable_via: ''
-  readme_examples: []
-  readme_usage: ''
-  description: '[Auto-discovered] MetaPhlAn is a computational tool for profiling
-    the composition of microbial communities from metagenomic shotgun sequencing data
-    (⭐421, Python) (license: license.txt)'
+  command: python -m bioemu.sample {sequence} {num_samples} {output_dir} --batch_size_100
+    {batch_size_100} --model_name {model_name} --ckpt_path {ckpt_path} --model_config_path
+    {model_config_path} --denoiser_type {denoiser_type} --denoiser_config {denoiser_config}
+    --cache_embeds_dir {cache_embeds_dir} --cache_so3_dir {cache_so3_dir} --msa_host_url
+    {msa_host_url} --filter_samples {filter_samples} --base_seed {base_seed}
+  arg_style: python
+  callable_via: python -m bioemu.sample
+  readme_examples:
+  - python -m bioemu.sample --sequence GYDPETGTWG --num_samples 10 --output_dir ~/test-chignolin
+  - python -m bioemu.sample \
+  - python -m bioemu.sidechain_relax --pdb-path path/to/topology.pdb --xtc-path path/to/samples.xtc
+  readme_usage: python -m bioemu.sample
+  description: '[Auto-discovered] Inference code for scalable emulation of protein
+    equilibrium ensembles with generative deep learning (⭐867, Python) (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    input_type:
-      type: string
-      description: set whether the input is the FASTA file of metagenomic reads or  the
-        SAM file of the mapping of the reads against the MetaPhlAn db.
-      required: true
-      source: help_parsed
-      flag: --input_type
-      takes_value: true
-    force:
-      type: boolean
-      description: Force profiling of the input file by removing the mapout file
-      required: false
-      source: help_parsed
-      flag: --force
-      takes_value: false
-    mapout:
-      type: path
-      description: The file for saving the mapping output (old --bowtie2out option)
-      required: false
-      source: help_parsed
-      flag: --mapout
-      takes_value: true
-    min_mapq_val:
-      type: string
-      description: Minimum mapping quality value (MAPQ)
-      required: false
-      source: help_parsed
-      flag: --min_mapq_val
-      takes_value: true
-    no_map:
-      type: boolean
-      description: Avoid storing the --mapout map file
-      required: false
-      source: help_parsed
-      flag: --no_map
-      takes_value: false
-    tmp_dir:
-      type: string
-      description: The folder used to store temporary files
-      required: false
-      source: help_parsed
-      flag: --tmp_dir
-      takes_value: false
-    bt2_ps:
-      type: path
-      description: Presets options for BowTie2 (applied only when a FASTA file is
-        provided)
-      required: false
-      source: help_parsed
-      flag: --bt2_ps
-      takes_value: true
-    bowtie2_exe:
-      type: path
-      description: Full path and name of the BowTie2 executable. This option allowsMetaPhlAn
-        to reach the executable even when it is not in the system PATH or the system
-        PATH is unreachable
-      required: false
-      source: help_parsed
-      flag: --bowtie2_exe
-      takes_value: true
-    bowtie2_build:
-      type: path
-      description: Full path to the bowtie2-build command to use, deafult assumes
-        that 'bowtie2-build is present in the system path
-      required: false
-      source: help_parsed
-      flag: --bowtie2_build
-      takes_value: true
-    tax_lev:
+    batch_size_100:
       type: int
-      description: CLI flag --tax_lev
+      description: Batch size you'd use for a sequence of length 100. The batch size
+        will be calculated from this, assuming that the memory requirement to compute
+        each sample scales quadratically with the sequence length.
       required: false
       source: help_parsed
-      flag: --tax_lev
+      flag: --batch_size_100
       takes_value: true
-    min_alignment_len:
-      type: string
-      description: The sam records for aligned reads with the longest subalignment  length
-        smaller than this threshold will be discarded.
-      required: false
-      source: help_parsed
-      flag: --min_alignment_len
-      takes_value: false
-    ignore_eukaryotes:
-      type: boolean
-      description: Do not profile eukaryotic organisms
-      required: false
-      source: help_parsed
-      flag: --ignore_eukaryotes
-      takes_value: false
-    ignore_bacteria:
-      type: boolean
-      description: Do not profile bacterial organisms
-      required: false
-      source: help_parsed
-      flag: --ignore_bacteria
-      takes_value: false
-    ignore_archaea:
-      type: boolean
-      description: Do not profile archeal organisms
-      required: false
-      source: help_parsed
-      flag: --ignore_archaea
-      takes_value: false
-    ignore_ksgbs:
-      type: boolean
-      description: Do not profile known SGBs (together with --sgb option)
-      required: false
-      source: help_parsed
-      flag: --ignore_ksgbs
-      takes_value: false
-    ignore_usgbs:
-      type: boolean
-      description: Do not profile unknown SGBs (together with --sgb option)
-      required: false
-      source: help_parsed
-      flag: --ignore_usgbs
-      takes_value: false
-    stat_q:
-      type: boolean
-      description: Quantile value for the robust average
-      required: false
-      source: help_parsed
-      flag: --stat_q
-      takes_value: false
-    perc_nonzero:
-      type: boolean
-      description: Percentage of markers with a non zero relative abundance for misidentify
-        a species
-      required: false
-      source: help_parsed
-      flag: --perc_nonzero
-      takes_value: false
-    input_file:
+    model_name:
       type: path
-      description: 'the input file can be:'
+      description: Name of pretrained model to use. If this is set, you do not need
+        to provide `ckpt_path` or `model_config_path`.
+      required: false
+      source: help_parsed
+      flag: --model_name
+      takes_value: true
+    ckpt_path:
+      type: path
+      description: Path to the model checkpoint. If this is set, `model_name` will
+        be ignored.
+      required: false
+      source: help_parsed
+      flag: --ckpt_path
+      takes_value: true
+    model_config_path:
+      type: path
+      description: Path to the model config, defining score model architecture and
+        the corruption process the model was trained with. Only required if `ckpt_path`
+        is set.
+      required: false
+      source: help_parsed
+      flag: --model_config_path
+      takes_value: true
+    denoiser_type:
+      type: string
+      description: Denoiser to use for sampling, if `denoiser_config` not specified.
+        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
+      required: false
+      source: help_parsed
+      flag: --denoiser_type
+      takes_value: true
+    denoiser_config:
+      type: path
+      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
+        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
+        which includes the denoiser target, potentials, and steering parameters in
+        one file.
+      required: false
+      source: help_parsed
+      flag: --denoiser_config
+      takes_value: true
+    cache_embeds_dir:
+      type: path
+      description: Directory to store MSA embeddings. If not set, this defaults to
+        `COLABFOLD_DIR/embeds_cache`.
+      required: false
+      source: help_parsed
+      flag: --cache_embeds_dir
+      takes_value: true
+    cache_so3_dir:
+      type: path
+      description: Directory to store SO3 precomputations. If not set, this defaults
+        to `~/sampling_so3_cache`.
+      required: false
+      source: help_parsed
+      flag: --cache_so3_dir
+      takes_value: true
+    msa_host_url:
+      type: string
+      description: MSA server URL. If not set, this defaults to colabfold's remote
+        server. If sequence is an a3m file, this is ignored.
+      required: false
+      source: help_parsed
+      flag: --msa_host_url
+      takes_value: true
+    filter_samples:
+      type: boolean
+      description: Filter out unphysical samples with e.g. long bond distances or
+        steric clashes.
+      required: false
+      source: help_parsed
+      flag: --filter_samples
+      takes_value: false
+    base_seed:
+      type: string
+      description: Base random seed for sampling. If set, each batch's seed will be
+        set to base_seed + (num samples already generated).
+      required: false
+      source: help_parsed
+      flag: --base_seed
+      takes_value: true
+    sequence:
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
       required: true
       source: help_parsed
       positional: true
       position: 0
-  resources:
-    db_dir:
-      required: false
-      required_by: runtime
+    num_samples:
+      type: int
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      required: true
       source: help_parsed
-      description: Folder containing the MetaPhlAn database (old --bowtie2db option).
-        Alternatively, you can specify the location by exporting the METAPHLAN_DB_DIR
-        variable in the shell.
-    index:
-      required: false
-      required_by: runtime
+      positional: true
+      position: 1
+    output_dir:
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      required: true
       source: help_parsed
-      description: Specify the id of the database version to use. If "latest", MetaPhlAn
-        will get the latest version.  If an index name is provided, MetaPhlAn will
-        try to use it, if available, and skip the online check.  If the database files
-        are not found on the local MetaPhlAn installation they  will be automatically
-        downloaded
+      positional: true
+      position: 2
+  resources: {}
+  outputs:
+    output_dir:
+      type: directory
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      input: output_dir
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: 'pip install bioemu  # source: https://github.com/microsoft/bioemu'
+    system_commands: []
+    python_packages:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_ssmtxa94/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - FastMBAR
+    - alphafold
+    - bioemu
+    - chemgraph
+    - collective_variables
+    - denoiser
+    - fire
+    - hpacker
+    - huggingface_hub
+    - hydra
+    - matplotlib
+    - mdtraj
+    - models
+    - numpy
+    - omegaconf
+    - openfold
+    - openmm
+    - potentials
+    - requests
+    - scipy
+    - sde_lib
+    - so3_sde
+    - stackprinter
+    - steered_dg_lib
+    - structure_module
+    - torch
+    - torch_geometric
+    - toy_gmm
+    - tqdm
+    venv_path: /tmp/execute_ssmtxa94/venv
+  evidence:
+    exec_status: passed
+    exec_reason: 'README usage: python -m bioemu.sample --help'
+    exec_executable: bioemu
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_status: repo_ok
+    inputs_source: help_parsed
+    params_schema:
+    - name: --batch_size_100
+      type: int
+      description: Batch size you'd use for a sequence of length 100. The batch size
+        will be calculated from this, assuming that the memory requirement to compute
+        each sample scales quadratically with the sequence length.
+      required: false
+      takes_value: true
+    - name: --model_name
+      type: path
+      description: Name of pretrained model to use. If this is set, you do not need
+        to provide `ckpt_path` or `model_config_path`.
+      required: false
+      takes_value: true
+    - name: --ckpt_path
+      type: path
+      description: Path to the model checkpoint. If this is set, `model_name` will
+        be ignored.
+      required: false
+      takes_value: true
+    - name: --model_config_path
+      type: path
+      description: Path to the model config, defining score model architecture and
+        the corruption process the model was trained with. Only required if `ckpt_path`
+        is set.
+      required: false
+      takes_value: true
+    - name: --denoiser_type
+      type: string
+      description: Denoiser to use for sampling, if `denoiser_config` not specified.
+        Comes in with default parameter configuration. Must be one of ['dpm', 'heun']
+      required: false
+      takes_value: true
+    - name: --denoiser_config
+      type: path
+      description: Path (str or :class:`os.PathLike`) to a denoiser config YAML, or
+        a dict. For steered sampling, pass a steering config (e.g., config/steering/physical_steering.yaml)
+        which includes the denoiser target, potentials, and steering parameters in
+        one file.
+      required: false
+      takes_value: true
+    - name: --cache_embeds_dir
+      type: path
+      description: Directory to store MSA embeddings. If not set, this defaults to
+        `COLABFOLD_DIR/embeds_cache`.
+      required: false
+      takes_value: true
+    - name: --cache_so3_dir
+      type: path
+      description: Directory to store SO3 precomputations. If not set, this defaults
+        to `~/sampling_so3_cache`.
+      required: false
+      takes_value: true
+    - name: --msa_host_url
+      type: string
+      description: MSA server URL. If not set, this defaults to colabfold's remote
+        server. If sequence is an a3m file, this is ignored.
+      required: false
+      takes_value: true
+      choices:
+      - str
+      - None
+    - name: --filter_samples
+      type: boolean
+      description: Filter out unphysical samples with e.g. long bond distances or
+        steric clashes.
+      required: false
+      takes_value: false
+      aliases:
+      - -f
+    - name: --base_seed
+      type: string
+      description: Base random seed for sampling. If set, each batch's seed will be
+        set to base_seed + (num samples already generated).
+      required: false
+      takes_value: true
+      choices:
+      - int
+      - None
+    - name: sequence
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      required: true
+      positional: true
+      position: 0
+    - name: num_samples
+      type: int
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      required: true
+      positional: true
+      position: 1
+    - name: output_dir
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      required: true
+      positional: true
+      position: 2
+    exec_positional_args:
+    - name: sequence
+      type: path
+      description: Amino acid sequence for which to generate samples, or a path to
+        a .fasta file, or a path to an .a3m file with MSAs. If it is not an a3m file,
+        then colabfold will be used to generate an MSA and embedding.
+      required: true
+      positional: true
+      position: 0
+    - name: num_samples
+      type: int
+      description: Number of samples to generate. If `output_dir` already contains
+        samples, this function will only generate additional samples necessary to
+        reach the specified `num_samples`.
+      required: true
+      positional: true
+      position: 1
+    - name: output_dir
+      type: path
+      description: Directory to save the samples. Each batch of samples will initially
+        be dumped as .npz files. Once all batches are sampled, they will be converted
+        to .xtc and .pdb.
+      required: true
+      positional: true
+      position: 2
+    installed_versions:
+    - absl-py==2.5.0
+    - aiohappyeyeballs==2.7.1
+    - aiohttp==3.14.3
+    - aiosignal==1.4.0
+    - annotated-doc==0.0.5
+    - antlr4-python3-runtime==4.9.3
+    - anyio==4.14.2
+    - astunparse==1.6.3
+    - attrs==26.1.0
+    - bio==1.8.3
+    - bioemu @ file:///tmp/execute_ssmtxa94/bioemu
+    - biopython==1.88
+    - biothings_client==0.5.1
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cuda-bindings==13.3.1
+    - cuda-pathfinder==1.6.0
+    - cuda-toolkit==13.0.3.0
+    - cycler==0.12.1
+    - dm-haiku==0.0.17
+    - dm-tree==0.1.10
+    - einops==0.8.2
+    - filelock==3.32.3
+    - fire==0.7.1
+    - flatbuffers==25.12.19
+    - fonttools==4.63.0
+    - frozenlist==1.8.0
+    - fsspec==2026.7.0
+    - gast==0.7.0
+    - google-pasta==0.2.0
+    - gprofiler-official==1.0.0
+    - grpcio==1.83.0
+    - h11==0.16.0
+    - h5py==3.14.0
+    - hf-xet==1.6.0
+    - httpcore==1.0.9
+    - httpx==0.28.1
+    - huggingface_hub==1.27.0
+    - hydra-core==1.3.5
+    - idna==3.18
+    - ihm==2.11
+    - jax==0.10.2
+    - jaxlib==0.10.2
+    - Jinja2==3.1.6
+    - jmp==0.0.4
+    - keras==3.15.1
+    - kiwisolver==1.5.0
+    - libclang==18.1.1
+    - markdown-it-py==4.2.0
+    - MarkupSafe==3.0.3
+    - matplotlib==3.11.1
+    - mdtraj==1.11.1.post2
+    - mdurl==0.1.2
+    - ml_collections==1.1.0
+    - ml_dtypes==0.6.0
+    - modelcif==1.7
+    - mpmath==1.3.0
+    - msgpack==1.2.1
+    - multidict==6.7.1
+    - mygene==3.2.2
+    - namex==0.1.0
+    - networkx==3.6.1
+    - numpy==2.4.6
+    - nvidia-cublas==13.1.1.3
+    - nvidia-cuda-cupti==13.0.85
+    - nvidia-cuda-nvrtc==13.0.88
+    - nvidia-cuda-runtime==13.0.96
+    - nvidia-cudnn-cu13==9.20.0.48
+    - nvidia-cufft==12.0.0.61
+    - nvidia-cufile==1.15.1.6
+    - nvidia-curand==10.4.0.35
+    - nvidia-cusolver==12.0.4.66
+    - nvidia-cusparse==12.6.3.3
+    - nvidia-cusparselt-cu13==0.8.1
+    - nvidia-nccl-cu13==2.29.7
+    - nvidia-nvjitlink==13.3.33
+    - nvidia-nvshmem-cu13==3.4.5
+    - nvidia-nvtx==13.0.85
+- name: bqtools
+  type: cli
+  command: bqtools {subcommand}
+  arg_style: subcommand
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] A command line utilty for working with BINSEQ files
+    (⭐39, Rust) (NO license - research use only)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    subcommand:
+      type: string
+      required: true
+      description: 'Subcommand to run. One of: encode, decode, cat, info, grep, sample,
+        split, pipe, revcomp, verify'
+  resources: {}
   outputs:
     stdout:
       type: text
       description: Tool result printed to stdout.
       source: inferred
   execution: null
-  subcommands: []
-  subcommand_details: {}
-  subcommand_discovery_complete: false
+  subcommands:
+  - encode
+  - decode
+  - cat
+  - info
+  - grep
+  - sample
+  - split
+  - pipe
+  - revcomp
+  - verify
+  subcommand_details:
+    encode:
+      params:
+      - name: --format
+        type: path
+        description: Input file format
+        required: false
+        takes_value: true
+        aliases:
+        - -f
+        choices: &id001
+        - a
+        - q
+        - b
+        - t
+      - name: --batch-size
+        type: int
+        description: Batch size (in records) to use in parallel processing
+        required: false
+        takes_value: true
+        aliases:
+        - -b
+      - name: --interleaved
+        type: boolean
+        description: Input is paired-interleaved
+        required: false
+        takes_value: false
+        aliases:
+        - -I
+      - name: --recursive
+        type: boolean
+        description: Apply encoding to all fasta/fastq files in the provided directory
+          input.
+        required: false
+        takes_value: false
+        aliases:
+        - -r
+        artifact_type: fastq
+        extensions:
+        - .fastq
+        - .fq
+      - name: --manifest
+        type: path
+        description: Path to a text file containing a list of input files to process.
+        required: false
+        takes_value: true
+        aliases:
+        - -M
+      - name: --depth
+        type: int
+        description: Maximum depth in the directory tree to process. Leaving this
+          option empty will set no limit
+        required: false
+        takes_value: true
+      - name: --paired
+        type: boolean
+        description: Encode *{_R1,_R2}* record pairs. Ignored unless `--manifest`
+          or `--recursive` is specified
+        required: false
+        takes_value: false
+        aliases:
+        - -P
+      - name: --collate
+        type: boolean
+        description: Collate all input files into a single output file. Will respect
+          paired records if `--paired` is specified
+        required: false
+        takes_value: false
+        aliases:
+        - -C
+      - name: --output
+        type: path
+        description: Output binseq file
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --mode
+        type: string
+        description: Defines the BINSEQ mode to use
+        required: false
+        takes_value: true
+        aliases:
+        - -m
+      - name: --policy
+        type: string
+        description: Policy for handling Ns in sequences
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --bitsize
+        type: string
+        description: Encoding bitsize (2 or 4 bits per nucleotide)
+        required: false
+        takes_value: true
+        aliases:
+        - -S
+      - name: --skip-headers
+        type: boolean
+        description: Exclude sequence names (headers) in the binseq file
+        required: false
+        takes_value: false
+        aliases:
+        - -H
+      - name: --uncompressed
+        type: boolean
+        description: 'Skip ZSTD compression of VBQ blocks (default: compressed)'
+        required: false
+        takes_value: false
+        aliases:
+        - -u
+      - name: --skip-quality
+        type: boolean
+        description: 'Skip inclusion of quality scores (default: included)'
+        required: false
+        takes_value: false
+        aliases:
+        - -Q
+      - name: --block-size
+        type: int
+        description: Virtual block size (in bytes)
+        required: false
+        takes_value: true
+        aliases:
+        - -B
+      - name: --threads
+        type: int
+        description: Number of threads to use for parallel reading and writing.
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: --level
+        type: int
+        description: Zstd compression level The compression level is between 1 and
+          22, with 3 being the default. Higher levels provide better compression at
+          the cost of speed. Level 0 disables compression.
+        required: false
+        takes_value: true
+        aliases:
+        - -l
+      - name: --archive
+        type: boolean
+        description: Archive mode
+        required: false
+        takes_value: false
+        aliases:
+        - -A
+      - name: --pipe
+        type: boolean
+        description: Pipe the output to stdout
+        required: false
+        takes_value: false
+      - name: input
+        type: path
+        description: Positional argument INPUT
+        required: false
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: &id002
+        - .vbq
+        - .cbq
+        - .bq
+      usage: bqtools encode [OPTIONS] [INPUT]...
+      outputs:
+        output:
+          type: file
+          description: Output binseq file
+          input: output
+          source: help_parsed
+      description: Encode FASTA/FASTQ sequence files into BINSEQ format.
+    decode:
+      params:
+      - name: --span
+        type: string
+        description: Span of records to process. If not specified, all records will
+          be processed
+        required: false
+        takes_value: true
+      - name: --output
+        type: path
+        description: Output file
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --prefix
+        type: path
+        description: Output file format prefix (required for paired BINSEQ files
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --mate
+        type: string
+        description: Designate which of the two mates is being processed
+        required: false
+        takes_value: true
+        aliases:
+        - -m
+      - name: --format
+        type: path
+        description: Output file format
+        required: false
+        takes_value: true
+        aliases:
+        - -f
+        choices: *id001
+      - name: --compress
+        type: path
+        description: Compress output file
+        required: false
+        takes_value: true
+        aliases:
+        - -c
+      - name: --threads
+        type: int
+        description: Number of threads to use for parallel compression (0 for auto)
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: input
+        type: path
+        description: Positional argument <INPUT>
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools decode [OPTIONS] <INPUT>
+      outputs:
+        output:
+          type: file
+          description: Output file
+          input: output
+          source: help_parsed
+      description: Restore BINSEQ files back to FASTA/FASTQ/TSV text format.
+    cat:
+      params:
+      - name: --output
+        type: path
+        description: Output binseq file
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --mode
+        type: string
+        description: Defines the BINSEQ mode to use
+        required: false
+        takes_value: true
+        aliases:
+        - -m
+      - name: --policy
+        type: string
+        description: Policy for handling Ns in sequences
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --bitsize
+        type: string
+        description: Encoding bitsize (2 or 4 bits per nucleotide)
+        required: false
+        takes_value: true
+        aliases:
+        - -S
+      - name: --skip-headers
+        type: boolean
+        description: Exclude sequence names (headers) in the binseq file
+        required: false
+        takes_value: false
+        aliases:
+        - -H
+      - name: --uncompressed
+        type: boolean
+        description: 'Skip ZSTD compression of VBQ blocks (default: compressed)'
+        required: false
+        takes_value: false
+        aliases:
+        - -u
+      - name: --skip-quality
+        type: boolean
+        description: 'Skip inclusion of quality scores (default: included)'
+        required: false
+        takes_value: false
+        aliases:
+        - -Q
+      - name: --block-size
+        type: int
+        description: Virtual block size (in bytes)
+        required: false
+        takes_value: true
+        aliases:
+        - -B
+      - name: --threads
+        type: int
+        description: Number of threads to use for parallel reading and writing.
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: --level
+        type: int
+        description: Zstd compression level The compression level is between 1 and
+          22, with 3 being the default. Higher levels provide better compression at
+          the cost of speed. Level 0 disables compression.
+        required: false
+        takes_value: true
+        aliases:
+        - -l
+      - name: --archive
+        type: boolean
+        description: Archive mode
+        required: false
+        takes_value: false
+        aliases:
+        - -A
+      - name: --pipe
+        type: boolean
+        description: Pipe the output to stdout
+        required: false
+        takes_value: false
+      - name: input
+        type: path
+        description: Positional argument INPUT
+        required: false
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools cat [OPTIONS] [INPUT]...
+      outputs:
+        output:
+          type: file
+          description: Output binseq file
+          input: output
+          source: help_parsed
+      description: Concatenate multiple BINSEQ files into a single output.
+    info:
+      params:
+      - name: --num
+        type: boolean
+        description: Only print the number of records in the file
+        required: false
+        takes_value: false
+        aliases:
+        - -n
+      - name: --json
+        type: boolean
+        description: Print the file in JSON format
+        required: false
+        takes_value: false
+        aliases:
+        - -j
+      - name: --show-index
+        type: boolean
+        description: Print the index of the file
+        required: false
+        takes_value: false
+      - name: --show-headers
+        type: boolean
+        description: Print the block headers of the file
+        required: false
+        takes_value: false
+      - name: input
+        type: path
+        description: Positional argument <INPUT>...
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools info [OPTIONS] <INPUT>...
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
+      description: Print metadata about a BINSEQ file (record count, format, etc.).
+    grep:
+      params:
+      - name: --span
+        type: string
+        description: Span of records to process. If not specified, all records will
+          be processed
+        required: false
+        takes_value: true
+      - name: --output
+        type: path
+        description: Output file
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --prefix
+        type: path
+        description: Output file format prefix (required for paired BINSEQ files
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --mate
+        type: string
+        description: Designate which of the two mates is being processed
+        required: false
+        takes_value: true
+        aliases:
+        - -m
+      - name: --format
+        type: path
+        description: Output file format
+        required: false
+        takes_value: true
+        aliases:
+        - -f
+        choices: *id001
+      - name: --compress
+        type: path
+        description: Compress output file
+        required: false
+        takes_value: true
+        aliases:
+        - -c
+      - name: --threads
+        type: int
+        description: Number of threads to use for parallel compression (0 for auto)
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: --reg1
+        type: string
+        description: Regex expression to search for in primary sequence
+        required: false
+        takes_value: true
+        aliases:
+        - -r
+      - name: --reg2
+        type: string
+        description: Regex expression to search for in extended sequence
+        required: false
+        takes_value: true
+        aliases:
+        - -R
+      - name: --invert
+        type: boolean
+        description: Invert pattern criteria (like grep -v)
+        required: false
+        takes_value: false
+        aliases:
+        - -v
+      - name: --header
+        type: boolean
+        description: Match patterns against the sequence header instead of the sequence
+        required: false
+        takes_value: false
+        aliases:
+        - -H
+      - name: --count
+        type: boolean
+        description: Only count matches
+        required: false
+        takes_value: false
+        aliases:
+        - -C
+      - name: --frac
+        type: boolean
+        description: Show match count as a fraction of total records
+        required: false
+        takes_value: false
+        aliases:
+        - -F
+      - name: --range
+        type: string
+        description: Only match patterns that are within this range.
+        required: false
+        takes_value: true
+      - name: --pattern-count
+        type: boolean
+        description: Count number of matches per pattern
+        required: false
+        takes_value: false
+        aliases:
+        - -P
+      - name: --fixed
+        type: boolean
+        description: Denotes patterns are fixed strings (non-regex)
+        required: false
+        takes_value: false
+        aliases:
+        - -x
+      - name: --rc
+        type: boolean
+        description: Reverse complement all patterns before matching
+        required: false
+        takes_value: false
+      - name: --no-dfa
+        type: boolean
+        description: Build Aho-Corasick automaton without DFA
+        required: false
+        takes_value: false
+      - name: --or-logic
+        type: boolean
+        description: use OR logic for multiple patterns (default=AND)
+        required: false
+        takes_value: false
+      - name: --color
+        type: string
+        description: Colorize output (auto, always, never)
+        required: false
+        takes_value: true
+      - name: input
+        type: path
+        description: Positional argument <INPUT>
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      - name: reg
+        type: string
+        description: Positional argument REG
+        required: false
+        positional: true
+        position: 1
+      usage: bqtools grep [OPTIONS] <INPUT> [REG]...
+      outputs:
+        output:
+          type: file
+          description: Output file
+          input: output
+          source: help_parsed
+      description: Search BINSEQ records by sequence pattern and write matches to
+        output.
+    sample:
+      params:
+      - name: --span
+        type: string
+        description: Span of records to process. If not specified, all records will
+          be processed
+        required: false
+        takes_value: true
+      - name: --output
+        type: path
+        description: Output file
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --prefix
+        type: path
+        description: Output file format prefix (required for paired BINSEQ files
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --mate
+        type: string
+        description: Designate which of the two mates is being processed
+        required: false
+        takes_value: true
+        aliases:
+        - -m
+      - name: --format
+        type: path
+        description: Output file format
+        required: false
+        takes_value: true
+        aliases:
+        - -f
+        choices: *id001
+      - name: --compress
+        type: path
+        description: Compress output file
+        required: false
+        takes_value: true
+        aliases:
+        - -c
+      - name: --threads
+        type: int
+        description: Number of threads to use for parallel compression (0 for auto)
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: --fraction
+        type: float
+        description: Fraction of the input reads to sample
+        required: true
+        takes_value: true
+        aliases:
+        - -F
+      - name: --seed
+        type: int
+        description: Seed to use for random sampling
+        required: false
+        takes_value: true
+        aliases:
+        - -S
+      - name: input
+        type: path
+        description: Positional argument <INPUT>
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools sample [OPTIONS] --fraction <FRACTION> <INPUT>
+      outputs:
+        output:
+          type: file
+          description: Output file
+          input: output
+          source: help_parsed
+      description: Randomly sample a fraction of records from a BINSEQ file.
+    split:
+      params:
+      - name: --span
+        type: string
+        description: Span of records to process. If not specified, all records will
+          be processed
+        required: false
+        takes_value: true
+      - name: --basepath
+        type: path
+        description: Optional base path for output files. If not provided, the current
+          working directory will be used
+        required: false
+        takes_value: true
+      - name: --skip-unmatched
+        type: boolean
+        description: Skip writing records that do not match any pattern
+        required: false
+        takes_value: false
+      - name: --unmatched-basename
+        type: string
+        description: Optional base name for unmatched records
+        required: false
+        takes_value: true
+      - name: --min-records
+        type: string
+        description: Remove output files with fewer than this many records.
+        required: false
+        takes_value: true
+      - name: --fixed
+        type: boolean
+        description: Denotes patterns are fixed strings (non-regex)
+        required: false
+        takes_value: false
+        aliases:
+        - -x
+      - name: --rc
+        type: boolean
+        description: Reverse complement all patterns before matching
+        required: false
+        takes_value: false
+      - name: --no-dfa
+        type: boolean
+        description: Don't use Aho-Corasick DFA (slower, but lower memory)
+        required: false
+        takes_value: false
+      - name: --threads
+        type: int
+        description: 'Number of processing threads to use, 0: auto'
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: --quiet
+        type: boolean
+        description: Suppress the per-pattern record count summary written to stderr
+        required: false
+        takes_value: false
+      - name: --file
+        type: path
+        description: File of patterns to search for in either primary or extended
+          sequence
+        required: false
+        takes_value: true
+      - name: --sfile
+        type: path
+        description: File of patterns to search for in primary sequence
+        required: false
+        takes_value: true
+      - name: --xfile
+        type: path
+        description: File of patterns to search for in extended sequence
+        required: false
+        takes_value: true
+      - name: input
+        type: path
+        description: Positional argument <INPUT>
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools split [OPTIONS] <INPUT>
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
+      description: Split a BINSEQ file into multiple files by pattern matching.
+      constraints:
+        any_of:
+        - - file
+        - - sfile
+        - - xfile
+    pipe:
+      params:
+      - name: --span
+        type: string
+        description: Span of records to process. If not specified, all records will
+          be processed
+        required: false
+        takes_value: true
+      - name: --num-pipes
+        type: int
+        description: 'Number of pipes to make [0: as many as threads]'
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --format
+        type: path
+        description: Output file format
+        required: false
+        takes_value: true
+        aliases:
+        - -f
+        choices: *id001
+      - name: --basepath
+        type: path
+        description: Base path for output files
+        required: false
+        takes_value: true
+        aliases:
+        - -b
+      - name: --exec
+        type: string
+        description: Execute a shell command once per pipe, substituting FIFO paths.
+        required: false
+        takes_value: true
+        aliases:
+        - -x
+      - name: --exec-batch
+        type: int
+        description: Execute a single shell command with all FIFO paths substituted.
+        required: false
+        takes_value: true
+        aliases:
+        - -X
+      - name: input
+        type: path
+        description: Positional argument <INPUT>
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools pipe [OPTIONS] <INPUT>
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
+      description: Split BINSEQ files into multiple named pipes for streaming.
+      constraints:
+        exec_template:
+          contains: '{}'
+    revcomp:
+      params:
+      - name: --span
+        type: string
+        description: Span of records to process. If not specified, all records will
+          be processed
+        required: false
+        takes_value: true
+      - name: --output
+        type: path
+        description: Output binseq file
+        required: false
+        takes_value: true
+        aliases:
+        - -o
+      - name: --mode
+        type: string
+        description: Defines the BINSEQ mode to use
+        required: false
+        takes_value: true
+        aliases:
+        - -m
+      - name: --policy
+        type: string
+        description: Policy for handling Ns in sequences
+        required: false
+        takes_value: true
+        aliases:
+        - -p
+      - name: --bitsize
+        type: string
+        description: Encoding bitsize (2 or 4 bits per nucleotide)
+        required: false
+        takes_value: true
+        aliases:
+        - -S
+      - name: --skip-headers
+        type: boolean
+        description: Exclude sequence names (headers) in the binseq file
+        required: false
+        takes_value: false
+        aliases:
+        - -H
+      - name: --uncompressed
+        type: boolean
+        description: 'Skip ZSTD compression of VBQ blocks (default: compressed)'
+        required: false
+        takes_value: false
+        aliases:
+        - -u
+      - name: --skip-quality
+        type: boolean
+        description: 'Skip inclusion of quality scores (default: included)'
+        required: false
+        takes_value: false
+        aliases:
+        - -Q
+      - name: --block-size
+        type: int
+        description: Virtual block size (in bytes)
+        required: false
+        takes_value: true
+        aliases:
+        - -B
+      - name: --threads
+        type: int
+        description: Number of threads to use for parallel reading and writing.
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: --level
+        type: int
+        description: Zstd compression level The compression level is between 1 and
+          22, with 3 being the default. Higher levels provide better compression at
+          the cost of speed. Level 0 disables compression.
+        required: false
+        takes_value: true
+        aliases:
+        - -l
+      - name: --archive
+        type: boolean
+        description: Archive mode
+        required: false
+        takes_value: false
+        aliases:
+        - -A
+      - name: --pipe
+        type: boolean
+        description: Pipe the output to stdout
+        required: false
+        takes_value: false
+      - name: --mate
+        type: string
+        description: Which mate(s) to reverse complement
+        required: false
+        takes_value: true
+        aliases:
+        - -M
+      - name: input
+        type: path
+        description: Positional argument <INPUT>
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools revcomp [OPTIONS] <INPUT>
+      outputs:
+        output:
+          type: file
+          description: Output binseq file
+          input: output
+          source: help_parsed
+      description: Reverse complement all sequences in a BINSEQ file.
+    verify:
+      params:
+      - name: --span
+        type: string
+        description: Span of records to process. If not specified, all records will
+          be processed
+        required: false
+        takes_value: true
+      - name: --skip-seq
+        type: boolean
+        description: Exclude sequence data from the checksum
+        required: false
+        takes_value: false
+      - name: --skip-qual
+        type: boolean
+        description: Exclude quality scores from the checksum
+        required: false
+        takes_value: false
+      - name: --skip-headers
+        type: boolean
+        description: Exclude sequence/record headers from the checksum
+        required: false
+        takes_value: false
+      - name: --skip-flags
+        type: boolean
+        description: Exclude the per-record flag from the checksum
+        required: false
+        takes_value: false
+      - name: --mate
+        type: string
+        description: Which mate(s) to include in the checksum for paired records
+        required: false
+        takes_value: true
+        aliases:
+        - -M
+      - name: --threads
+        type: int
+        description: 'Number of threads to use [0: auto]'
+        required: false
+        takes_value: true
+        aliases:
+        - -T
+      - name: --json
+        type: boolean
+        description: Print the checksum report as JSON
+        required: false
+        takes_value: false
+        aliases:
+        - -j
+      - name: input
+        type: path
+        description: Positional argument <INPUT>
+        required: true
+        positional: true
+        position: 0
+        artifact_type: binseq
+        extensions: *id002
+      usage: bqtools verify [OPTIONS] <INPUT>
+      outputs:
+        stdout:
+          type: text
+          description: Tool result printed to stdout.
+          source: inferred
+      description: Compute an order-independent checksum to verify BINSEQ integrity.
+  subcommand_discovery_complete: true
   install:
-    method: pip_pkg
-    command: pip install https://github.com/biobakery/MetaPhlAn
+    method: cargo
+    command: cargo install --git https://github.com/ArcInstitute/bqtools
     system_commands: []
-    python_packages:
-    - biom_format==2.1.17
-    - biopython==1.88
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cycler==0.12.1
-    - DendroPy==5.0.10
-    - fonttools==4.63.0
-    - h5py==3.16.0
-    - idna==3.18
-    - kiwisolver==1.5.0
-    - matplotlib==3.11.1
-    - metaphlan @ file:///tmp/execute_u6cqxxzu/MetaPhlAn
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - PhyloPhlAn==3.2.1
-    - pillow==12.3.0
-    - pyparsing==3.3.2
+    python_packages: []
     declared_packages: []
-    missing_deps:
-    - Bio
-    - StringIO
-    - array
-    - biom
-    - consensus_markers
-    - database_controller
-    - dendropy
-    - external_exec
-    - matplotlib
-    - numpy
-    - optparse
-    - packaging
-    - pandas
-    - parallelisation
-    - phylophlan_controller
-    - pickletools
-    - pylab
-    - pyphlan
-    - pysam
-    - scipy
-    - scripts
-    - setuptools
-    - shlex
-    - stat
-    - util_fun
-    - utils
-    venv_path: /tmp/execute_u6cqxxzu/venv
+    missing_deps: []
+    venv_path: /tmp/execute_ev584vb0/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_u6cqxxzu/venv/bin/metaphlan --help` -> exit 0'
-    exec_executable: metaphlan
-    verified_license: true
-    verified_license_path: license.txt
+    exec_reason: '`/tmp/execute_ev584vb0/bqtools/target/release/bqtools --help` ->
+      exit 0'
+    exec_executable: bqtools
+    verified_license: false
     verified_status: repo_ok
-    inputs_source: help_parsed
+    inputs_source: subcommand
     params_schema:
-    - name: --input_type
-      type: string
-      description: set whether the input is the FASTA file of metagenomic reads or  the
-        SAM file of the mapping of the reads against the MetaPhlAn db.
-      required: true
-      takes_value: true
-      choices:
-      - fastq
-      - fasta
-      - mapout
-      - sam
-    - name: --force
+    - name: --version
       type: boolean
-      description: Force profiling of the input file by removing the mapout file
+      description: Print version
       required: false
       takes_value: false
-    - name: --db_dir
-      type: path
-      description: Folder containing the MetaPhlAn database (old --bowtie2db option).
-        Alternatively, you can specify the location by exporting the METAPHLAN_DB_DIR
-        variable in the shell.
-      required: false
-      takes_value: true
-    - name: --index
-      type: string
-      description: Specify the id of the database version to use. If "latest", MetaPhlAn
-        will get the latest version.  If an index name is provided, MetaPhlAn will
-        try to use it, if available, and skip the online check.  If the database files
-        are not found on the local MetaPhlAn installation they  will be automatically
-        downloaded
-      required: false
-      takes_value: true
-      choices:
-      - default
-      - latest
       aliases:
-      - -x
-    - name: --mapout
-      type: path
-      description: The file for saving the mapping output (old --bowtie2out option)
-      required: false
-      takes_value: true
-    - name: --min_mapq_val
-      type: string
-      description: Minimum mapping quality value (MAPQ)
-      required: false
-      takes_value: true
-    - name: --no_map
-      type: boolean
-      description: Avoid storing the --mapout map file
-      required: false
-      takes_value: false
-    - name: --tmp_dir
-      type: string
-      description: The folder used to store temporary files
-      required: false
-      takes_value: false
-      choices:
-      - default
-      - is
-      - the
-      - OS
-      - dependent
-      - tmp
-      - dir
-    - name: --bt2_ps
-      type: path
-      description: Presets options for BowTie2 (applied only when a FASTA file is
-        provided)
-      required: false
-      takes_value: true
-    - name: --bowtie2_exe
-      type: path
-      description: Full path and name of the BowTie2 executable. This option allowsMetaPhlAn
-        to reach the executable even when it is not in the system PATH or the system
-        PATH is unreachable
-      required: false
-      takes_value: true
-    - name: --bowtie2_build
-      type: path
-      description: Full path to the bowtie2-build command to use, deafult assumes
-        that 'bowtie2-build is present in the system path
-      required: false
-      takes_value: true
-    - name: --tax_lev
-      type: int
-      description: CLI flag --tax_lev
-      required: false
-      takes_value: true
-    - name: --min_alignment_len
-      type: string
-      description: The sam records for aligned reads with the longest subalignment  length
-        smaller than this threshold will be discarded.
-      required: false
-      takes_value: false
-      choices:
-      - default
-      - None
-    - name: --ignore_eukaryotes
-      type: boolean
-      description: Do not profile eukaryotic organisms
-      required: false
-      takes_value: false
-    - name: --ignore_bacteria
-      type: boolean
-      description: Do not profile bacterial organisms
-      required: false
-      takes_value: false
-    - name: --ignore_archaea
-      type: boolean
-      description: Do not profile archeal organisms
-      required: false
-      takes_value: false
-    - name: --ignore_ksgbs
-      type: boolean
-      description: Do not profile known SGBs (together with --sgb option)
-      required: false
-      takes_value: false
-    - name: --ignore_usgbs
-      type: boolean
-      description: Do not profile unknown SGBs (together with --sgb option)
-      required: false
-      takes_value: false
-    - name: --stat_q
-      type: boolean
-      description: Quantile value for the robust average
-      required: false
-      takes_value: false
-    - name: --perc_nonzero
-      type: boolean
-      description: Percentage of markers with a non zero relative abundance for misidentify
-        a species
-      required: false
-      takes_value: false
-    - name: input_file
-      type: path
-      description: 'the input file can be:'
-      required: false
-      positional: true
-      position: 0
-    exec_positional_args:
-    - name: input_file
-      type: path
-      description: 'the input file can be:'
-      required: false
-      positional: true
-      position: 0
-    installed_versions:
-    - biom_format==2.1.17
-    - biopython==1.88
-    - certifi==2026.7.22
-    - charset-normalizer==3.5.1
-    - click==8.4.2
-    - contourpy==1.3.3
-    - cycler==0.12.1
-    - DendroPy==5.0.10
-    - fonttools==4.63.0
-    - h5py==3.16.0
-    - idna==3.18
-    - kiwisolver==1.5.0
-    - matplotlib==3.11.1
-    - metaphlan @ file:///tmp/execute_u6cqxxzu/MetaPhlAn
-    - numpy==2.4.6
-    - packaging==26.3
-    - pandas==3.0.5
-    - PhyloPhlAn==3.2.1
-    - pillow==12.3.0
-    - pyparsing==3.3.2
-    - pysam==0.24.0
-    - python-dateutil==2.9.0.post0
-    - requests==2.34.2
-    - scipy==1.17.1
-    - seaborn==0.13.2
-    - six==1.17.0
-    - tqdm==4.70.0
-    - urllib3==2.7.0
-- name: condiga
+      - -V
+- name: kaptain
   type: cli
-  command: condiga --contigs {contigs} --taxa {taxa} --genes {genes} --coverages {coverages}
-    --assembly-summary {assembly_summary} --rel-abundance {rel_abundance} --genome-coverage
-    {genome_coverage} --map-threshold {map_threshold} --nthreads {nthreads} --output
-    {output} --version {version}
-  arg_style: named
+  command: kaptain --ont-in {ont_in} --db {db} --db-lookup {db_lookup} --dir-working
+    {dir_working} --output {output} --output-html {output_html} --subsampling {subsampling}
+    --fdr {fdr} --threads {threads} --version {version} --log {log}
+  arg_style: positional
   callable_via: ''
   readme_examples: []
   readme_usage: ''
-  description: '[Auto-discovered] 🗂️🧬 Contigs directed gene annotation for accurate
-    protein sequence database construction in metaproteomics (⭐7, Python) (license:
-    LICENSE)'
+  description: '[Auto-discovered] KMA-bAsed Pipeline for meTAgenomic specIes ideNtification
+    (⭐3, Python) (license: LICENSE)'
   output_control:
     intercept_large_output: true
     max_preview_lines: 50
   inputs:
-    contigs:
-      type: string
-      description: path to the contigs file
+    ont_in:
+      type: path
+      description: 'ONT input FASTA/Q file (default: None)'
       required: true
       source: help_parsed
-      flag: --contigs
+      flag: --ont-in
       takes_value: true
-    taxa:
-      type: string
-      description: path to the taxonomic classification results  file
-      required: true
-      source: help_parsed
-      flag: --taxa
-      takes_value: true
-    genes:
-      type: string
-      description: path to the genes file
-      required: true
-      source: help_parsed
-      flag: --genes
-      takes_value: true
-    coverages:
-      type: string
-      description: path to the contig coverages file
-      required: true
-      source: help_parsed
-      flag: --coverages
-      takes_value: true
-    assembly_summary:
-      type: string
-      description: path to the assembly_summary.txt file
-      required: true
-      source: help_parsed
-      flag: --assembly-summary
-      takes_value: true
-    rel_abundance:
-      type: float
-      description: minimum relative abundance cut-off
+    dir_working:
+      type: path
+      description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
       source: help_parsed
-      flag: --rel-abundance
-      takes_value: true
-    genome_coverage:
-      type: float
-      description: minimum genome coverage cut-off
-      required: false
-      source: help_parsed
-      flag: --genome-coverage
-      takes_value: true
-    map_threshold:
-      type: float
-      description: minimum mapping length threshold cut-off
-      required: false
-      source: help_parsed
-      flag: --map-threshold
-      takes_value: true
-    nthreads:
-      type: integer
-      description: number of threads to use
-      required: false
-      source: help_parsed
-      flag: --nthreads
+      flag: --dir-working
       takes_value: true
     output:
-      type: string
-      description: path to the output folder
+      type: path
+      description: 'Output directory (default: None)'
       required: true
       source: help_parsed
       flag: --output
       takes_value: true
+    output_html:
+      type: path
+      description: 'Output report name (default: report.html)'
+      required: false
+      source: help_parsed
+      flag: --output-html
+      takes_value: true
+    subsampling:
+      type: string
+      description: 'Subsample input to number of bases before  classification. Leave
+        empty or use None for no  downsampling. (default: [None])'
+      required: false
+      source: help_parsed
+      flag: --subsampling
+      takes_value: true
+    fdr:
+      type: string
+      description: 'FDR setting. (default: [5])'
+      required: false
+      source: help_parsed
+      flag: --fdr
+      takes_value: true
+    threads:
+      type: int
+      description: 'Number of threads (default: 4)'
+      required: false
+      source: help_parsed
+      flag: --threads
+      takes_value: true
     version:
       type: boolean
-      description: Show the version and exit.
+      description: Print version and exit
       required: false
       source: help_parsed
       flag: --version
       takes_value: false
-  resources: {}
+    log:
+      type: boolean
+      description: 'Write out log information to file (default: False)'
+      required: false
+      source: help_parsed
+      flag: --log
+      takes_value: false
+  resources:
+    db:
+      required: true
+      required_by: runtime
+      source: help_parsed
+      description: 'Basename of KMA database. Database exists of four  files named
+        *.{comp.b, length.b, name, seq.b}  (default: None)'
+    db_lookup:
+      required: true
+      required_by: runtime
+      source: help_parsed
+      description: 'Lookup file of KMA database (default: None)'
   outputs:
     output:
-      type: file
-      description: path to the output folder
+      type: directory
+      description: 'Output directory (default: None)'
       input: output
+      source: help_parsed
+    output_html:
+      type: file
+      description: 'Output report name (default: report.html)'
+      input: output_html
       source: help_parsed
   execution: null
   subcommands: []
@@ -531,129 +1549,187 @@ tools:
   subcommand_discovery_complete: false
   install:
     method: pip_pkg
-    command: pip install https://github.com/metagentools/ConDiGA
+    command: 'pip install kaptain  # source: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN'
     system_commands: []
     python_packages:
-    - biopython==1.88
-    - click==8.4.2
-    - condiga @ file:///tmp/execute_y941ywe1/ConDiGA
-    - numpy==2.4.6
-    - packaging==26.3
-    - tqdm==4.70.0
-    - xlsxwriter==3.2.9
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.2
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
     declared_packages: []
     missing_deps:
-    - Bio
-    - click
-    - setuptools
-    - xlsxwriter
-    venv_path: /tmp/execute_y941ywe1/venv
+    - bs4
+    - importlib
+    - kaptain
+    - pandas
+    - yaml
+    - yattag
+    venv_path: /tmp/execute_t7anshg9/venv
   evidence:
     exec_status: passed
-    exec_reason: '`/tmp/execute_y941ywe1/venv/bin/condiga --help` -> exit 0'
-    exec_executable: condiga
+    exec_reason: '`/tmp/execute_t7anshg9/venv/bin/kaptain --help` -> exit 0'
+    exec_executable: kaptain
     verified_license: true
     verified_license_path: LICENSE
     verified_status: repo_ok
     inputs_source: help_parsed
     params_schema:
-    - name: --contigs
-      type: string
-      description: path to the contigs file
+    - name: --ont-in
+      type: path
+      description: 'ONT input FASTA/Q file (default: None)'
       required: true
       takes_value: true
-      choices:
-      - required
       aliases:
-      - -c
-    - name: --taxa
-      type: string
-      description: path to the taxonomic classification results  file
+      - -i
+    - name: --db
+      type: path
+      description: 'Basename of KMA database. Database exists of four  files named
+        *.{comp.b, length.b, name, seq.b}  (default: None)'
       required: true
       takes_value: true
-      choices:
-      - required
-      aliases:
-      - -ta
-    - name: --genes
-      type: string
-      description: path to the genes file
+    - name: --db-lookup
+      type: path
+      description: 'Lookup file of KMA database (default: None)'
       required: true
       takes_value: true
-      choices:
-      - required
-      aliases:
-      - -g
-    - name: --coverages
-      type: string
-      description: path to the contig coverages file
-      required: true
-      takes_value: true
-      choices:
-      - required
-      aliases:
-      - -cov
-    - name: --assembly-summary
-      type: string
-      description: path to the assembly_summary.txt file
-      required: true
-      takes_value: true
-      choices:
-      - required
-      aliases:
-      - -as
-    - name: --rel-abundance
-      type: float
-      description: minimum relative abundance cut-off
+    - name: --dir-working
+      type: path
+      description: 'Working directory (default: /home/runner/work/scientif  ic_training2_cxy/scientific_training2_cxy/working)'
       required: false
       takes_value: true
-      aliases:
-      - -ra
-    - name: --genome-coverage
-      type: float
-      description: minimum genome coverage cut-off
-      required: false
-      takes_value: true
-      aliases:
-      - -gc
-    - name: --map-threshold
-      type: float
-      description: minimum mapping length threshold cut-off
-      required: false
-      takes_value: true
-      aliases:
-      - -mt
-    - name: --nthreads
-      type: integer
-      description: number of threads to use
-      required: false
-      takes_value: true
-      aliases:
-      - -t
     - name: --output
-      type: string
-      description: path to the output folder
+      type: path
+      description: 'Output directory (default: None)'
       required: true
       takes_value: true
-      choices:
-      - required
       aliases:
       - -o
+    - name: --output-html
+      type: path
+      description: 'Output report name (default: report.html)'
+      required: false
+      takes_value: true
+    - name: --subsampling
+      type: string
+      description: 'Subsample input to number of bases before  classification. Leave
+        empty or use None for no  downsampling. (default: [None])'
+      required: false
+      takes_value: true
+      choices:
+      - 200M
+      - 500M
+      - 1000M
+      - 1500M
+      - 2000M
+      - None
+    - name: --fdr
+      type: string
+      description: 'FDR setting. (default: [5])'
+      required: false
+      takes_value: true
+      choices:
+      - '15'
+      - '10'
+      - '5'
+      - '1'
+    - name: --threads
+      type: int
+      description: 'Number of threads (default: 4)'
+      required: false
+      takes_value: true
     - name: --version
       type: boolean
-      description: Show the version and exit.
+      description: Print version and exit
       required: false
       takes_value: false
-      aliases:
-      - -v
+    - name: --log
+      type: boolean
+      description: 'Write out log information to file (default: False)'
+      required: false
+      takes_value: false
     installed_versions:
-    - biopython==1.88
-    - click==8.4.2
-    - condiga @ file:///tmp/execute_y941ywe1/ConDiGA
+    - annotated-types==0.8.0
+    - argparse-dataclass==2.0.0
+    - attrs==26.1.0
+    - beautifulsoup4==4.15.0
+    - bs4==0.0.2
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - conda-inject==1.3.2
+    - ConfigArgParse==1.7.5
+    - connection_pool==0.0.3
+    - docutils==0.22.4
+    - dpath==2.2.0
+    - fastjsonschema==2.22.2
+    - gitdb==4.0.12
+    - GitPython==3.1.59
+    - greenlet==3.5.5
+    - humanfriendly==10.0
+    - idna==3.18
+    - immutables==0.21
+    - iniconfig==2.3.0
+    - Jinja2==3.1.6
+    - jsonschema==4.26.0
+    - jsonschema-specifications==2025.9.1
+    - jupyter_core==5.9.1
+    - kaptain @ file:///tmp/execute_t7anshg9/KAPTAIN
+    - MarkupSafe==3.0.3
+    - nbformat==5.11.1
     - numpy==2.4.6
-    - packaging==26.3
-    - tqdm==4.70.0
-    - xlsxwriter==3.2.9
+    - packaging==25.0
+    - pandas==3.0.5
+    - platformdirs==4.11.3
+    - pluggy==1.6.0
+    - psutil==7.2.2
+    - PuLP==2.7.0
+    - pydantic==2.13.4
+    - pydantic_core==2.46.4
+    - Pygments==2.21.0
+    - pytest==9.1.1
+    - python-dateutil==2.9.0.post0
+    - PyYAML==6.0.3
+    - referencing==0.37.0
+    - requests==2.34.2
+    - rpds-py==2026.6.3
+    - six==1.17.0
+    - smart_open==7.7.1
+    - smmap==5.0.3
+    - snakemake==9.25.1
+    - snakemake-interface-common==1.23.0
+    - snakemake-interface-executor-plugins==9.4.0
+    - snakemake-interface-logger-plugins==2.1.0
+    - snakemake-interface-report-plugins==1.3.0
+    - snakemake-interface-scheduler-plugins==2.0.2
+    - snakemake-interface-storage-plugins==4.4.1
+    - soupsieve==2.9.2
+    - SQLAlchemy==2.0.52
+    - sqlmodel==0.0.37
+    - tabulate==0.10.0
+    - tenacity==9.1.4
+    - throttler==1.2.3
+    - traitlets==5.16.1
+    - typing-inspection==0.4.4
+    - typing_extensions==4.16.0
+    - urllib3==2.7.0
+    - wrapt==2.3.0
+    - yattag==1.16.1
+    - yte==1.9.4
   expected_outputs:
-  - name: output
+  - name: output_html
     render_as: text
