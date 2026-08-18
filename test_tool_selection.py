@@ -107,13 +107,19 @@ def test_retrieval_only():
     graph = build_graph_from_registry(registry_path)
     print(f"== Retrieval-only test ==")
     hit1 = hit3 = hit5 = 0
+    neg_correct = 0
+    neg_total = 0
     total = len(SELECTION_TASKS)
     for task, expected in SELECTION_TASKS:
         if expected is None:
-            # negative test: check that no tool scores above threshold
+            neg_total += 1
             results = retrieve_tools(graph, task, top_k=3)
             top_name = results[0][0] if results else None
-            print(f"  [NEG] {task[:50]}... top={top_name}")
+            ok = results == []
+            if ok:
+                neg_correct += 1
+            tag = "NO_MATCH" if ok else f"WRONG: {top_name}"
+            print(f"  [{'PASS' if ok else 'FAIL':4}] [NEG] {task[:50]}... -> {tag}")
             continue
         results = retrieve_tools(graph, task, top_k=5)
         names = [r[0] for r in results]
@@ -125,10 +131,11 @@ def test_retrieval_only():
         if in5: hit5 += 1
         mark = "OK" if in1 else ("HIT@3" if in3 else ("HIT@5" if in5 else "MISS"))
         print(f"  [{mark:6}] {task[:50]}... top3={names[:3]}")
-    n = total
+    n = total - neg_total
     print(f"\n  retrieval_hit@1 = {hit1}/{n}")
     print(f"  retrieval_hit@3 = {hit3}/{n}")
     print(f"  retrieval_hit@5 = {hit5}/{n}")
+    print(f"  no_match_correct = {neg_correct}/{neg_total}")
     return hit1
 
 
@@ -143,9 +150,17 @@ def test_selection_retrieval_first():
     skipped = 0
     llm_correct = 0
     llm_total = 0
+    neg_correct = 0
+    neg_total = 0
     for task, expected in SELECTION_TASKS:
         if expected is None:
-            print(f"  [NEG-SKIP] {task[:50]}... (negative test, no LLM needed)")
+            neg_total += 1
+            results = retrieve_tools(graph, task, top_k=3)
+            if not results:
+                neg_correct += 1
+                print(f"  [PASS] [NEG] {task[:50]}... -> NO_MATCHING_TOOL")
+            else:
+                print(f"  [FAIL] [NEG] {task[:50]}... -> WRONG: {results[0][0]}")
             continue
         # retrieve candidates via graph-tool-call
         results = retrieve_tools(graph, task, top_k=5)
@@ -176,6 +191,7 @@ def test_selection_retrieval_first():
             print(f"  [FAIL] {task[:50]}...")
             print(f"         expected={expected}  got={got}  candidates={candidate_names[:5]}")
     print(f"\n  LLM accuracy: {llm_correct}/{llm_total}")
+    print(f"  no_match_correct: {neg_correct}/{neg_total}")
     print(f"  Passed: {passed}/{len(SELECTION_TASKS)}, Failed: {failed}, Skipped: {skipped}")
     return failed
 
@@ -187,8 +203,18 @@ def test_selection_all_tools():
     print(f"== Selection test (all_tools): {len(all_schemas)} total schemas ==")
     passed = 0
     failed = 0
+    neg_correct = 0
+    neg_total = 0
     for task, expected in SELECTION_TASKS:
         got = _llm_select(task, all_schemas)
+        if expected is None:
+            neg_total += 1
+            if got is None:
+                neg_correct += 1
+                print(f"  [PASS] [NEG] {task[:50]}... -> NO_MATCHING_TOOL")
+            else:
+                print(f"  [FAIL] [NEG] {task[:50]}... -> WRONG: {got}")
+            continue
         if got == expected:
             passed += 1
             print(f"  [PASS] {task[:50]}... -> {got}")
@@ -197,6 +223,7 @@ def test_selection_all_tools():
             print(f"  [FAIL] {task[:50]}...")
             print(f"         expected={expected}  got={got}")
     print(f"\n  Passed: {passed}/{len(SELECTION_TASKS)}, Failed: {failed}")
+    print(f"  no_match_correct: {neg_correct}/{neg_total}")
     return failed
 
 
