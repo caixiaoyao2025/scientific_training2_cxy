@@ -32,12 +32,29 @@ import yaml
 from tool_agent_test import to_function_schemas
 from agent_connector.tool_retrieval import build_tool_index, retrieve_tools
 
-MODEL = os.environ.get("WESTLAKE_MODEL", "deepseek-v4-flash-ga-260731")
+MODEL = os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL") or os.environ.get("DEEPSEEK_MODEL") or "deepseek-v4-flash-ga-260731"
 MAX_RETRIES = 3
 RETRY_DELAY = 5
 
-_BASE_URL = os.environ.get("WESTLAKE_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3")
-_API_KEY = os.environ.get("WESTLAKE_API_KEY", "")
+BASE_URL = (
+    os.environ.get("WESTLAKE_BASE_URL")
+    or os.environ.get("OPENAI_BASE_URL")
+    or os.environ.get("DEEPSEEK_BASE_URL")
+    or "https://ark.cn-beijing.volces.com/api/v3"
+)
+API_KEY = (
+    os.environ.get("WESTLAKE_API_KEY")
+    or os.environ.get("OPENAI_API_KEY")
+    or os.environ.get("DEEPSEEK_API_KEY")
+    or ""
+)
+
+if not API_KEY:
+    raise RuntimeError(
+        "Missing API key: set WESTLAKE_API_KEY, OPENAI_API_KEY, or DEEPSEEK_API_KEY"
+    )
+if not BASE_URL.startswith(("http://", "https://")):
+    raise RuntimeError(f"Invalid BASE_URL: {BASE_URL!r}")
 
 # --- selection tasks: (user_task, expected_fn_name) ---
 # Each task is a natural language request that should map to exactly one
@@ -77,7 +94,7 @@ def _load_schemas(registry_path: str):
 
 def _llm_select(task: str, schemas: list, retries: int = MAX_RETRIES):
     """Send task to LLM, return the first tool_call function name or None."""
-    client = OpenAI(base_url=_BASE_URL, api_key=_API_KEY)
+    client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
     messages = [{"role": "user", "content": task}]
     for attempt in range(retries):
         try:

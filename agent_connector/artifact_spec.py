@@ -149,23 +149,35 @@ def annotate_inputs_with_artifacts(inputs: dict[str, Any],
                                    sub_name: str = "") -> dict[str, Any]:
     """Add artifact_type to inputs that don't already have one.
 
-    Uses a three-layer strategy:
-      1. Explicit annotation already present → skip
-      2. Tool-specific rules (bqtools input → binseq, etc.)
+    Uses a three-layer strategy with explicit precedence:
+      1. Subcommand-specific rules (bqtools encode input → fasta)
+      2. Base-tool rules (bqtools input → binseq) — only if no subcommand match
       3. Description-based inference (regex on param description)
+
+    Existing annotations from the registry are preserved UNLESS a higher-
+    priority subcommand-specific rule exists (to fix the precedence bug
+    where base-level binseq locked out encode's fasta).
     Only annotates string/path type parameters (not int/bool/float flags).
     Returns the mutated inputs dict."""
     for key, meta in inputs.items():
         if not isinstance(meta, dict):
             continue
-        if meta.get("artifact"):
-            continue  # already annotated
         # Only annotate string/path type parameters
         ptype = (meta.get("type") or "string").lower()
         if ptype in ("integer", "int", "float", "number", "boolean", "bool"):
             continue
-        # Layer 2: tool-specific rules
-        artifact = _tool_specific_artifact(tool_name, sub_name, key, meta)
+        # Layer 1: subcommand-specific rule ALWAYS wins (even over existing)
+        if sub_name:
+            sub_artifact = _TOOL_ARTIFACTS.get((tool_name, sub_name, key))
+            if sub_artifact:
+                meta["artifact"] = sub_artifact
+                meta["artifact_info"] = ARTIFACT_TYPES.get(sub_artifact, {})
+                continue
+        # Existing annotation (from base-tool rule or registry) — keep it
+        if meta.get("artifact"):
+            continue
+        # Layer 2: base-tool rules
+        artifact = _TOOL_ARTIFACTS.get((tool_name, key))
         if not artifact:
             # Layer 3: description inference
             desc = meta.get("description") or ""
@@ -180,9 +192,10 @@ def annotate_inputs_with_artifacts(inputs: dict[str, Any],
 # (tool_name, sub_name, param_name) to an artifact type. These are the
 # ground-truth annotations that description inference can't reach.
 _TOOL_ARTIFACTS: dict[tuple[str, ...], str] = {
-    # bqtools: all subcommands take BINSEQ as input
+    # bqtools base: most subcommands take BINSEQ as input
+    # (subcommand-specific rules below override this for encode etc.)
     ("bqtools", "input"): "binseq",
-    # bqtools encode: input is FASTA/FASTQ
+    # bqtools encode: input is FASTA/FASTQ (overrides base binseq)
     ("bqtools", "encode", "input"): "fasta",
     # bqtools decode: input is BINSEQ
     ("bqtools", "decode", "input"): "binseq",
