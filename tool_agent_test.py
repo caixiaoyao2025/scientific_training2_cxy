@@ -111,17 +111,19 @@ def _fixture_for_artifact(artifact_type: str) -> str | None:
 
 
 def _resolve_param_fixtures(leaf: dict) -> dict[str, str]:
-    """Resolve a fixture path for each file-type parameter in a leaf spec.
+    """Resolve a fixture path for each INPUT file-type parameter in a leaf spec.
 
-    Returns {param_key: fixture_path} for ALL required file/path params.
-    Params with artifact_type get their specific fixture (e.g. sample.vbq).
-    Params without artifact_type but with type string/path/file get sample.
-    Non-file params (integer, boolean) are skipped.
+    Returns {param_key: fixture_path} for required file/path INPUT params only.
+    Skips output params, runtime resources, booleans, integers.
     """
     result = {}
+    output_keys = set(leaf.get("outputs") or {})
+    resource_keys = set(leaf.get("resources") or {})
     inputs = leaf.get("inputs") or {}
     for key, meta in inputs.items():
         if not isinstance(meta, dict):
+            continue
+        if key in output_keys or key in resource_keys:
             continue
         if not meta.get("required"):
             continue
@@ -644,17 +646,18 @@ def main() -> int:
                 out_param = _task_output_param(t, sub)
                 # Build the leaf spec to get artifact-annotated inputs
                 leaf = fnmap.get(expected_fn, {})
-                # Resolve per-parameter fixtures from artifact_type
-                param_fixtures = _resolve_param_fixtures(leaf)
-                # Fallback for legacy: if no artifact-based fixtures found,
-                # use the old binseq/sample logic for bqtools
-                if not param_fixtures and name == "bqtools":
+                # P0: bqtools subcommand-specific fixture MUST override the
+                # generic artifact resolver. encode takes FASTA, consumers
+                # take BINSEQ — the generic resolver sees "binseq" on the
+                # base tool's input and wrongly applies it to ALL subs.
+                if name == "bqtools":
                     if sub in _BQ_INPUT_BINSEQ:
-                        inp = binseq_sample
+                        param_fixtures = {"input": binseq_sample}
                     else:
-                        inp = sample
-                    param_fixtures = {"input": inp}
-                elif not param_fixtures:
+                        param_fixtures = {"input": sample}
+                else:
+                    param_fixtures = _resolve_param_fixtures(leaf)
+                if not param_fixtures:
                     param_fixtures = {"input": sample}
                 label = f"{name}: {sub} on sample -> {os.path.basename(out)}"
                 prompt = _build_subcommand_prompt(
