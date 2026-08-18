@@ -166,7 +166,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_ssmtxa94/bioemu
+    - bioemu @ file:///tmp/execute_sd9txgrr/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -174,7 +174,7 @@ tools:
     - click==8.4.2
     - contourpy==1.3.3
     - cuda-bindings==13.3.1
-    - cuda-pathfinder==1.6.0
+    - cuda-pathfinder==1.6.1
     - cuda-toolkit==13.0.3.0
     declared_packages: []
     missing_deps:
@@ -208,7 +208,7 @@ tools:
     - torch_geometric
     - toy_gmm
     - tqdm
-    venv_path: /tmp/execute_ssmtxa94/venv
+    venv_path: /tmp/execute_sd9txgrr/venv
   _discovery_metadata:
     github: https://github.com/microsoft/bioemu
     stars: 867
@@ -229,7 +229,7 @@ tools:
     verified_license: true
     verified_license_path: LICENSE
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-18T02:16:07.734308'
+    verified_checked_at: '2026-08-18T07:46:03.113235'
     dependencies:
       system_commands: []
       readme_hint: ''
@@ -383,7 +383,7 @@ tools:
     - astunparse==1.6.3
     - attrs==26.1.0
     - bio==1.8.3
-    - bioemu @ file:///tmp/execute_ssmtxa94/bioemu
+    - bioemu @ file:///tmp/execute_sd9txgrr/bioemu
     - biopython==1.88
     - biothings_client==0.5.1
     - certifi==2026.7.22
@@ -391,7 +391,7 @@ tools:
     - click==8.4.2
     - contourpy==1.3.3
     - cuda-bindings==13.3.1
-    - cuda-pathfinder==1.6.0
+    - cuda-pathfinder==1.6.1
     - cuda-toolkit==13.0.3.0
     - cycler==0.12.1
     - dm-haiku==0.0.17
@@ -414,7 +414,7 @@ tools:
     - httpx==0.28.1
     - huggingface_hub==1.27.0
     - hydra-core==1.3.5
-    - idna==3.18
+    - idna==3.19
     - ihm==2.11
     - jax==0.10.2
     - jaxlib==0.10.2
@@ -430,7 +430,7 @@ tools:
     - mdurl==0.1.2
     - ml_collections==1.1.0
     - ml_dtypes==0.6.0
-    - modelcif==1.7
+    - modelcif==1.8
     - mpmath==1.3.0
     - msgpack==1.2.1
     - multidict==6.7.1
@@ -454,6 +454,1203 @@ tools:
     - nvidia-nvshmem-cu13==3.4.5
     - nvidia-nvtx==13.0.85
     exec_executable: bioemu
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: help_parsed
+    pending_reason: ''
+- name: metaphlan
+  type: cli
+  command: metaphlan {{input_file}} --input_type {{input_type}} --force {{force}}
+    --db_dir {{db_dir}} --index {{index}} --mapout {{mapout}} --min_mapq_val {{min_mapq_val}}
+    --no_map {{no_map}} --tmp_dir {{tmp_dir}} --bt2_ps {{bt2_ps}} --bowtie2_exe {{bowtie2_exe}}
+    --bowtie2_build {{bowtie2_build}} --tax_lev {{tax_lev}} --min_alignment_len {{min_alignment_len}}
+    --ignore_eukaryotes {{ignore_eukaryotes}} --ignore_bacteria {{ignore_bacteria}}
+    --ignore_archaea {{ignore_archaea}} --ignore_ksgbs {{ignore_ksgbs}} --ignore_usgbs
+    {{ignore_usgbs}} --stat_q {{stat_q}} --perc_nonzero {{perc_nonzero}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] MetaPhlAn is a computational tool for profiling
+    the composition of microbial communities from metagenomic shotgun sequencing data
+    (⭐421, Python) (license: license.txt)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input_type:
+      type: string
+      description: set whether the input is the FASTA file of metagenomic reads or  the
+        SAM file of the mapping of the reads against the MetaPhlAn db.
+      required: true
+      source: help_parsed
+      flag: --input_type
+      takes_value: true
+    force:
+      type: boolean
+      description: Force profiling of the input file by removing the mapout file
+      required: false
+      source: help_parsed
+      flag: --force
+      takes_value: false
+    mapout:
+      type: path
+      description: The file for saving the mapping output (old --bowtie2out option)
+      required: false
+      source: help_parsed
+      flag: --mapout
+      takes_value: true
+    min_mapq_val:
+      type: string
+      description: Minimum mapping quality value (MAPQ)
+      required: false
+      source: help_parsed
+      flag: --min_mapq_val
+      takes_value: true
+    no_map:
+      type: boolean
+      description: Avoid storing the --mapout map file
+      required: false
+      source: help_parsed
+      flag: --no_map
+      takes_value: false
+    tmp_dir:
+      type: string
+      description: The folder used to store temporary files
+      required: false
+      source: help_parsed
+      flag: --tmp_dir
+      takes_value: false
+    bt2_ps:
+      type: path
+      description: Presets options for BowTie2 (applied only when a FASTA file is
+        provided)
+      required: false
+      source: help_parsed
+      flag: --bt2_ps
+      takes_value: true
+    bowtie2_exe:
+      type: path
+      description: Full path and name of the BowTie2 executable. This option allowsMetaPhlAn
+        to reach the executable even when it is not in the system PATH or the system
+        PATH is unreachable
+      required: false
+      source: help_parsed
+      flag: --bowtie2_exe
+      takes_value: true
+    bowtie2_build:
+      type: path
+      description: Full path to the bowtie2-build command to use, deafult assumes
+        that 'bowtie2-build is present in the system path
+      required: false
+      source: help_parsed
+      flag: --bowtie2_build
+      takes_value: true
+    tax_lev:
+      type: int
+      description: CLI flag --tax_lev
+      required: false
+      source: help_parsed
+      flag: --tax_lev
+      takes_value: true
+    min_alignment_len:
+      type: string
+      description: The sam records for aligned reads with the longest subalignment  length
+        smaller than this threshold will be discarded.
+      required: false
+      source: help_parsed
+      flag: --min_alignment_len
+      takes_value: false
+    ignore_eukaryotes:
+      type: boolean
+      description: Do not profile eukaryotic organisms
+      required: false
+      source: help_parsed
+      flag: --ignore_eukaryotes
+      takes_value: false
+    ignore_bacteria:
+      type: boolean
+      description: Do not profile bacterial organisms
+      required: false
+      source: help_parsed
+      flag: --ignore_bacteria
+      takes_value: false
+    ignore_archaea:
+      type: boolean
+      description: Do not profile archeal organisms
+      required: false
+      source: help_parsed
+      flag: --ignore_archaea
+      takes_value: false
+    ignore_ksgbs:
+      type: boolean
+      description: Do not profile known SGBs (together with --sgb option)
+      required: false
+      source: help_parsed
+      flag: --ignore_ksgbs
+      takes_value: false
+    ignore_usgbs:
+      type: boolean
+      description: Do not profile unknown SGBs (together with --sgb option)
+      required: false
+      source: help_parsed
+      flag: --ignore_usgbs
+      takes_value: false
+    stat_q:
+      type: boolean
+      description: Quantile value for the robust average
+      required: false
+      source: help_parsed
+      flag: --stat_q
+      takes_value: false
+    perc_nonzero:
+      type: boolean
+      description: Percentage of markers with a non zero relative abundance for misidentify
+        a species
+      required: false
+      source: help_parsed
+      flag: --perc_nonzero
+      takes_value: false
+    input_file:
+      type: path
+      description: 'the input file can be:'
+      required: true
+      source: help_parsed
+      positional: true
+      position: 0
+  resources:
+    db_dir:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: Folder containing the MetaPhlAn database (old --bowtie2db option).
+        Alternatively, you can specify the location by exporting the METAPHLAN_DB_DIR
+        variable in the shell.
+    index:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: Specify the id of the database version to use. If "latest", MetaPhlAn
+        will get the latest version.  If an index name is provided, MetaPhlAn will
+        try to use it, if available, and skip the online check.  If the database files
+        are not found on the local MetaPhlAn installation they  will be automatically
+        downloaded
+  outputs:
+    stdout:
+      type: text
+      description: Tool result printed to stdout.
+      source: inferred
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/biobakery/MetaPhlAn
+    system_commands: []
+    python_packages:
+    - biom_format==2.1.17
+    - biopython==1.88
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - DendroPy==5.0.10
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.19
+    - kiwisolver==1.5.0
+    - matplotlib==3.11.1
+    - metaphlan @ file:///tmp/execute_hb_izmnv/MetaPhlAn
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - PhyloPhlAn==3.2.1
+    - pillow==12.3.0
+    - pyparsing==3.3.2
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - StringIO
+    - array
+    - biom
+    - consensus_markers
+    - database_controller
+    - dendropy
+    - external_exec
+    - matplotlib
+    - numpy
+    - optparse
+    - packaging
+    - pandas
+    - parallelisation
+    - phylophlan_controller
+    - pickletools
+    - pylab
+    - pyphlan
+    - pysam
+    - scipy
+    - scripts
+    - setuptools
+    - shlex
+    - stat
+    - util_fun
+    - utils
+    venv_path: /tmp/execute_hb_izmnv/venv
+  _discovery_metadata:
+    github: https://github.com/biobakery/MetaPhlAn
+    stars: 421
+    language: Python
+    tags:
+    - software
+    - metaphlan
+    quality_score: 55
+    paper_doi: 10.1002/imt2.70001
+    paper_title: 'EasyMetagenome: A user-friendly and flexible pipeline for shotgun
+      metagenomic analysis in microbiome'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/biobakery/MetaPhlAn
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
+      license); command not installed'
+    verified_license: true
+    verified_license_path: license.txt
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-18T07:47:27.416571'
+    dependencies:
+      system_commands: []
+      readme_hint: conda
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_hb_izmnv/venv/bin/metaphlan --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: "oad of the latest MetaPhlAn database.\n  --read_min_len READ_MIN_LEN\n\
+      \                        Specify the minimum length of the reads to be considered\
+      \ when parsing the input file with 'read_fastx.py' script, default value is\
+      \ 70\n  --verbose             Makes MetaPhlAn verbose\n  -v, --version     \
+      \    Prints the current MetaPhlAn version and exit\n  -h, --help           \
+      \ show this help message and exit\n"
+    exec_params_schema:
+    - name: --input_type
+      type: string
+      description: set whether the input is the FASTA file of metagenomic reads or  the
+        SAM file of the mapping of the reads against the MetaPhlAn db.
+      required: true
+      takes_value: true
+      choices:
+      - fastq
+      - fasta
+      - mapout
+      - sam
+    - name: --force
+      type: boolean
+      description: Force profiling of the input file by removing the mapout file
+      required: false
+      takes_value: false
+    - name: --db_dir
+      type: path
+      description: Folder containing the MetaPhlAn database (old --bowtie2db option).
+        Alternatively, you can specify the location by exporting the METAPHLAN_DB_DIR
+        variable in the shell.
+      required: false
+      takes_value: true
+    - name: --index
+      type: string
+      description: Specify the id of the database version to use. If "latest", MetaPhlAn
+        will get the latest version.  If an index name is provided, MetaPhlAn will
+        try to use it, if available, and skip the online check.  If the database files
+        are not found on the local MetaPhlAn installation they  will be automatically
+        downloaded
+      required: false
+      takes_value: true
+      choices:
+      - default
+      - latest
+      aliases:
+      - -x
+    - name: --mapout
+      type: path
+      description: The file for saving the mapping output (old --bowtie2out option)
+      required: false
+      takes_value: true
+    - name: --min_mapq_val
+      type: string
+      description: Minimum mapping quality value (MAPQ)
+      required: false
+      takes_value: true
+    - name: --no_map
+      type: boolean
+      description: Avoid storing the --mapout map file
+      required: false
+      takes_value: false
+    - name: --tmp_dir
+      type: string
+      description: The folder used to store temporary files
+      required: false
+      takes_value: false
+      choices:
+      - default
+      - is
+      - the
+      - OS
+      - dependent
+      - tmp
+      - dir
+    - name: --bt2_ps
+      type: path
+      description: Presets options for BowTie2 (applied only when a FASTA file is
+        provided)
+      required: false
+      takes_value: true
+    - name: --bowtie2_exe
+      type: path
+      description: Full path and name of the BowTie2 executable. This option allowsMetaPhlAn
+        to reach the executable even when it is not in the system PATH or the system
+        PATH is unreachable
+      required: false
+      takes_value: true
+    - name: --bowtie2_build
+      type: path
+      description: Full path to the bowtie2-build command to use, deafult assumes
+        that 'bowtie2-build is present in the system path
+      required: false
+      takes_value: true
+    - name: --tax_lev
+      type: int
+      description: CLI flag --tax_lev
+      required: false
+      takes_value: true
+    - name: --min_alignment_len
+      type: string
+      description: The sam records for aligned reads with the longest subalignment  length
+        smaller than this threshold will be discarded.
+      required: false
+      takes_value: false
+      choices:
+      - default
+      - None
+    - name: --ignore_eukaryotes
+      type: boolean
+      description: Do not profile eukaryotic organisms
+      required: false
+      takes_value: false
+    - name: --ignore_bacteria
+      type: boolean
+      description: Do not profile bacterial organisms
+      required: false
+      takes_value: false
+    - name: --ignore_archaea
+      type: boolean
+      description: Do not profile archeal organisms
+      required: false
+      takes_value: false
+    - name: --ignore_ksgbs
+      type: boolean
+      description: Do not profile known SGBs (together with --sgb option)
+      required: false
+      takes_value: false
+    - name: --ignore_usgbs
+      type: boolean
+      description: Do not profile unknown SGBs (together with --sgb option)
+      required: false
+      takes_value: false
+    - name: --stat_q
+      type: boolean
+      description: Quantile value for the robust average
+      required: false
+      takes_value: false
+    - name: --perc_nonzero
+      type: boolean
+      description: Percentage of markers with a non zero relative abundance for misidentify
+        a species
+      required: false
+      takes_value: false
+    - name: input_file
+      type: path
+      description: 'the input file can be:'
+      required: false
+      positional: true
+      position: 0
+    exec_positional_args:
+    - name: input_file
+      type: path
+      description: 'the input file can be:'
+      required: false
+      positional: true
+      position: 0
+    exec_installed_versions:
+    - biom_format==2.1.17
+    - biopython==1.88
+    - certifi==2026.7.22
+    - charset-normalizer==3.5.1
+    - click==8.4.2
+    - contourpy==1.3.3
+    - cycler==0.12.1
+    - DendroPy==5.0.10
+    - fonttools==4.63.0
+    - h5py==3.16.0
+    - idna==3.19
+    - kiwisolver==1.5.0
+    - matplotlib==3.11.1
+    - metaphlan @ file:///tmp/execute_hb_izmnv/MetaPhlAn
+    - numpy==2.4.6
+    - packaging==26.3
+    - pandas==3.0.5
+    - PhyloPhlAn==3.2.1
+    - pillow==12.3.0
+    - pyparsing==3.3.2
+    - pysam==0.24.0
+    - python-dateutil==2.9.0.post0
+    - requests==2.34.2
+    - scipy==1.17.1
+    - seaborn==0.13.2
+    - six==1.17.0
+    - tqdm==4.70.0
+    - urllib3==2.7.0
+    exec_executable: metaphlan
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: help_parsed
+    pending_reason: ''
+- name: humann
+  type: cli
+  command: humann --input {{input}} --output {{output}} --threads {{threads}} --version
+    {{version}} --resume {{resume}} --bypass-nucleotide-index {{bypass_nucleotide_index}}
+    --bypass-nucleotide-search {{bypass_nucleotide_search}} --bypass-prescreen {{bypass_prescreen}}
+    --bypass-translated-search {{bypass_translated_search}} --taxonomic-profile {{taxonomic_profile}}
+    --memory-use {{memory_use}} --input-format {{input_format}} --verbose {{verbose}}
+    --metaphlan {{metaphlan}} --metaphlan-options {{metaphlan_options}} --prescreen-threshold
+    {{prescreen_threshold}} --average-read-length {{average_read_length}} --bowtie2
+    {{bowtie2}} --bowtie-options {{bowtie_options}} --nucleotide-database {{nucleotide_database}}
+  arg_style: positional
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] HUMAnN is the next generation of HUMAnN 1.0 (HMP
+    Unified Metabolic Analysis Network). (⭐250, Python) (license: LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    input:
+      type: string
+      description: input file of type {fastq,fastq.gz,fasta,fasta.gz,sam,bam,blastm8,genetable,biom}  [REQUIRED]
+      required: true
+      source: help_parsed
+      flag: --input
+      takes_value: true
+    output:
+      type: string
+      description: directory to write output files  [REQUIRED]
+      required: true
+      source: help_parsed
+      flag: --output
+      takes_value: true
+    threads:
+      type: int
+      description: 'number of threads/processes  [DEFAULT: 1]'
+      required: false
+      source: help_parsed
+      flag: --threads
+      takes_value: true
+    version:
+      type: boolean
+      description: show program's version number and exit
+      required: false
+      source: help_parsed
+      flag: --version
+      takes_value: false
+    resume:
+      type: boolean
+      description: bypass commands if the output files exist
+      required: false
+      source: help_parsed
+      flag: --resume
+      takes_value: false
+    bypass_nucleotide_search:
+      type: boolean
+      description: bypass the nucleotide search steps
+      required: false
+      source: help_parsed
+      flag: --bypass-nucleotide-search
+      takes_value: false
+    bypass_translated_search:
+      type: boolean
+      description: bypass the translated search step
+      required: false
+      source: help_parsed
+      flag: --bypass-translated-search
+      takes_value: false
+    taxonomic_profile:
+      type: path
+      description: 'a taxonomic profile (the output file created by metaphlan)  [DEFAULT:
+        file will be created]'
+      required: false
+      source: help_parsed
+      flag: --taxonomic-profile
+      takes_value: true
+    memory_use:
+      type: string
+      description: 'the amount of memory to use  [DEFAULT: minimum]'
+      required: false
+      source: help_parsed
+      flag: --memory-use
+      takes_value: true
+    input_format:
+      type: string
+      description: 'the format of the input file  [DEFAULT: format identified by software]'
+      required: false
+      source: help_parsed
+      flag: --input-format
+      takes_value: true
+    verbose:
+      type: boolean
+      description: additional output is printed
+      required: false
+      source: help_parsed
+      flag: --verbose
+      takes_value: false
+    metaphlan:
+      type: path
+      description: 'directory containing the MetaPhlAn software  [DEFAULT: $PATH]'
+      required: false
+      source: help_parsed
+      flag: --metaphlan
+      takes_value: true
+    metaphlan_options:
+      type: string
+      description: 'options to be provided to the MetaPhlAn software  [DEFAULT: "-t
+        rel_ab_w_read_stats"]'
+      required: false
+      source: help_parsed
+      flag: --metaphlan-options
+      takes_value: true
+    prescreen_threshold:
+      type: string
+      description: 'minimum estimated genome coverage for inclusion in pangenome search  [DEFAULT:
+        0.5]'
+      required: false
+      source: help_parsed
+      flag: --prescreen-threshold
+      takes_value: true
+    average_read_length:
+      type: path
+      description: 'average read length for input file  [DEFAULT: 150.0]'
+      required: false
+      source: help_parsed
+      flag: --average-read-length
+      takes_value: true
+    bowtie2:
+      type: path
+      description: 'directory containing the bowtie2 executable  [DEFAULT: $PATH]'
+      required: false
+      source: help_parsed
+      flag: --bowtie2
+      takes_value: true
+    bowtie_options:
+      type: string
+      description: 'options to be provided to the bowtie software  [DEFAULT: "--very-sensitive
+        --no-hd --no-sq"]'
+      required: false
+      source: help_parsed
+      flag: --bowtie-options
+      takes_value: true
+  resources:
+    bypass_nucleotide_index:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: bypass the nucleotide index step and run on the indexed ChocoPhlAn
+        database
+    bypass_prescreen:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: bypass the prescreen step and run on the full ChocoPhlAn database
+    nucleotide_database:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: 'directory containing the nucleotide database  [DEFAULT: /tmp/execute_vfl6ozpi/venv/lib/python3.11/site-packages/humann/data/chocophlan_DEMO]'
+  outputs:
+    output:
+      type: directory
+      description: directory to write output files  [REQUIRED]
+      input: output
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/biobakery/humann
+    system_commands: []
+    python_packages:
+    - humann @ file:///tmp/execute_vfl6ozpi/humann
+    - packaging==26.3
+    declared_packages: []
+    missing_deps:
+    - biom
+    - bs4
+    - distutils
+    - ete2
+    - h5py
+    - humann
+    - importlib
+    - importlib_metadata
+    - matplotlib
+    - numbers
+    - numpy
+    - operator
+    - optparse
+    - packaging
+    - pkg_resources
+    - psutil
+    - quantify
+    - scipy
+    - search
+    - setuptools
+    - urllib2
+    venv_path: /tmp/execute_vfl6ozpi/venv
+  _discovery_metadata:
+    github: https://github.com/biobakery/humann
+    stars: 250
+    language: Python
+    tags:
+    - software
+    - humann
+    quality_score: 55
+    paper_doi: 10.1002/imt2.70001
+    paper_title: 'EasyMetagenome: A user-friendly and flexible pipeline for shotgun
+      metagenomic analysis in microbiome'
+    install_method: pip_pkg
+    install_url: pip install https://github.com/biobakery/humann
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
+      license); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-18T07:47:34.308507'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_vfl6ozpi/venv/bin/humann --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: "           the number of decimals to output\n            \
+      \            [DEFAULT: 10]\n  --remove-column-description-output\n         \
+      \               remove the description in the output column\n              \
+      \          [DEFAULT: output column includes description]\n  --remove-stratified-output\n\
+      \                        remove stratification from output\n               \
+      \         [DEFAULT: output is stratified]\n"
+    exec_params_schema:
+    - name: --input
+      type: string
+      description: input file of type {fastq,fastq.gz,fasta,fasta.gz,sam,bam,blastm8,genetable,biom}  [REQUIRED]
+      required: true
+      takes_value: true
+      choices:
+      - REQUIRED
+      aliases:
+      - -i
+    - name: --output
+      type: string
+      description: directory to write output files  [REQUIRED]
+      required: true
+      takes_value: true
+      choices:
+      - REQUIRED
+      aliases:
+      - -o
+    - name: --threads
+      type: int
+      description: 'number of threads/processes  [DEFAULT: 1]'
+      required: false
+      takes_value: true
+    - name: --version
+      type: boolean
+      description: show program's version number and exit
+      required: false
+      takes_value: false
+    - name: --resume
+      type: boolean
+      description: bypass commands if the output files exist
+      required: false
+      takes_value: false
+      aliases:
+      - -r
+    - name: --bypass-nucleotide-index
+      type: boolean
+      description: bypass the nucleotide index step and run on the indexed ChocoPhlAn
+        database
+      required: false
+      takes_value: false
+    - name: --bypass-nucleotide-search
+      type: boolean
+      description: bypass the nucleotide search steps
+      required: false
+      takes_value: false
+    - name: --bypass-prescreen
+      type: boolean
+      description: bypass the prescreen step and run on the full ChocoPhlAn database
+      required: false
+      takes_value: false
+    - name: --bypass-translated-search
+      type: boolean
+      description: bypass the translated search step
+      required: false
+      takes_value: false
+    - name: --taxonomic-profile
+      type: path
+      description: 'a taxonomic profile (the output file created by metaphlan)  [DEFAULT:
+        file will be created]'
+      required: false
+      takes_value: true
+    - name: --memory-use
+      type: string
+      description: 'the amount of memory to use  [DEFAULT: minimum]'
+      required: false
+      takes_value: true
+      choices:
+      - minimum
+      - maximum
+    - name: --input-format
+      type: string
+      description: 'the format of the input file  [DEFAULT: format identified by software]'
+      required: false
+      takes_value: true
+      choices:
+      - fastq
+      - fastq.gz
+      - fasta
+      - fasta.gz
+      - sam
+      - bam
+      - blastm8
+      - genetable
+      - biom
+    - name: --verbose
+      type: boolean
+      description: additional output is printed
+      required: false
+      takes_value: false
+      aliases:
+      - -v
+    - name: --metaphlan
+      type: path
+      description: 'directory containing the MetaPhlAn software  [DEFAULT: $PATH]'
+      required: false
+      takes_value: true
+    - name: --metaphlan-options
+      type: string
+      description: 'options to be provided to the MetaPhlAn software  [DEFAULT: "-t
+        rel_ab_w_read_stats"]'
+      required: false
+      takes_value: true
+    - name: --prescreen-threshold
+      type: string
+      description: 'minimum estimated genome coverage for inclusion in pangenome search  [DEFAULT:
+        0.5]'
+      required: false
+      takes_value: true
+    - name: --average-read-length
+      type: path
+      description: 'average read length for input file  [DEFAULT: 150.0]'
+      required: false
+      takes_value: true
+    - name: --bowtie2
+      type: path
+      description: 'directory containing the bowtie2 executable  [DEFAULT: $PATH]'
+      required: false
+      takes_value: true
+    - name: --bowtie-options
+      type: string
+      description: 'options to be provided to the bowtie software  [DEFAULT: "--very-sensitive
+        --no-hd --no-sq"]'
+      required: false
+      takes_value: true
+    - name: --nucleotide-database
+      type: path
+      description: 'directory containing the nucleotide database  [DEFAULT: /tmp/execute_vfl6ozpi/venv/lib/python3.11/site-packages/humann/data/chocophlan_DEMO]'
+      required: false
+      takes_value: true
+    exec_positional_args: []
+    exec_installed_versions:
+    - humann @ file:///tmp/execute_vfl6ozpi/humann
+    - packaging==26.3
+    exec_executable: humann
+    exec_retries: 0
+    exec_heal_evidence: ''
+    inputs_source: help_parsed
+    pending_reason: ''
+- name: kneaddata
+  type: cli
+  command: kneaddata --verbose {{verbose}} --version {{version}} --input1 {{input1}}
+    --input2 {{input2}} --unpaired {{unpaired}} --output {{output}} --scratch {{scratch}}
+    --reference-db {{reference_db}} --bypass-trim {{bypass_trim}} --output-prefix
+    {{output_prefix}} --threads {{threads}} --processes {{processes}} --quality-scores
+    {{quality_scores}} --run-bmtagger {{run_bmtagger}} --bypass-trf {{bypass_trf}}
+    --run-trf {{run_trf}} --run-fastqc-start {{run_fastqc_start}} --run-fastqc-end
+    {{run_fastqc_end}} --store-temp-output {{store_temp_output}} --remove-intermediate-output
+    {{remove_intermediate_output}}
+  arg_style: named
+  callable_via: ''
+  readme_examples: []
+  readme_usage: ''
+  description: '[Auto-discovered] Quality control tool on metagenomic and metatranscriptomic
+    sequencing data, especially data from microbiome experiments. (⭐152, Python) (license:
+    LICENSE)'
+  output_control:
+    intercept_large_output: true
+    max_preview_lines: 50
+  inputs:
+    verbose:
+      type: boolean
+      description: additional output is printed
+      required: false
+      source: help_parsed
+      flag: --verbose
+      takes_value: false
+    version:
+      type: boolean
+      description: show program's version number and exit
+      required: false
+      source: help_parsed
+      flag: --version
+      takes_value: false
+    input1:
+      type: path
+      description: Pair 1 input FASTQ file
+      required: false
+      source: help_parsed
+      flag: --input1
+      takes_value: true
+    input2:
+      type: path
+      description: Pair 2 input FASTQ file
+      required: false
+      source: help_parsed
+      flag: --input2
+      takes_value: true
+    unpaired:
+      type: path
+      description: unparied input FASTQ file
+      required: false
+      source: help_parsed
+      flag: --unpaired
+      takes_value: true
+    output:
+      type: path
+      description: directory to write output files
+      required: true
+      source: help_parsed
+      flag: --output
+      takes_value: true
+    scratch:
+      type: path
+      description: directory to write temp files
+      required: false
+      source: help_parsed
+      flag: --scratch
+      takes_value: true
+    bypass_trim:
+      type: boolean
+      description: bypass the trim step
+      required: false
+      source: help_parsed
+      flag: --bypass-trim
+      takes_value: false
+    output_prefix:
+      type: path
+      description: 'prefix for all output files  [ DEFAULT : $SAMPLE_kneaddata ]'
+      required: false
+      source: help_parsed
+      flag: --output-prefix
+      takes_value: true
+    threads:
+      type: int
+      description: 'number of threads  [ Default : 1 ]'
+      required: false
+      source: help_parsed
+      flag: --threads
+      takes_value: true
+    processes:
+      type: int
+      description: 'number of processes  [ Default : 1 ]'
+      required: false
+      source: help_parsed
+      flag: --processes
+      takes_value: true
+    quality_scores:
+      type: string
+      description: 'quality scores  [ DEFAULT : phred33 ]'
+      required: false
+      source: help_parsed
+      flag: --quality-scores
+      takes_value: true
+    run_bmtagger:
+      type: boolean
+      description: run BMTagger instead of Bowtie2 to identify contaminant reads
+      required: false
+      source: help_parsed
+      flag: --run-bmtagger
+      takes_value: false
+    bypass_trf:
+      type: boolean
+      description: option to bypass the removal of tandem repeats
+      required: false
+      source: help_parsed
+      flag: --bypass-trf
+      takes_value: false
+    run_trf:
+      type: boolean
+      description: legacy option to run the removal of tandem repeats (now run by
+        default)
+      required: false
+      source: help_parsed
+      flag: --run-trf
+      takes_value: false
+    run_fastqc_start:
+      type: boolean
+      description: run fastqc at the beginning of the workflow
+      required: false
+      source: help_parsed
+      flag: --run-fastqc-start
+      takes_value: false
+    run_fastqc_end:
+      type: boolean
+      description: run fastqc at the end of the workflow
+      required: false
+      source: help_parsed
+      flag: --run-fastqc-end
+      takes_value: false
+    store_temp_output:
+      type: boolean
+      description: 'store temp output files  [ DEFAULT : temp output files are removed
+        ]'
+      required: false
+      source: help_parsed
+      flag: --store-temp-output
+      takes_value: false
+    remove_intermediate_output:
+      type: boolean
+      description: 'remove intermediate output files  [ DEFAULT : intermediate output
+        files are stored ]'
+      required: false
+      source: help_parsed
+      flag: --remove-intermediate-output
+      takes_value: false
+  resources:
+    reference_db:
+      required: false
+      required_by: runtime
+      source: help_parsed
+      description: location of reference database (additional arguments add databases)
+  outputs:
+    output:
+      type: directory
+      description: directory to write output files
+      input: output
+      source: help_parsed
+    output_prefix:
+      type: file
+      description: 'prefix for all output files  [ DEFAULT : $SAMPLE_kneaddata ]'
+      input: output_prefix
+      source: help_parsed
+  execution: null
+  subcommands: []
+  subcommand_details: {}
+  subcommand_discovery_complete: false
+  install:
+    method: pip_pkg
+    command: pip install https://github.com/biobakery/kneaddata
+    system_commands: []
+    python_packages:
+    - kneaddata @ file:///tmp/execute_4dbm88cn/kneaddata
+    - packaging==26.3
+    declared_packages: []
+    missing_deps:
+    - Bio
+    - errno
+    - kneaddata
+    - pdb
+    - psutil
+    - sets
+    - setuptools
+    - shlex
+    venv_path: /tmp/execute_4dbm88cn/venv
+  _discovery_metadata:
+    github: https://github.com/biobakery/kneaddata
+    stars: 152
+    language: Python
+    tags:
+    - software
+    - kneaddata
+    quality_score: 55
+    paper_doi: 10.3389/fmicb.2024.1426465
+    paper_title: 'MetaBakery: a Singularity implementation of bioBakery tools as a
+      skeleton application for efficient '
+    install_method: pip_pkg
+    install_url: pip install https://github.com/biobakery/kneaddata
+    verified_status: repo_ok
+    verified_reason: 'repo healthy (entry scripts: none; deps: setup.py lang=Python
+      license); command not installed'
+    verified_license: true
+    verified_license_path: LICENSE
+    verified_entry_scripts: []
+    verified_checked_at: '2026-08-18T07:47:41.481707'
+    dependencies:
+      system_commands: []
+      readme_hint: ''
+      container_files: []
+      install_method: pip_pkg
+    exec_status: passed
+    exec_reason: '`/tmp/execute_4dbm88cn/venv/bin/kneaddata --help` -> exit 0'
+    exec_install_evidence: ''
+    exec_run_evidence: "pi PI               indel probability\n                  \
+      \      [ DEFAULT : 10 ]\n  --minscore MINSCORE   minimum alignment score to\
+      \ report\n                        [ DEFAULT : 50 ]\n  --maxperiod MAXPERIOD\n\
+      \                        maximum period size to report\n                   \
+      \     [ DEFAULT : 500 ]\n\nfastqc arguments:\n  --fastqc FASTQC_PATH  path to\
+      \ fastqc\n                        [ DEFAULT : $PATH ]\n"
+    exec_params_schema:
+    - name: --verbose
+      type: boolean
+      description: additional output is printed
+      required: false
+      takes_value: false
+      aliases:
+      - -v
+    - name: --version
+      type: boolean
+      description: show program's version number and exit
+      required: false
+      takes_value: false
+    - name: --input1
+      type: path
+      description: Pair 1 input FASTQ file
+      required: false
+      takes_value: true
+      aliases:
+      - -i1
+    - name: --input2
+      type: path
+      description: Pair 2 input FASTQ file
+      required: false
+      takes_value: true
+      aliases:
+      - -i2
+    - name: --unpaired
+      type: path
+      description: unparied input FASTQ file
+      required: false
+      takes_value: true
+      aliases:
+      - -un
+    - name: --output
+      type: path
+      description: directory to write output files
+      required: true
+      takes_value: true
+      aliases:
+      - -o
+    - name: --scratch
+      type: path
+      description: directory to write temp files
+      required: false
+      takes_value: true
+      aliases:
+      - -s
+    - name: --reference-db
+      type: path
+      description: location of reference database (additional arguments add databases)
+      required: false
+      takes_value: true
+      aliases:
+      - -db
+    - name: --bypass-trim
+      type: boolean
+      description: bypass the trim step
+      required: false
+      takes_value: false
+    - name: --output-prefix
+      type: path
+      description: 'prefix for all output files  [ DEFAULT : $SAMPLE_kneaddata ]'
+      required: false
+      takes_value: true
+    - name: --threads
+      type: int
+      description: 'number of threads  [ Default : 1 ]'
+      required: false
+      takes_value: true
+      aliases:
+      - -t
+    - name: --processes
+      type: int
+      description: 'number of processes  [ Default : 1 ]'
+      required: false
+      takes_value: true
+      aliases:
+      - -p
+    - name: --quality-scores
+      type: string
+      description: 'quality scores  [ DEFAULT : phred33 ]'
+      required: false
+      takes_value: true
+      choices:
+      - phred33
+      - phred64
+      aliases:
+      - -q
+    - name: --run-bmtagger
+      type: boolean
+      description: run BMTagger instead of Bowtie2 to identify contaminant reads
+      required: false
+      takes_value: false
+    - name: --bypass-trf
+      type: boolean
+      description: option to bypass the removal of tandem repeats
+      required: false
+      takes_value: false
+    - name: --run-trf
+      type: boolean
+      description: legacy option to run the removal of tandem repeats (now run by
+        default)
+      required: false
+      takes_value: false
+    - name: --run-fastqc-start
+      type: boolean
+      description: run fastqc at the beginning of the workflow
+      required: false
+      takes_value: false
+    - name: --run-fastqc-end
+      type: boolean
+      description: run fastqc at the end of the workflow
+      required: false
+      takes_value: false
+    - name: --store-temp-output
+      type: boolean
+      description: 'store temp output files  [ DEFAULT : temp output files are removed
+        ]'
+      required: false
+      takes_value: false
+    - name: --remove-intermediate-output
+      type: boolean
+      description: 'remove intermediate output files  [ DEFAULT : intermediate output
+        files are stored ]'
+      required: false
+      takes_value: false
+    exec_positional_args: []
+    exec_installed_versions:
+    - kneaddata @ file:///tmp/execute_4dbm88cn/kneaddata
+    - packaging==26.3
+    exec_executable: kneaddata
     exec_retries: 0
     exec_heal_evidence: ''
     inputs_source: help_parsed
@@ -1451,14 +2648,14 @@ tools:
     python_packages: []
     declared_packages: []
     missing_deps: []
-    venv_path: /tmp/execute_ev584vb0/venv
+    venv_path: /tmp/execute_w9ca0npb/venv
   _discovery_metadata:
     github: https://github.com/ArcInstitute/bqtools
     stars: 39
     language: Rust
     tags:
-    - bqtools
     - software
+    - bqtools
     quality_score: 48.400000000000006
     paper_doi: 10.64898/2026.06.02.729736
     paper_title: 'Chromap Suite: an open-source single-binary platform for agentic
@@ -1471,20 +2668,20 @@ tools:
     verified_license: false
     verified_license_path: ''
     verified_entry_scripts: []
-    verified_checked_at: '2026-08-18T02:16:25.365698'
+    verified_checked_at: '2026-08-18T07:47:45.729763'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: cargo
     exec_status: passed
-    exec_reason: '`/tmp/execute_ev584vb0/bqtools/target/release/bqtools --help` ->
+    exec_reason: '`/tmp/execute_w9ca0npb/bqtools/target/release/bqtools --help` ->
       exit 0'
     exec_install_evidence: " v1.4.0\n   Compiling clap v4.6.3\n   Compiling rand v0.10.2\n\
-      \   Compiling is-terminal v0.4.17\n   Compiling thousands v0.2.0\n   Compiling\
-      \ fixedbitset v0.5.7\n   Compiling xxhash-rust v0.8.18\n   Compiling rust-htslib\
+      \   Compiling is-terminal v0.4.17\n   Compiling fixedbitset v0.5.7\n   Compiling\
+      \ xxhash-rust v0.8.18\n   Compiling thousands v0.2.0\n   Compiling rust-htslib\
       \ v0.49.0\n   Compiling paraseq v0.4.14\n   Compiling binseq v0.9.6\n   Compiling\
-      \ bqtools v0.5.13 (/tmp/execute_ev584vb0/bqtools)\n    Finished `release` profile\
+      \ bqtools v0.5.13 (/tmp/execute_w9ca0npb/bqtools)\n    Finished `release` profile\
       \ [optimized] target(s) in 2m 10s\n"
     exec_run_evidence: "into multiple files based on patterns provided in a pattern\
       \ file\n  pipe     Split BINSEQ files into multiple named pipes\n  qc      \
@@ -1636,7 +2833,7 @@ tools:
     - GitPython==3.1.59
     - greenlet==3.5.5
     - humanfriendly==10.0
-    - idna==3.18
+    - idna==3.19
     - immutables==0.21
     - iniconfig==2.3.0
     declared_packages: []
@@ -1647,14 +2844,14 @@ tools:
     - pandas
     - yaml
     - yattag
-    venv_path: /tmp/execute_t7anshg9/venv
+    venv_path: /tmp/execute_j4i4roct/venv
   _discovery_metadata:
     github: https://github.com/BioinformaticsPlatformWIV-ISP/KAPTAIN
     stars: 3
     language: Python
     tags:
-    - kaptain
     - pipeline
+    - kaptain
     quality_score: 26.8
     paper_doi: 10.1186/s12864-026-12668-0
     paper_title: 'Filtering for truth: high-precision taxonomic classification in
@@ -1668,14 +2865,14 @@ tools:
     verified_license_path: LICENSE
     verified_entry_scripts:
     - kaptain/__main__.py
-    verified_checked_at: '2026-08-18T02:17:00.817531'
+    verified_checked_at: '2026-08-18T07:48:31.795517'
     dependencies:
       system_commands: []
       readme_hint: ''
       container_files: []
       install_method: pip_pkg
     exec_status: passed
-    exec_reason: '`/tmp/execute_t7anshg9/venv/bin/kaptain --help` -> exit 0'
+    exec_reason: '`/tmp/execute_j4i4roct/venv/bin/kaptain --help` -> exit 0'
     exec_install_evidence: ''
     exec_run_evidence: "efore\n                        classification. Leave empty\
       \ or use None for no\n                        downsampling. (default: [None])\n\
@@ -1776,14 +2973,14 @@ tools:
     - GitPython==3.1.59
     - greenlet==3.5.5
     - humanfriendly==10.0
-    - idna==3.18
+    - idna==3.19
     - immutables==0.21
     - iniconfig==2.3.0
     - Jinja2==3.1.6
     - jsonschema==4.26.0
     - jsonschema-specifications==2025.9.1
     - jupyter_core==5.9.1
-    - kaptain @ file:///tmp/execute_t7anshg9/KAPTAIN
+    - kaptain @ file:///tmp/execute_j4i4roct/KAPTAIN
     - MarkupSafe==3.0.3
     - nbformat==5.11.1
     - numpy==2.4.6

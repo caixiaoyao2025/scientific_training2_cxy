@@ -1,5 +1,67 @@
 [
   {
+    "name": "metaphlan",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 2 (stderr: usage: metaphlan --input_type {fastq,fasta,mapout,sam} [--force]\n                 [--db_dir METAPHLAN_DB] [-x INDEX] [--))",
+    "output": "FAIL (output: exit 2 (stderr: usage: metaphlan --input_type {fastq,fasta,mapout,sam} [--force]\n                 [--db_dir METAPHLAN_DB] [-x INDEX] [--))",
+    "_argv": [
+      "metaphlan",
+      "/tmp/sample.fa",
+      "--input_type",
+      "x"
+    ],
+    "_args": {
+      "input_type": "x",
+      "input_file": "/tmp/sample.fa"
+    },
+    "_functions": [
+      "metaphlan"
+    ],
+    "_return_code": 2
+  },
+  {
+    "name": "humann",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: CRITICAL ERROR: Can not find input file selected: /home/runner/work/scientific_training2_cxy/scientific_training2_cxy/x\n))",
+    "output": "FAIL (output: exit 1 (stderr: CRITICAL ERROR: Can not find input file selected: /home/runner/work/scientific_training2_cxy/scientific_training2_cxy/x\n))",
+    "_argv": [
+      "humann",
+      "--input",
+      "x",
+      "--output",
+      "/tmp/out.tsv"
+    ],
+    "_args": {
+      "input": "x",
+      "output": "/tmp/out.tsv"
+    },
+    "_functions": [
+      "humann"
+    ],
+    "_return_code": 1
+  },
+  {
+    "name": "kneaddata",
+    "schema": "PASS",
+    "render": "PASS",
+    "execute": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_4dbm88cn/venv/bin/kneaddata\", line 6, in <module>\n    sys.exit(m))",
+    "output": "FAIL (output: exit 1 (stderr: Traceback (most recent call last):\n  File \"/tmp/execute_4dbm88cn/venv/bin/kneaddata\", line 6, in <module>\n    sys.exit(m))",
+    "_argv": [
+      "kneaddata",
+      "--output",
+      "/tmp/out.tsv"
+    ],
+    "_args": {
+      "output": "/tmp/out.tsv"
+    },
+    "_functions": [
+      "kneaddata"
+    ],
+    "_return_code": 1
+  },
+  {
     "name": "bioemu",
     "schema": "PASS",
     "render": "PASS",
