@@ -611,12 +611,24 @@ def main() -> int:
     for t in callable_tools:
         name = t["name"]
         as_ = t.get("arg_style") or "cli"
-        # runtime resources (kaptain's KMA DB): the LLM must NEVER guess a
-        # database path. A tool whose required resources have no environment
-        # path is not executable -- skip its task with a clear reason instead
-        # of sending the agent in to flail (previously WRONG_FUNCTION 7/12).
-        missing_res = [k for k, r in (t.get("resources") or {}).items()
-                       if (r or {}).get("required") and not (r or {}).get("path")]
+        # runtime resources (kaptain's KMA DB, metaphlan DB): the LLM must
+        # NEVER guess a database path. A tool whose required resources have no
+        # environment path is not executable -- skip its task with a clear
+        # reason instead of sending the agent in to flail.
+        # Also skip tools where a declared resource has no resolvable path
+        # even if not marked required (e.g. MetaPhlAn's db_dir which the CLI
+        # says is "optional" but the tool needs at runtime).
+        missing_res = []
+        for k, r in (t.get("resources") or {}).items():
+            r = r or {}
+            if r.get("path"):
+                continue  # explicitly provisioned in registry
+            # check env var: <TOOLNAME>_<RESOURCE_KEY>
+            env_name = f"{name}_{k}".upper().replace("-", "_")
+            if os.environ.get(env_name):
+                continue  # env var is set
+            if r.get("required") or r.get("required_by") == "runtime":
+                missing_res.append(k)
         if missing_res:
             skip_reasons.append(f"{name}: required runtime resource(s) "
                                 f"{sorted(missing_res)} have no environment path")
@@ -665,6 +677,9 @@ def main() -> int:
             tasks.append((label, prompt, expected_fn, out, out_kind))
 
     print(f"\n== {len(tasks)} concrete per-tool tasks ==")
+    for label, prompt, ef, op, ok in tasks:
+        print(f"  {label}  fn={ef}")
+        print(f"    prompt:\n{prompt}")
     for r in skip_reasons:
         print(f"  [skip-task] {r}")
     stats = {"selected": 0, "wrong_function": 0, "started": 0,
