@@ -137,6 +137,10 @@ jobs:
           git diff --cached --quiet || git commit -m "auto: deep tool discovery $(date -u +%Y-%m-%d)"
           # Rebase onto latest main; on conflicts keep this run's freshly generated data
           # (in rebase, "theirs" = the commits being replayed, i.e. the auto-commit).
+          # Clean any unstaged modifications (e.g. from pipeline-generated files)
+          # that would block `git rebase` with "unstaged changes".
+          git checkout -- . 2>/dev/null || true
+          git clean -fd 2>/dev/null || true
           pulled=0
           for i in 1 2 3 4 5; do
             git rebase --abort 2>/dev/null || true

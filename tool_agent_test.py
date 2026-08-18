@@ -646,10 +646,22 @@ def main() -> int:
             out = os.path.join(outdir, f"{name}_out")
             out_kind = _task_output_kind(t)
             out_param = _task_output_param(t)
-            # Resolve fixtures from the tool's own inputs
-            param_fixtures = _resolve_param_fixtures(t)
+            # Resolve fixtures from the LEAF ToolSpec (not the raw registry
+            # tool which has params_schema, not inputs). fnmap maps function
+            # names to the exact leaf ToolSpec that produces the LLM schema.
+            leaf_for_fixtures = fnmap.get(expected_fn, t)
+            param_fixtures = _resolve_param_fixtures(leaf_for_fixtures)
             if not param_fixtures:
-                param_fixtures = {"input": sample}
+                # Fallback: pick the first required file/path param from the
+                # leaf spec (not hardcoded "input" which many tools don't have).
+                leaf_inputs = leaf_for_fixtures.get("inputs") or {}
+                for lk, lm in leaf_inputs.items():
+                    if (isinstance(lm, dict) and lm.get("required")
+                            and lm.get("type") in ("string", "path", "file")):
+                        param_fixtures = {lk: sample}
+                        break
+                if not param_fixtures:
+                    param_fixtures = {"input": sample}
             label = f"{name}: process sample -> {os.path.basename(out)}"
             prompt = _build_nonsubcommand_prompt(
                 name, param_fixtures, out, out_param)
