@@ -113,21 +113,29 @@ def _fixture_for_artifact(artifact_type: str) -> str | None:
 def _resolve_param_fixtures(leaf: dict) -> dict[str, str]:
     """Resolve a fixture path for each file-type parameter in a leaf spec.
 
-    Returns {param_key: fixture_path} for parameters that have an
-    artifact_type with a known fixture. Parameters without artifacts
-    (integer flags, boolean switches) are skipped.
+    Returns {param_key: fixture_path} for ALL required file/path params.
+    Params with artifact_type get their specific fixture (e.g. sample.vbq).
+    Params without artifact_type but with type string/path/file get sample.
+    Non-file params (integer, boolean) are skipped.
     """
     result = {}
     inputs = leaf.get("inputs") or {}
     for key, meta in inputs.items():
         if not isinstance(meta, dict):
             continue
-        artifact = meta.get("artifact_type") or meta.get("artifact")
-        if not artifact or artifact == "directory":
+        if not meta.get("required"):
             continue
-        path = _fixture_for_artifact(artifact)
-        if path and os.path.exists(path):
-            result[key] = path
+        jtype = meta.get("type", "string")
+        if jtype not in ("string", "path", "file"):
+            continue
+        artifact = meta.get("artifact_type") or meta.get("artifact")
+        if artifact and artifact != "directory":
+            path = _fixture_for_artifact(artifact)
+            if path and os.path.exists(path):
+                result[key] = path
+                continue
+        # No artifact annotation but it's a required file param — use sample
+        result[key] = os.path.join(tempfile.gettempdir(), "agent_test_sample.fasta")
     return result
 
 
@@ -651,17 +659,6 @@ def main() -> int:
             # names to the exact leaf ToolSpec that produces the LLM schema.
             leaf_for_fixtures = fnmap.get(expected_fn, t)
             param_fixtures = _resolve_param_fixtures(leaf_for_fixtures)
-            if not param_fixtures:
-                # Fallback: pick the first required file/path param from the
-                # leaf spec (not hardcoded "input" which many tools don't have).
-                leaf_inputs = leaf_for_fixtures.get("inputs") or {}
-                for lk, lm in leaf_inputs.items():
-                    if (isinstance(lm, dict) and lm.get("required")
-                            and lm.get("type") in ("string", "path", "file")):
-                        param_fixtures = {lk: sample}
-                        break
-                if not param_fixtures:
-                    param_fixtures = {"input": sample}
             label = f"{name}: process sample -> {os.path.basename(out)}"
             prompt = _build_nonsubcommand_prompt(
                 name, param_fixtures, out, out_param)
