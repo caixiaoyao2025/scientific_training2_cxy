@@ -44,7 +44,7 @@ MODEL = (os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL")
 API_KEY = (os.environ.get("WESTLAKE_API_KEY") or os.environ.get("OPENAI_API_KEY")
            or os.environ.get("DEEPSEEK_API_KEY") or "")
 REGISTRY = os.environ.get("REGISTRY", "data/mcp_registry.yaml")
-MAX_TURNS = 10
+MAX_TURNS = 6
 MAX_SAME_TOOL_ATTEMPTS = 3  # anti-tool-roulette: cap retries per tool per task
 # A tool that HANGS (bioemu waiting on an unreachable model hub) must fail fast
 # and let the agent move on -- otherwise a single hung subprocess eats the
