@@ -40,7 +40,7 @@ BASE_URL = (os.environ.get("WESTLAKE_BASE_URL") or os.environ.get("OPENAI_BASE_U
             or os.environ.get("DEEPSEEK_BASE_URL")
             or "https://ark.cn-beijing.volces.com/api/v3")
 MODEL = (os.environ.get("WESTLAKE_MODEL") or os.environ.get("OPENAI_MODEL")
-          or os.environ.get("DEEPSEEK_MODEL") or "glm-5-2-260617")
+          or os.environ.get("DEEPSEEK_MODEL") or "deepseek-v4-flash-ga-260731")
 API_KEY = (os.environ.get("WESTLAKE_API_KEY") or os.environ.get("OPENAI_API_KEY")
            or os.environ.get("DEEPSEEK_API_KEY") or "")
 REGISTRY = os.environ.get("REGISTRY", "data/mcp_registry.yaml")

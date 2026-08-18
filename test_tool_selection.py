@@ -32,12 +32,12 @@ import yaml
 from tool_agent_test import to_function_schemas
 from agent_connector.tool_retrieval import build_tool_index, retrieve_tools
 
-MODEL = "glm-5-2-260617"
+MODEL = os.environ.get("WESTLAKE_MODEL", "deepseek-v4-flash-ga-260731")
 MAX_RETRIES = 3
 RETRY_DELAY = 5
 
-_BASE_URL = "http://model.mify.ai.srv/v1"
-_API_KEY = "sk-39NcBFhB0k871tZUDl8c6E0jJmKk00UHxf0Jt8Z0QYDFvQnM"
+_BASE_URL = os.environ.get("WESTLAKE_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3")
+_API_KEY = os.environ.get("WESTLAKE_API_KEY", "")
 
 # --- selection tasks: (user_task, expected_fn_name) ---
 # Each task is a natural language request that should map to exactly one
